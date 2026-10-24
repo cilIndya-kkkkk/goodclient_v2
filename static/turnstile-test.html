@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turnstile domain test</title>
+  <style>
+    body { background:#111; color:#eee; font-family:monospace; padding:16px; }
+    #status { white-space:pre-wrap; margin:12px 0; font-size:14px; line-height:1.5; }
+    #widget { margin:12px 0; min-height:70px; }
+    button { padding:8px 14px; font-size:14px; }
+    .ok { color:#6f6; }
+    .bad { color:#f66; }
+  </style>
+</head>
+<body>
+  <h3>Turnstile domain test</h3>
+  <div id="status">hostname: <span id="host"></span>
+loading api.js...</div>
+  <div id="widget"></div>
+  <button id="retry" type="button">Render again</button>
+  <script>
+    document.getElementById("host").textContent = location.hostname;
+    var statusEl = document.getElementById("status");
+    var widgetEl = document.getElementById("widget");
+    var rendered = false;
+
+    function log(text, cls) {
+      var line = document.createElement("div");
+      if (cls) line.className = cls;
+      line.textContent = text;
+      statusEl.appendChild(line);
+    }
+
+    function loadScript() {
+      if (window.turnstile) { render(); return; }
+      var s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      s.async = true;
+      s.onload = function () { log("api.js loaded", "ok"); render(); };
+      s.onerror = function () { log("api.js failed to load", "bad"); };
+      document.head.appendChild(s);
+    }
+
+    function render() {
+      if (!window.turnstile) { log("window.turnstile missing", "bad"); return; }
+      if (rendered) {
+        try { window.turnstile.remove(window.__widgetId); } catch (e) {}
+      }
+      widgetEl.innerHTML = "";
+      log("render() called");
+      window.__widgetId = window.turnstile.render(widgetEl, {
+        sitekey: "0x4AAAAAAEI8HZoG8nJMzxt1",
+        action: "enter_lobby",
+        appearance: "always",
+        callback: function (token) {
+          log("SUCCESS token length=" + String(token || "").length, "ok");
+        },
+        "expired-callback": function () { log("expired", "bad"); },
+        "error-callback": function (code) {
+          log("ERROR code=" + code, "bad");
+          return true;
+        }
+      });
+      rendered = true;
+    }
+
+    document.getElementById("retry").addEventListener("click", loadScript);
+    loadScript();
+  </script>
+</body>
+</html>
