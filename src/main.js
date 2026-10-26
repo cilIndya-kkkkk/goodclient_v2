@@ -5,7 +5,6 @@ import { reportError } from './debugging.js';
 window.__fx = window.__fx || {};
 window.__fx.reportError = reportError;
 
-import { installRttHook, installRttDisplay } from './rtt.js';
 import versionData from '../version.json';
 const { version, lastUpdated, isSignificant } = versionData;
 
@@ -26,13 +25,6 @@ import lobbyReminders from './lobbyReminders.js';
 import pingFilter from './pingFilter.js';
 import nameFilter from './nameFilter.js';
 import followedAccounts from './followedAccounts.js';
-
-try {
-  installRttHook();
-  installRttDisplay();
-} catch (e) {
-  console.error('RTT hook failed', e);
-}
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
