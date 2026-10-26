@@ -23,6 +23,7 @@ var settings = {
   densityDisplayStyle: "absoluteQuotient",
   hideBotNames: false,
   highlightClanSpawns: false,
+  showAllSpawnPoints: true,
   highlightDuplicateIps: false,
   detailedTeamPercentage: false,
   openDonationHistoryFromLb: true,
@@ -490,6 +491,12 @@ const settingsManager = new (function () {
       ],
     },
     { for: "hideBotNames", type: "checkbox", label: "Hide bot names" },
+    {
+      for: "showAllSpawnPoints",
+      type: "checkbox",
+      label: "Show all spawnpoints",
+      note: "Increases every spawnpoint glow during spawn selection",
+    },
     {
       for: "highlightClanSpawns",
       type: "checkbox",

@@ -223,6 +223,27 @@ export default function initToolbox() {
     }))
   );
 
+  const displaySection = makeSection("Display");
+  const spawnAllButton = makeButton("All spawns", () => {
+    const settings = getSettings();
+    settings.showAllSpawnPoints = !settings.showAllSpawnPoints;
+    persistSettings();
+    render();
+  });
+  const spawnClanButton = makeButton("Clan spawns", () => {
+    const settings = getSettings();
+    settings.highlightClanSpawns = !settings.highlightClanSpawns;
+    persistSettings();
+    render();
+  });
+  displaySection.append(
+    makeRow(spawnAllButton, spawnClanButton),
+    makeRow(Object.assign(document.createElement("span"), {
+      className: "fx-toolbox-note",
+      textContent: "Spawn markers are shown during spawn selection."
+    }))
+  );
+
   const statusSection = makeSection("Status");
   const statusLine = document.createElement("div");
   statusLine.className = "fx-toolbox-status";
@@ -232,7 +253,7 @@ export default function initToolbox() {
   });
   statusSection.append(statusLine, makeRow(resetToggleButton));
 
-  body.append(automationSection, openingSection, statusSection);
+  body.append(automationSection, openingSection, displaySection, statusSection);
   panel.append(header, body);
 
   function isInGame() {
@@ -438,6 +459,8 @@ export default function initToolbox() {
     onButton.classList.toggle("active", Boolean(settings.openingAutomationEnabled && settings.infiniteExpansionEnabled && mode !== "off"));
     offButton.classList.toggle("active", !settings.openingAutomationEnabled && !settings.infiniteExpansionEnabled && mode === "off");
     botModeSelect.value = mode;
+    spawnAllButton.classList.toggle("active", Boolean(settings.showAllSpawnPoints));
+    spawnClanButton.classList.toggle("active", Boolean(settings.highlightClanSpawns));
     const spend = automation.getBotSpendPercent();
     spendSlider.value = String(spend);
     spendValue.textContent = `${spend}%`;

@@ -23,7 +23,7 @@ export default (/** @type {ModUtils} */ { replaceCode }) => {
 		mainCanvas.setTransform(bg, 0, 0, bg, x, y);
 		mainCanvas.drawImage(vL[game.gIsTeamGame ? TeamManager.ids[i] : 1], 0, 0);`,
 
-        `var highlight = __fx.settings.highlightClanSpawns && __fx.clanFilter.inOwnClan[i];
+        `        var highlight = __fx.settings.showAllSpawnPoints || (__fx.settings.highlightClanSpawns && __fx.clanFilter.inOwnClan[i]);
         if (highlight) j7 *= 2;
 		var x = f.w * ((playerData.minX[i] + playerData.maxX[i] + 1) / 2 - gE) / (li - gE) - 0.5 * j7;
 		var y = f.h * ((playerData.minY[i] + playerData.maxY[i] + 1) / 2 - ex) / (lj - ex) - 0.5 * j7;
