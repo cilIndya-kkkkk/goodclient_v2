@@ -36,7 +36,7 @@ export default (/** @type {ModUtils} */ { replaceCode, safeDictionary: dict }) =
             if (spawnName) {
                 mainCanvas.save();
                 mainCanvas.setTransform(1, 0, 0, 1, 0, 0);
-                mainCanvas.font = "12px Trebuchet MS, Arial, sans-serif";
+                mainCanvas.font = (__fx.settings.spawnPointNameSize || 12) + "px Trebuchet MS, Arial, sans-serif";
                 mainCanvas.textAlign = "center";
                 mainCanvas.textBaseline = "top";
                 mainCanvas.lineWidth = 3;

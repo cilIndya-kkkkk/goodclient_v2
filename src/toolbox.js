@@ -245,11 +245,43 @@ export default function initToolbox() {
   const clearSpawnButton = makeButton("Clear highlight", () => {
     window.__fx.selectedSpawnPlayer = -1;
   });
+  const nameSizeLabel = document.createElement("span");
+  nameSizeLabel.textContent = "Name size";
+  const nameSizeSlider = document.createElement("input");
+  nameSizeSlider.type = "range";
+  nameSizeSlider.min = "8";
+  nameSizeSlider.max = "24";
+  nameSizeSlider.step = "1";
+  const nameSizeValue = document.createElement("span");
+  nameSizeSlider.addEventListener("input", () => {
+    const settings = getSettings();
+    const size = Number(nameSizeSlider.value);
+    settings.spawnPointNameSize = size;
+    persistSettings();
+    nameSizeValue.textContent = `${size}px`;
+  });
   displaySection.append(
     makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, clearSpawnButton),
+    makeRow(nameSizeLabel, nameSizeSlider, nameSizeValue),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
       textContent: "Spawn markers are shown during spawn selection."
+    }))
+  );
+
+  const themeSection = makeSection("Theme");
+  const animeThemeButton = makeButton("Anime theme", () => {
+    const settings = getSettings();
+    settings.animeThemeEnabled = !settings.animeThemeEnabled;
+    persistSettings();
+    window.__fx.theme?.apply?.();
+    render();
+  });
+  themeSection.append(
+    makeRow(animeThemeButton),
+    makeRow(Object.assign(document.createElement("span"), {
+      className: "fx-toolbox-note",
+      textContent: "Pastel UI theme. The game canvas keeps its own colors."
     }))
   );
 
@@ -262,7 +294,7 @@ export default function initToolbox() {
   });
   statusSection.append(statusLine, makeRow(resetToggleButton));
 
-  body.append(automationSection, openingSection, displaySection, statusSection);
+  body.append(automationSection, openingSection, displaySection, themeSection, statusSection);
   panel.append(header, body);
 
   function isInGame() {
@@ -471,6 +503,10 @@ export default function initToolbox() {
     spawnAllButton.classList.toggle("active", Boolean(settings.showAllSpawnPoints));
     spawnClanButton.classList.toggle("active", Boolean(settings.highlightClanSpawns));
     spawnNamesButton.classList.toggle("active", Boolean(settings.showSpawnPointNames));
+    const nameSize = Number(settings.spawnPointNameSize) || 12;
+    nameSizeSlider.value = String(nameSize);
+    nameSizeValue.textContent = `${nameSize}px`;
+    animeThemeButton.classList.toggle("active", Boolean(settings.animeThemeEnabled));
     const spend = automation.getBotSpendPercent();
     spendSlider.value = String(spend);
     spendValue.textContent = `${spend}%`;

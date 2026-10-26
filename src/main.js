@@ -1,6 +1,7 @@
 import openingAutomation, { OpeningAutomationInput } from './openingAutomation.js';
 import initAutomationControls from './automationControls.js';
 import initToolbox from './toolbox.js';
+import initTheme from './theme.js';
 import { reportError } from './debugging.js';
 
 window.__fx = window.__fx || {};
@@ -62,6 +63,7 @@ __fx.followedAccounts = followedAccounts;
 __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
+__fx.theme = initTheme();
 __fx.toolbox = initToolbox();
 __fx.selectedSpawnPlayer = -1;
 __fx.onLeaderboardPlayerClick = (player) => {

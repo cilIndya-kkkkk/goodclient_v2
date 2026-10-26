@@ -25,6 +25,8 @@ var settings = {
   highlightClanSpawns: false,
   showAllSpawnPoints: true,
   showSpawnPointNames: true,
+  spawnPointNameSize: 12,
+  animeThemeEnabled: false,
   highlightDuplicateIps: false,
   detailedTeamPercentage: false,
   openDonationHistoryFromLb: true,
@@ -505,6 +507,14 @@ const settingsManager = new (function () {
       note: "Draws player names next to spawnpoints during spawn selection",
     },
     {
+      for: "spawnPointNameSize",
+      type: "numberInput",
+      label: "Spawnpoint name size",
+      min: "8",
+      max: "24",
+      step: "1",
+    },
+    {
       for: "highlightClanSpawns",
       type: "checkbox",
       label: "Highlight clan spawnpoints",
@@ -556,6 +566,13 @@ const settingsManager = new (function () {
     LobbyReminderRulesInput,
     SectionHeader("Muted lobby pings"),
     MutePingSection,
+    SectionHeader("Theme"),
+    {
+      for: "animeThemeEnabled",
+      type: "checkbox",
+      label: "Fresh anime theme",
+      note: "Pastel UI theme; use the toolbox toggle to apply it without reloading",
+    },
     SectionHeader("Other"),
     {
       for: "hideInappropriateNames",
