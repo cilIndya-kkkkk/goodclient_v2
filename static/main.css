@@ -522,21 +522,21 @@ label.checkbox .checkmark:after {
 #fxToolboxToggle {
 	position: fixed;
 	left: 8px;
-	bottom: 8px;
+	top: 8px;
 	z-index: 2147483646;
-	display: none;
+	display: block;
 	padding: 7px 12px;
 	border: 1px solid rgba(255, 255, 255, 0.7);
 	background: rgba(0, 0, 0, 0.72);
 	color: #fff;
 	font: 700 13px 'Trebuchet MS', Arial, sans-serif;
-	cursor: pointer;
+	cursor: grab;
 	user-select: none;
-	touch-action: manipulation;
+	touch-action: none;
 }
 
-#fxToolboxToggle.in-game {
-	display: block;
+#fxToolboxToggle.dragging {
+	cursor: grabbing;
 }
 
 #fxToolbox {

@@ -6,6 +6,7 @@ import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "./botA
 import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 
 const POSITION_STORAGE_KEY = "fx_toolbox_position";
+const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position";
 const BOT_MODES = [
   { value: "off", label: "Bot Off" },
   { value: "v20reserve", label: "V20 Reserve" },
@@ -47,7 +48,7 @@ export default function initToolbox() {
   toggle.type = "button";
   toggle.id = "fxToolboxToggle";
   toggle.textContent = "Tools";
-  toggle.title = "Open toolbox (F2)";
+  toggle.title = "Drag to move, click to open (F2)";
 
   const panel = document.createElement("div");
   panel.id = "fxToolbox";
@@ -225,7 +226,11 @@ export default function initToolbox() {
   const statusSection = makeSection("Status");
   const statusLine = document.createElement("div");
   statusLine.className = "fx-toolbox-status";
-  statusSection.append(statusLine);
+  const resetToggleButton = makeButton("Reset Tools button", () => {
+    localStorage.removeItem(TOGGLE_POSITION_STORAGE_KEY);
+    applyTogglePosition(8, 8, false);
+  });
+  statusSection.append(statusLine, makeRow(resetToggleButton));
 
   body.append(automationSection, openingSection, statusSection);
   panel.append(header, body);
@@ -285,6 +290,91 @@ export default function initToolbox() {
     });
   }
 
+  function loadTogglePosition() {
+    try {
+      const position = JSON.parse(localStorage.getItem(TOGGLE_POSITION_STORAGE_KEY) || "null");
+      if (!position || !Number.isFinite(position.left) || !Number.isFinite(position.top)) return null;
+      return position;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function clampTogglePosition(left, top) {
+    const rect = toggle.getBoundingClientRect();
+    const width = rect.width || 64;
+    const height = rect.height || 32;
+    return {
+      left: Math.min(Math.max(0, left), Math.max(0, window.innerWidth - width)),
+      top: Math.min(Math.max(0, top), Math.max(0, window.innerHeight - height))
+    };
+  }
+
+  function applyTogglePosition(left, top, persist = true) {
+    const position = clampTogglePosition(left, top);
+    toggle.style.left = `${position.left}px`;
+    toggle.style.top = `${position.top}px`;
+    toggle.style.right = "auto";
+    toggle.style.bottom = "auto";
+    if (persist) localStorage.setItem(TOGGLE_POSITION_STORAGE_KEY, JSON.stringify(position));
+  }
+
+  function applyInitialTogglePosition() {
+    const saved = loadTogglePosition();
+    if (saved) {
+      applyTogglePosition(saved.left, saved.top, false);
+      return;
+    }
+    applyTogglePosition(8, 8, false);
+  }
+
+  let toggleDragState = null;
+  let suppressToggleClick = false;
+  toggle.addEventListener("pointerdown", (event) => {
+    const rect = toggle.getBoundingClientRect();
+    toggleDragState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      moved: false
+    };
+    toggle.setPointerCapture(event.pointerId);
+    toggle.classList.add("dragging");
+  });
+  toggle.addEventListener("pointermove", (event) => {
+    if (!toggleDragState || toggleDragState.pointerId !== event.pointerId) return;
+    const dx = event.clientX - toggleDragState.startX;
+    const dy = event.clientY - toggleDragState.startY;
+    if (!toggleDragState.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+      toggleDragState.moved = true;
+    }
+    if (toggleDragState.moved) {
+      applyTogglePosition(
+        event.clientX - toggleDragState.offsetX,
+        event.clientY - toggleDragState.offsetY,
+        false
+      );
+    }
+  });
+  const finishToggleDrag = (event) => {
+    if (!toggleDragState || toggleDragState.pointerId !== event.pointerId) return;
+    const moved = toggleDragState.moved;
+    toggleDragState = null;
+    toggle.classList.remove("dragging");
+    if (moved) {
+      const rect = toggle.getBoundingClientRect();
+      applyTogglePosition(rect.left, rect.top, true);
+      suppressToggleClick = true;
+      setTimeout(() => {
+        suppressToggleClick = false;
+      }, 0);
+    }
+  };
+  toggle.addEventListener("pointerup", finishToggleDrag);
+  toggle.addEventListener("pointercancel", finishToggleDrag);
+
   let dragState = null;
   header.addEventListener("pointerdown", (event) => {
     if (event.target === closeButton) return;
@@ -325,12 +415,21 @@ export default function initToolbox() {
     else openPanel();
   }
 
-  toggle.addEventListener("click", togglePanel);
+  toggle.addEventListener("click", (event) => {
+    if (suppressToggleClick) {
+      suppressToggleClick = false;
+      event.preventDefault();
+      return;
+    }
+    togglePanel();
+  });
 
   function render() {
-    if (!document.body.contains(toggle)) document.body.append(toggle);
+    if (!document.body.contains(toggle)) {
+      document.body.append(toggle);
+      applyInitialTogglePosition();
+    }
     if (!document.body.contains(panel)) document.body.append(panel);
-    toggle.classList.toggle("in-game", isInGame());
     const settings = getSettings();
     const automation = window.__fx.openingAutomation;
     const mode = automation.getAutoAttackMode();
@@ -362,9 +461,14 @@ export default function initToolbox() {
   });
 
   window.addEventListener("resize", () => {
-    if (!panel.style.left) return;
-    const rect = panel.getBoundingClientRect();
-    applyPosition(rect.left, rect.top);
+    if (panel.style.left) {
+      const rect = panel.getBoundingClientRect();
+      applyPosition(rect.left, rect.top);
+    }
+    if (toggle.style.left) {
+      const rect = toggle.getBoundingClientRect();
+      applyTogglePosition(rect.left, rect.top, false);
+    }
   });
 
   window.addEventListener("load", render);
