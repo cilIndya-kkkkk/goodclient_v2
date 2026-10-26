@@ -10,25 +10,7 @@ import { FollowedAccountNicknames } from './followedAccounts.js';
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
 
-const DEFAULT_MENU_BACKGROUND = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
-<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff5fb"/><stop offset=".5" stop-color="#eafcff"/><stop offset="1" stop-color="#f1fff7"/></linearGradient></defs>
-<rect width="1200" height="800" fill="url(#g)"/>
-<g fill="#ffd3e6" opacity=".55"><circle cx="150" cy="130" r="70"/><circle cx="1050" cy="180" r="95"/><circle cx="980" cy="660" r="75"/><circle cx="220" cy="710" r="50"/></g>
-<g fill="#c9f5e8" opacity=".55"><circle cx="340" cy="90" r="38"/><circle cx="880" cy="70" r="30"/><circle cx="80" cy="420" r="26"/></g>
-<g fill="none" stroke="#5b4b63" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-<path d="M410 620 C 350 585 330 510 375 458 C 415 415 480 408 530 438 L 620 422 C 700 402 780 450 790 520 C 800 590 750 642 680 652 L 440 652 C 412 646 402 636 410 620 Z" fill="#fffafd"/>
-<path d="M620 422 C 650 360 715 332 775 350 C 835 368 860 425 830 478" fill="#fffafd"/>
-<path d="M790 520 C 850 510 880 472 860 432 C 846 404 812 403 802 428"/>
-<path d="M450 652 L 450 724 M 510 652 L 510 736 M 700 652 L 700 736 M 760 642 L 760 724"/>
-<path d="M640 372 C 610 332 620 292 650 278 C 676 266 700 286 706 316"/>
-<path d="M800 356 C 830 320 866 326 882 352 C 897 377 881 406 856 416"/>
-<circle cx="735" cy="382" r="5" fill="#5b4b63"/><circle cx="795" cy="392" r="5" fill="#5b4b63"/>
-<path d="M758 402 C 768 414 780 414 790 402"/><path d="M775 408 C 775 420 765 425 758 418"/>
-<path d="M690 448 C 720 468 770 472 805 458" stroke="#ff9fc4"/>
-</g>
-<g fill="#ff9fc4" opacity=".8"><path d="M400 760 C 380 740 360 750 370 770 C 380 790 410 780 400 760 Z"/><path d="M435 780 C 420 765 405 772 413 787 C 421 800 443 794 435 780 Z"/></g>
-<text x="600" y="752" text-anchor="middle" font-family="Trebuchet MS, Arial" font-size="26" fill="#b98aa9" opacity=".7">GoodClient · line dog</text>
-</svg>`);
+const DEFAULT_MENU_BACKGROUND = "linear-gradient(160deg, #fff9e8, #f6e6c3 55%, #efe0b8)";
 
 var settings = {
   //"showBotDonations": false,
@@ -791,9 +773,11 @@ const settingsManager = new (function () {
     window.location.reload();
   };
   this.applySettings = function () {
-    const backgroundUrl = settings.customBackgroundUrl || DEFAULT_MENU_BACKGROUND;
-    const backgroundOverlay = settings.customBackgroundUrl ? "" : "linear-gradient(180deg, rgba(20, 10, 30, 0.08), rgba(20, 10, 30, 0.18)), ";
-    document.body.style.backgroundImage = `${backgroundOverlay}url("${backgroundUrl}")`;
+    const backgroundImage = settings.customBackgroundUrl
+      ? `url("${settings.customBackgroundUrl}")`
+      : DEFAULT_MENU_BACKGROUND;
+    document.body.style.backgroundColor = "#f6e6c3";
+    document.body.style.backgroundImage = backgroundImage;
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundRepeat = "no-repeat";
