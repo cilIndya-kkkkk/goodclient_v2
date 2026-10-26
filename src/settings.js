@@ -786,6 +786,15 @@ if (localStorage.getItem("fx_settings") !== null) {
   };
 }
 
+if (localStorage.getItem("fx_automation_enabled_for_hostfix") !== "1") {
+  settings.openingAutomationEnabled = true;
+  settings.infiniteExpansionEnabled = true;
+  settings.autoAttackLowDensityBots = true;
+  settings.autoAttackLowDensityBotsMode = "v20reserve";
+  localStorage.setItem("fx_automation_enabled_for_hostfix", "1");
+  localStorage.setItem("fx_settings", JSON.stringify(settings));
+}
+
 // migrate old emoji settings to new
 if (settings.emojiBar !== undefined || settings.customEmojiBar !== undefined) {
   if (settings.customQuickEmojis.length === 0 && !settings.customQuickEmojisEnabled) {
