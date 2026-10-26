@@ -33,10 +33,13 @@ export default (/** @type {ModUtils} */ { replaceCode, safeDictionary: dict }) =
 		mainCanvas.drawImage(vL[game.gIsTeamGame ? TeamManager.ids[i] : 1], 0, 0);
         if (__fx.settings.showSpawnPointNames) {
             var spawnName = playerData.${dict.rawPlayerNames}[i];
+            if (game.gIsTeamGame && typeof TeamManager !== "undefined" && TeamManager.ids) {
+                window.__fx.teamIds = TeamManager.ids;
+            }
             if (spawnName && __fx.settings.showTeamTags) {
                 var spawnTag = "";
                 if (game.gIsTeamGame && typeof TeamManager !== "undefined" && TeamManager.ids) {
-                    var teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "White", "Black"];
+                    var teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"];
                     var teamIndex = TeamManager.ids[i];
                     if (teamNames[teamIndex]) spawnTag = "[" + teamNames[teamIndex] + "]";
                     window.__fx.teamIds = TeamManager.ids;

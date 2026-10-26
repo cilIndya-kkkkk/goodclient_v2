@@ -2,7 +2,7 @@ import ModUtils, { insert } from "../modUtils.js"
 
 // Name rendering patches - Display density of other players & Hide bot names features
 
-export default (/** @type {ModUtils} */ { modifyCode, waitForMinification, matchCode, replaceOne }) => {
+export default (/** @type {ModUtils} */ { modifyCode, waitForMinification, matchCode, replaceOne, safeDictionary: dict }) => {
 
   const { placeBalanceAbove } = matchCode(`aLT += Math.floor(0.78 * fontSize);
     if (placeBalanceAbove) {/*...*/}`)
@@ -12,6 +12,14 @@ export default (/** @type {ModUtils} */ { modifyCode, waitForMinification, match
     `function aLY(ctx, i, fontSize, x, y, aLU) {
     var a4f = playerData.a4f[i];
     var aLe = Util.s1.formatNumber(playerData.playerBalances[i] - a4f);
+    ${insert(`var ___teamTag = "";
+      if (__fx.settings.showTeamTags) {
+        var ___teamIds = window.__fx.teamIds;
+        var ___teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"];
+        if (___teamIds && ___teamIds[i] != null && ___teamNames[___teamIds[i]]) ___teamTag = "[" + ___teamNames[___teamIds[i]] + "]";
+        else if (__fx.getTeamTag) ___teamTag = __fx.getTeamTag(playerData.${dict.rawPlayerNames}[i]);
+      }
+      aLe = ___teamTag + aLe;`)}
     ${insert(`function drawDensity() {
       if (!placeBalanceAbove && __fx.settings.showPlayerDensity)
         __fx.settings.coloredDensity && (ctx.fillStyle = __fx.utils.textStyleBasedOnDensity(i)), ctx.fillText(__fx.utils.getDensity(i), x, y + fontSize);

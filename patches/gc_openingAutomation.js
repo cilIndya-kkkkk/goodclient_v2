@@ -62,6 +62,7 @@ function applyOpeningAutomation(modUtils) {
             // onTick/onTickAutoAttack, so a bad read must degrade to a safe default (false/0/null/
             // no-op) rather than throw a ReferenceError and take the render loop down with it.
             var __fxAd = typeof ${g.mapData} !== "undefined" ? ${g.mapData} : undefined;
+            var __fxTargetStart = (humans) => ${dict.game}.${dict.gIsTeamGame} ? 0 : humans;
             // Attacks are not sent through the click-to-attack UI dispatcher at all: attackFreeLand
             // below calls GameCommandSender.sendAttack directly, which is the same call the UI path
             // ends in, minus the input handling.
@@ -127,7 +128,7 @@ function applyOpeningAutomation(modUtils) {
                         var neighbor = tile + offsets[d];
                         if (!__fxAd.${g.isOwnedTile}(neighbor)) continue;
                         var owner = __fxAd.${g.getTileOwner}(neighbor);
-                        if (owner < humans || owner >= maxPlayers || owner === player || seen.has(owner)) continue;
+                        if (owner < __fxTargetStart(humans) || owner >= maxPlayers || owner === player || seen.has(owner)) continue;
                         seen.add(owner);
                         if (recentTargets?.has(owner) && lastTick - recentTargets.get(owner) < 30) continue;
                         var land = ${dict.playerData}.${dict.playerTerritories}[owner] || 0;
@@ -171,7 +172,7 @@ function applyOpeningAutomation(modUtils) {
                         var neighbor = tile + offsets[d];
                         if (!__fxAd.${g.isOwnedTile}(neighbor)) continue;
                         var id = __fxAd.${g.getTileOwner}(neighbor);
-                        if (id < humans || id >= maxPlayers || id === player || seen.has(id)) continue;
+                        if (id < __fxTargetStart(humans) || id >= maxPlayers || id === player || seen.has(id)) continue;
                         seen.add(id);
                         if (!__fxCanAttack(player, id) || !__fxBorders(id, player)) continue;
                         if (activeTargets?.has(id)) continue;
@@ -236,7 +237,13 @@ function applyOpeningAutomation(modUtils) {
                 }
                 return false;
             };
-            var __fxCanAttack = (attacker, target)=> !${dict.game}.${dict.gIsTeamGame};
+            var __fxCanAttack = (attacker, target)=> {
+                if (!${dict.game}.${dict.gIsTeamGame}) return true;
+                if (typeof ${g.teamUtils} !== "undefined" && typeof ${g.teamUtils}.${g.canAttack} === "function") {
+                    return ${g.teamUtils}.${g.canAttack}(attacker, target);
+                }
+                return true;
+            };
             var __fxBorders = (left, right)=> {
                 if (typeof ${g.teamUtils} !== "undefined" && typeof ${g.teamUtils}.${g.canAttack} === "function") {
                     return ${g.teamUtils}.${g.canAttack}(left, right);
@@ -263,7 +270,7 @@ function applyOpeningAutomation(modUtils) {
                 // is unavailable, and re-check here so no selector can accidentally send
                 // an attack against another player.
                 if (!isFinite(humans) || humans < 1) return false;
-                if (target < humans || target >= maxPlayers) return false;
+                if (target < __fxTargetStart(humans) || target >= maxPlayers) return false;
                 var targetLand = ${dict.playerData}.${dict.playerTerritories}[target];
                 if (!targetLand || targetLand <= 0) return false;
                 if (!__fxCanAttack(${dict.game}.${dict.playerId}, target)) return false;
@@ -345,9 +352,9 @@ function applyOpeningAutomation(modUtils) {
             };
             __fx.openingAutomation.findLowDensityBorderingBots=(limit, mode)=> {
                 var targets = [];
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     if (${dict.playerData}.${dict.playerTerritories}[id] <= 0) continue;
-                    if (!__fxBorders(id, ${dict.game}.${dict.playerId}) || !__fxCanAttack(${dict.game}.${dict.playerId}, id)) continue;
+                    if (id === ${dict.game}.${dict.playerId} || !__fxBorders(id, ${dict.game}.${dict.playerId}) || !__fxCanAttack(${dict.game}.${dict.playerId}, id)) continue;
                     var density = ${dict.playerData}.${dict.playerBalances}[id] / (${dict.playerData}.${dict.playerTerritories}[id] * 150);
                     if (density >= 0.4) continue;
                     targets.push({ id, density, land: ${dict.playerData}.${dict.playerTerritories}[id], balance: ${dict.playerData}.${dict.playerBalances}[id] });
@@ -364,7 +371,7 @@ function applyOpeningAutomation(modUtils) {
                 __fx.openingAutomation.safeBotDensityTrackerLastUpdate = now;
                 var tracker = __fx.openingAutomation.safeBotDensityTracker ||= new Map();
                 var seen = new Set();
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land <= 0) continue;
                     var record = tracker.get(id) || {};
@@ -468,10 +475,10 @@ function applyOpeningAutomation(modUtils) {
                 var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
                 var best = null;
                 var bestScore = -1;
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land < 120 || land > Math.max(2400, ownLand * 0.10)) continue;
-                    if (!__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
+                    if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
                     if (recentTargets?.has(id) && nowTick - recentTargets.get(id) < 18) continue;
                     var exposure = __fx.openingAutomation.getBotExposure(id);
                     if (exposure.playerEdges < 8 || exposure.botNeighbors > 1) continue;
@@ -527,10 +534,10 @@ function applyOpeningAutomation(modUtils) {
                 var bestScore = -1;
                 var fallbackBest = null;
                 var fallbackBestScore = -1;
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land < minLand) continue;
-                    if (!__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
+                    if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
                     var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
                     if (recentTargets?.has(id) && tick - recentTargets.get(id) < (forceBest ? 8 : 14)) continue;
                     var troops = ${dict.playerData}.${dict.playerBalances}[id];
@@ -689,7 +696,7 @@ function applyOpeningAutomation(modUtils) {
                         var neighbor = tile + offsets[d];
                         if (!__fxAd.${g.isOwnedTile}(neighbor)) continue;
                         var owner = __fxAd.${g.getTileOwner}(neighbor);
-                        if (owner < humans || owner >= maxPlayers || owner === player) continue;
+                        if (owner < __fxTargetStart(humans) || owner >= maxPlayers || owner === player) continue;
                         var entries = entriesByBot.get(owner);
                         if (!entries) { entries = []; entriesByBot.set(owner, entries); }
                         if (entries.indexOf(tile) < 0) entries.push(tile);
@@ -777,10 +784,10 @@ function applyOpeningAutomation(modUtils) {
                 var tracker = __fx.openingAutomation.safeBotDensityTracker ||= new Map();
                 var best = null;
                 var bestScore = -1;
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land <= 0 || land < minLand) continue;
-                    if (!__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
+                    if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
                     var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
                     if (recentTargets?.has(id) && tick - recentTargets.get(id) < 30) continue;
                     var troops = ${dict.playerData}.${dict.playerBalances}[id];
@@ -840,7 +847,7 @@ function applyOpeningAutomation(modUtils) {
                 var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
                 var best = -1;
                 var bestScore = -1;
-                for (var id = humans; id < maxPlayers; id++) {
+                for (var id = __fxTargetStart(humans); id < maxPlayers; id++) {
                     if (id === playerId) continue;
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (!land || land <= 0) continue;
@@ -856,7 +863,7 @@ function applyOpeningAutomation(modUtils) {
                     }
                 }
                 if (best >= 0) return best;
-                for (var fallbackId = humans; fallbackId < maxPlayers; fallbackId++) {
+                for (var fallbackId = __fxTargetStart(humans); fallbackId < maxPlayers; fallbackId++) {
                     if (fallbackId === playerId) continue;
                     var fallbackLand = ${dict.playerData}.${dict.playerTerritories}[fallbackId];
                     if (!fallbackLand || fallbackLand <= 0) continue;
@@ -900,10 +907,10 @@ function applyOpeningAutomation(modUtils) {
                 };
                 var best = -1, bestScore = -1;
                 var bestInfo = null;
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land <= 0) continue;
-                    if (!__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
+                    if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
                     if (!isEncapsulatedBot(id)) continue;
                     var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
                     if (recentTargets?.has(id) && now - recentTargets.get(id) < 5000) continue;
@@ -973,10 +980,10 @@ function applyOpeningAutomation(modUtils) {
                 };
                 var best = -1, bestScore = -1;
                 var bestInfo = null;
-                for (var id = ${dict.game}.${dict.gHumans}; id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
+                for (var id = __fxTargetStart(${dict.game}.${dict.gHumans}); id < ${dict.game}.${dict.gLobbyMaxJoin}; id++) {
                     var land = ${dict.playerData}.${dict.playerTerritories}[id];
                     if (land <= 0) continue;
-                    if (!__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
+                    if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
                     var botTroops = ${dict.playerData}.${dict.playerBalances}[id];
                     var encapsulated = isEncapsulatedBot(id);
                     if (excludeEncapsulated && encapsulated) continue;

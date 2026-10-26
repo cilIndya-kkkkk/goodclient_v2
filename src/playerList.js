@@ -20,7 +20,7 @@ const playerList = new (function () {
         const troops = getVar("playerBalances") || [];
         const showTeamTags = Boolean(getSettings().showTeamTags);
         const teamIds = window.__fx.teamIds;
-        const teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "White", "Black"];
+        const teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"];
         let listContent = `<h3>Players (${gHumans})</h3><tr><th>Player</th><th>Land</th><th>Troops</th></tr>`;
         for (let i = 0; i < gLobbyMaxJoin; i++) {
             if (i === gHumans) listContent += `<tr><th>Bots (${gLobbyMaxJoin - gHumans})</th><th>Land</th><th>Troops</th></tr>`;
