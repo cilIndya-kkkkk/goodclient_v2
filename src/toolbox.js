@@ -236,8 +236,17 @@ export default function initToolbox() {
     persistSettings();
     render();
   });
+  const spawnNamesButton = makeButton("Spawn names", () => {
+    const settings = getSettings();
+    settings.showSpawnPointNames = !settings.showSpawnPointNames;
+    persistSettings();
+    render();
+  });
+  const clearSpawnButton = makeButton("Clear highlight", () => {
+    window.__fx.selectedSpawnPlayer = -1;
+  });
   displaySection.append(
-    makeRow(spawnAllButton, spawnClanButton),
+    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, clearSpawnButton),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
       textContent: "Spawn markers are shown during spawn selection."
@@ -461,6 +470,7 @@ export default function initToolbox() {
     botModeSelect.value = mode;
     spawnAllButton.classList.toggle("active", Boolean(settings.showAllSpawnPoints));
     spawnClanButton.classList.toggle("active", Boolean(settings.highlightClanSpawns));
+    spawnNamesButton.classList.toggle("active", Boolean(settings.showSpawnPointNames));
     const spend = automation.getBotSpendPercent();
     spendSlider.value = String(spend);
     spendValue.textContent = `${spend}%`;

@@ -24,6 +24,7 @@ var settings = {
   hideBotNames: false,
   highlightClanSpawns: false,
   showAllSpawnPoints: true,
+  showSpawnPointNames: true,
   highlightDuplicateIps: false,
   detailedTeamPercentage: false,
   openDonationHistoryFromLb: true,
@@ -496,6 +497,12 @@ const settingsManager = new (function () {
       type: "checkbox",
       label: "Show all spawnpoints",
       note: "Increases every spawnpoint glow during spawn selection",
+    },
+    {
+      for: "showSpawnPointNames",
+      type: "checkbox",
+      label: "Spawnpoint names",
+      note: "Draws player names next to spawnpoints during spawn selection",
     },
     {
       for: "highlightClanSpawns",

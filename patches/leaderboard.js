@@ -91,6 +91,7 @@ export default definePatch(({ safeDictionary: dict, modifyCode, waitForMinificat
 			{ dictionary: { game, playerData }, addToDictionary: ["playerId"] }
 		)
 		modifyCode(`
+			${insert(`if (!isEmptySpace) __fx.onLeaderboardPlayerClick?.(player);`)}
 			${insert(`if (!isEmptySpace && game.gIsTeamGame && __fx.settings.openDonationHistoryFromLb)
 				__fx.donationsTracker.displayHistory(player, playerData.rawPlayerNames, game.gIsSingleplayer);`)}
 			if (playerData.b[player] !== 0 ${insert(`&& !isEmptySpace`)} && !(game.d && !game.e && !game.f ${insert(`&& player !== ${game}.${playerId}`)})) {

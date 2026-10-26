@@ -63,5 +63,9 @@ __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
 __fx.toolbox = initToolbox();
+__fx.selectedSpawnPlayer = -1;
+__fx.onLeaderboardPlayerClick = (player) => {
+  __fx.selectedSpawnPlayer = Number(player);
+};
 
 console.log('Successfully loaded FX Client');
