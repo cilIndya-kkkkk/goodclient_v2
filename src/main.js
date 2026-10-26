@@ -1,5 +1,6 @@
 import openingAutomation, { OpeningAutomationInput } from './openingAutomation.js';
 import initAutomationControls from './automationControls.js';
+import initToolbox from './toolbox.js';
 import { reportError } from './debugging.js';
 
 window.__fx = window.__fx || {};
@@ -61,5 +62,6 @@ __fx.followedAccounts = followedAccounts;
 __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
+__fx.toolbox = initToolbox();
 
 console.log('Successfully loaded FX Client');
