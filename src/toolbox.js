@@ -186,9 +186,30 @@ export default function initToolbox() {
     render();
   });
   const defaultButton = makeButton("Load default", loadDefaultStrategy);
-  const settingsButton = makeButton("FX Settings", () => {
+  function ensureSettingsCloseButton() {
+    const footer = document.querySelector(".window.settings footer");
+    if (!footer || document.getElementById("fxToolboxSettingsClose")) return;
+    const close = makeButton("Close", () => {
+      window.__fx.WindowManager.closeWindow("settings");
+      const automationPanel = document.getElementById("demonAutomationControls");
+      if (automationPanel) automationPanel.style.display = "";
+      close.remove();
+    }, "fx-toolbox-close");
+    close.id = "fxToolboxSettingsClose";
+    footer.append(close);
+  }
+
+  function openFxSettings() {
+    const settingsWindow = document.querySelector(".window.settings");
+    const automationPanel = document.getElementById("demonAutomationControls");
+    panel.classList.remove("open");
+    if (settingsWindow) settingsWindow.style.setProperty("z-index", "2147483647", "important");
+    if (automationPanel) automationPanel.style.display = "none";
     window.__fx.WindowManager.openWindow("settings");
-  });
+    ensureSettingsCloseButton();
+  }
+
+  const settingsButton = makeButton("FX Settings", openFxSettings);
 
   openingSection.append(
     makeRow(offsetLabel, offsetInput),
