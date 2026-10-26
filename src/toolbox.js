@@ -245,6 +245,12 @@ export default function initToolbox() {
   const clearSpawnButton = makeButton("Clear highlight", () => {
     window.__fx.selectedSpawnPlayer = -1;
   });
+  const teamTagButton = makeButton("Team tags", () => {
+    const settings = getSettings();
+    settings.showTeamTags = !settings.showTeamTags;
+    persistSettings();
+    render();
+  });
   const nameSizeLabel = document.createElement("span");
   nameSizeLabel.textContent = "Name size";
   const nameSizeSlider = document.createElement("input");
@@ -261,7 +267,7 @@ export default function initToolbox() {
     nameSizeValue.textContent = `${size}px`;
   });
   displaySection.append(
-    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, clearSpawnButton),
+    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, teamTagButton, clearSpawnButton),
     makeRow(nameSizeLabel, nameSizeSlider, nameSizeValue),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
@@ -503,6 +509,7 @@ export default function initToolbox() {
     spawnAllButton.classList.toggle("active", Boolean(settings.showAllSpawnPoints));
     spawnClanButton.classList.toggle("active", Boolean(settings.highlightClanSpawns));
     spawnNamesButton.classList.toggle("active", Boolean(settings.showSpawnPointNames));
+    teamTagButton.classList.toggle("active", Boolean(settings.showTeamTags));
     const nameSize = Number(settings.spawnPointNameSize) || 12;
     nameSizeSlider.value = String(nameSize);
     nameSizeValue.textContent = `${nameSize}px`;

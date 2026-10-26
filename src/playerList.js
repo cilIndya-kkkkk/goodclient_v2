@@ -1,5 +1,7 @@
 import { getVar } from "./gameInterface.js";
 import { escapeHtml } from "./utils.js";
+import { getSettings } from "./settings.js";
+import { getTeamTag } from "./teamTags.js";
 import donationsTracker from "./donationsTracker.js";
 import WindowManager from "./windowManager.js";
 
@@ -14,10 +16,23 @@ const playerList = new (function () {
     this.display = function displayPlayerList(playerNames) {
         const gHumans = getVar("gHumans");
         const gLobbyMaxJoin = getVar("gLobbyMaxJoin");
-        let listContent = `<h3>Players (${gHumans})</h3>`;
+        const land = getVar("playerTerritories") || [];
+        const troops = getVar("playerBalances") || [];
+        const showTeamTags = Boolean(getSettings().showTeamTags);
+        const teamIds = window.__fx.teamIds;
+        const teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "White", "Black"];
+        let listContent = `<h3>Players (${gHumans})</h3><tr><th>Player</th><th>Land</th><th>Troops</th></tr>`;
         for (let i = 0; i < gLobbyMaxJoin; i++) {
-            if (i === gHumans) listContent += `<h3>Bots (${gLobbyMaxJoin - gHumans})</h3>`;
-            listContent += `<tr data-player-id="${i}"><td><span class="color-light-gray">${i + 1}.</span> ${escapeHtml(playerNames[i])}</td></tr>`
+            if (i === gHumans) listContent += `<tr><th>Bots (${gLobbyMaxJoin - gHumans})</th><th>Land</th><th>Troops</th></tr>`;
+            const name = playerNames[i] || "";
+            let tag = showTeamTags ? getTeamTag(name) : "";
+            if (showTeamTags && getVar("gIsTeamGame") && teamIds && teamNames[teamIds[i]]) {
+                tag = `[${teamNames[teamIds[i]]}]`;
+            }
+            const landValue = Number(land[i] || 0);
+            const troopValue = Number(troops[i] || 0);
+            const troopText = `${tag}${troopValue}`;
+            listContent += `<tr data-player-id="${i}"><td><span class="color-light-gray">${i + 1}.</span> ${escapeHtml(name)}</td><td>${landValue}</td><td>${escapeHtml(troopText)}</td></tr>`;
         }
         document.getElementById("playerlist_content").innerHTML = listContent;
         document.getElementById("playerlist_content").setAttribute("class", getVar("gIsTeamGame") ? "clickable" : "");

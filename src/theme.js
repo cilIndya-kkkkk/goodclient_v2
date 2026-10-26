@@ -10,6 +10,20 @@ body.fx-anime-theme #canvasA {
 	filter: saturate(1.14) brightness(1.05) contrast(0.98);
 }
 
+#fxAnimeTint {
+	position: fixed;
+	inset: 0;
+	z-index: 1;
+	display: none;
+	pointer-events: none;
+	background: linear-gradient(135deg, rgba(255, 182, 213, 0.2), rgba(160, 240, 220, 0.16) 55%, rgba(180, 220, 255, 0.16));
+	mix-blend-mode: soft-light;
+}
+
+body.fx-anime-theme #fxAnimeTint {
+	display: block;
+}
+
 body.fx-anime-theme ::selection {
 	background: #ffc4dc;
 	color: #4c3b53;
@@ -211,8 +225,19 @@ export default function initTheme() {
 		(document.head || document.documentElement).append(style);
 	}
 
+	function ensureTint() {
+		if (!document.body) return;
+		let tint = document.getElementById("fxAnimeTint");
+		if (!tint) {
+			tint = document.createElement("div");
+			tint.id = "fxAnimeTint";
+			document.body.append(tint);
+		}
+	}
+
 	function apply() {
 		if (!document.body) return;
+		ensureTint();
 		document.body.classList.toggle("fx-anime-theme", Boolean(getSettings().animeThemeEnabled));
 	}
 

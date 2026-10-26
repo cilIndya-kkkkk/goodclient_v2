@@ -2,6 +2,7 @@ import openingAutomation, { OpeningAutomationInput } from './openingAutomation.j
 import initAutomationControls from './automationControls.js';
 import initToolbox from './toolbox.js';
 import initTheme from './theme.js';
+import { getTeamTag } from './teamTags.js';
 import { reportError } from './debugging.js';
 
 window.__fx = window.__fx || {};
@@ -65,6 +66,7 @@ __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
 __fx.theme = initTheme();
 __fx.toolbox = initToolbox();
+__fx.getTeamTag = getTeamTag;
 __fx.selectedSpawnPlayer = -1;
 __fx.onLeaderboardPlayerClick = (player) => {
   __fx.selectedSpawnPlayer = Number(player);
