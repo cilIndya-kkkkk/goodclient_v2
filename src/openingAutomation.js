@@ -7,6 +7,7 @@ import {
 } from "./infiniteExpansionStrategy.js";
 import { openingTickOffsetToInternalTicks } from "./openingTickOffset.js";
 import { intervalMsToAttacksPerCycle } from "./botAttackRate.js";
+import { t } from "./i18n.js";
 
 // Loaded via dynamic import() rather than a static import so the opening schedule can be
 // swapped by replacing this one file (or its build output) without rebuilding the whole
@@ -644,7 +645,7 @@ const openingAutomation = new (function () {
         } catch (error) {
             this.reset();
             console.error("Opening automation strategy error", error);
-            alert("Opening automation strategy error:\n" + error.message);
+            alert(t("Opening automation strategy error:") + "\n" + error.message);
         }
     };
 
@@ -1237,9 +1238,9 @@ export function OpeningAutomationInput(containerElement) {
             normalizeStrategy(JSON.parse(textarea.value), openingTickOffsetToInternalTicks(offsetInput.value));
             getSettings().openingAutomationStrategy = textarea.value;
             getSettings().openingAutomationTickOffset = offsetInput.value;
-            alert("Opening strategy is valid");
+            alert(t("Opening strategy is valid"));
         } catch (error) {
-            alert("Opening strategy error:\n" + error.message);
+            alert(t("Opening strategy error:") + "\n" + error.message);
         }
     });
 

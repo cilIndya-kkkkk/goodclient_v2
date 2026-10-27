@@ -6,6 +6,7 @@ const socketURL = "wss://fx-lobbies.peshomir.workers.dev/";
 const customMessageMarker = 120;
 let isActive = false;
 let currentCode = "";
+let windowHidden = false;
 let joinLobby = () => { };
 /** when `leaveLobby` is called, the modified code will also execute setActive(false) */
 let leaveLobby = () => { };
@@ -215,6 +216,7 @@ function isCustomMessage(raw) {
     } else if (type === "lobby") {
         pingIndicator.innerText = ""
         sendPing()
+        windowHidden = false;
         WindowManager.openWindow("customLobby");
         header.textContent = "Custom Lobby " + data.code;
         currentCode = data.code;
@@ -270,7 +272,10 @@ function createBadge(text, visible) {
 function addPlayer(player) {
     const div = document.createElement("div");
     div.className = "lobby-player";
-    div.textContent = player.name;
+    const nameSpan = document.createElement("span");
+    nameSpan.dataset.noI18n = "1";
+    nameSpan.textContent = player.name;
+    div.append(nameSpan);
     const kickButton = document.createElement("button");
     kickButton.textContent = "Kick";
     kickButton.className = playerIsHost && !player.isHost ? "" : "d-none";
@@ -279,7 +284,7 @@ function addPlayer(player) {
     const inGameBadge = createBadge("In Game", player.inGame);
     div.append(hostBadge, inGameBadge, kickButton);
     playerListDiv.append(div);
-    playerList.push({ element: div, hostBadge, inGameBadge, kickButton, isHost: player.isHost, inGame: player.inGame });
+    playerList.push({ element: div, hostBadge, inGameBadge, kickButton, name: player.name, isHost: player.isHost, inGame: player.inGame });
 }
 function kickButtonHandler(event) {
     const button = event.target;
@@ -348,14 +353,27 @@ let pingInterval;
 function setActive(active) {
     isActive = active;
     if (active === false) {
+        windowHidden = false;
         WindowManager.closeWindow("customLobby");
         if (pingInterval !== undefined) clearInterval(pingInterval)
     } else pingInterval = setInterval(sendPing, 10_000)
 }
 function hideWindow() {
+    windowHidden = true;
     WindowManager.closeWindow("customLobby");
 }
-const gameInterface = { gameInfo: optionsValues, showJoinPrompt, isCustomMessage, getSocketURL, getPlayerId, setJoinFunction, setLeaveFunction, setSendFunction, setMapInfo, rejoinLobby, hideWindow, isActive: () => isActive, setActive }
+function getState() {
+    return {
+        active: isActive,
+        code: currentCode,
+        isHost: playerIsHost,
+        windowHidden,
+        playerId: getPlayerId(),
+        playerCount: playerList.length,
+        players: playerList.map(player => ({ name: player.name, isHost: Boolean(player.isHost), inGame: Boolean(player.inGame) }))
+    };
+}
+const gameInterface = { gameInfo: optionsValues, showJoinPrompt, isCustomMessage, getSocketURL, getPlayerId, getState, setJoinFunction, setLeaveFunction, setSendFunction, setMapInfo, rejoinLobby, hideWindow, isActive: () => isActive, setActive }
 
 const customLobby = gameInterface
 export default customLobby

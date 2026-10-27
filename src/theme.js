@@ -229,6 +229,48 @@ body.fx-anime-theme .window .checkbox input:checked + .checkmark {
 	background: #8fd6a5 !important;
 	border-color: #3f7a52 !important;
 }
+
+body.fx-anime-theme [data-fx-theme="control"] {
+	background: linear-gradient(135deg, #fff9e8, #d9f5e3) !important;
+	color: #3d4a34 !important;
+	border: 1px solid #9fce9f !important;
+	border-radius: 10px !important;
+	font-family: 'Trebuchet MS', Arial, sans-serif !important;
+}
+
+body.fx-anime-theme [data-fx-theme="control"]:hover:not(:disabled) {
+	background: linear-gradient(135deg, #d9f5e3, #ffe08a) !important;
+}
+
+body.fx-anime-theme [data-fx-theme="panel"] {
+	background: linear-gradient(155deg, rgba(255, 249, 232, 0.97), rgba(217, 245, 227, 0.97)) !important;
+	color: #3d4a34 !important;
+	border: 1px solid #9fce9f !important;
+	border-radius: 12px !important;
+	box-shadow: 0 8px 24px rgba(60, 100, 70, 0.2) !important;
+}
+
+body.fx-anime-theme [data-fx-theme="panel"] * {
+	color: #3d4a34 !important;
+}
+
+body.fx-anime-theme [data-fx-theme="panel"] button,
+body.fx-anime-theme [data-fx-theme="panel"] input,
+body.fx-anime-theme [data-fx-theme="panel"] select,
+body.fx-anime-theme [data-fx-theme="panel"] textarea {
+	background: linear-gradient(135deg, #fff9e8, #d9f5e3) !important;
+	color: #3d4a34 !important;
+	border: 1px solid #9fce9f !important;
+	border-radius: 10px !important;
+}
+
+body.fx-anime-theme [data-fx-theme="panel"] a {
+	color: #2f7a52 !important;
+}
+
+body.fx-anime-theme [data-fx-theme="panel"] hr {
+	border-color: #c9e8cf !important;
+}
 `;
 
 export default function initTheme() {
@@ -249,10 +291,77 @@ export default function initTheme() {
 		}
 	}
 
+	let observer = null;
+	let scheduled = false;
+	const pendingRoots = new Set();
+
+	function shouldSkip(element) {
+		return element.closest("#fxToolbox, #demonAutomationControls, #fxToolboxToggle, #fxAnimeTint, .window");
+	}
+
+	function markElement(element) {
+		if (!element || element.nodeType !== 1 || shouldSkip(element)) return;
+		if (element.matches("button, input, select, textarea")) {
+			element.setAttribute("data-fx-theme", "control");
+			return;
+		}
+		if (element.tagName === "DIV") {
+			const style = element.getAttribute("style") || "";
+			if (/background(-color)?\s*:/i.test(style) && !/url\(/i.test(style)) {
+				element.setAttribute("data-fx-theme", "panel");
+				element.querySelectorAll("button, input, select, textarea").forEach((child) => {
+					if (!shouldSkip(child)) child.setAttribute("data-fx-theme", "control");
+				});
+			}
+		}
+	}
+
+	function scan(root) {
+		if (!getSettings().animeThemeEnabled) return;
+		if (!root || root.nodeType !== 1) return;
+		markElement(root);
+		if (root.querySelectorAll) root.querySelectorAll("button, input, select, textarea, div[style]").forEach(markElement);
+	}
+
+	function flush() {
+		scheduled = false;
+		const roots = Array.from(pendingRoots);
+		pendingRoots.clear();
+		roots.forEach(scan);
+	}
+
+	function schedule(root) {
+		if (!root) return;
+		pendingRoots.add(root);
+		if (scheduled) return;
+		scheduled = true;
+		requestAnimationFrame(flush);
+	}
+
+	function startObserver() {
+		if (observer || !document.body) return;
+		observer = new MutationObserver((records) => {
+			for (const record of records) {
+				if (record.type === "attributes") {
+					schedule(record.target);
+				} else {
+					record.addedNodes.forEach((node) => schedule(node));
+				}
+			}
+		});
+		observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] });
+		schedule(document.body);
+	}
+
 	function apply() {
 		if (!document.body) return;
 		ensureTint();
-		document.body.classList.toggle("fx-anime-theme", Boolean(getSettings().animeThemeEnabled));
+		const enabled = Boolean(getSettings().animeThemeEnabled);
+		document.body.classList.toggle("fx-anime-theme", enabled);
+		if (enabled) {
+			startObserver();
+			schedule(document.body);
+		}
 	}
 
 	if (document.body) apply();

@@ -6,6 +6,7 @@ import { displayChangelog } from './changelog.js';
 import replayHistory from './replayHistory.js'
 import { LobbyReminderRulesInput } from './lobbyReminderRulesInput.js';
 import { FollowedAccountNicknames } from './followedAccounts.js';
+import { t } from './i18n.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
@@ -13,6 +14,7 @@ const __fx = window.__fx;
 const DEFAULT_MENU_BACKGROUND = "linear-gradient(160deg, #fff9e8, #f6e6c3 55%, #efe0b8)";
 
 var settings = {
+  uiLanguage: "auto",
   //"showBotDonations": false,
   displayWinCounter: true,
   displayTickNumber: true,
@@ -29,6 +31,7 @@ var settings = {
   showSpawnPointNames: true,
   spawnPointNameSize: 12,
   showTeamTags: false,
+  showShipRoutes: true,
   animeThemeEnabled: false,
   highlightDuplicateIps: false,
   detailedTeamPercentage: false,
@@ -442,6 +445,17 @@ function ReplayHistoryList(container) {
 const settingsManager = new (function () {
   const settingsStructure = [
     {
+      for: "uiLanguage",
+      type: "selectMenu",
+      label: "Interface language",
+      note: "Auto follows the browser language. Reloads the page after saving.",
+      options: [
+        { value: "auto", label: "Auto" },
+        { value: "zh", label: "简体中文" },
+        { value: "en", label: "English" },
+      ],
+    },
+    {
       for: "displayWinCounter",
       type: "checkbox",
       label: "Display win counter",
@@ -522,6 +536,12 @@ const settingsManager = new (function () {
       type: "checkbox",
       label: "Team tags",
       note: "Shows [TAG] before troop counts in the player list and before spawn names",
+    },
+    {
+      for: "showShipRoutes",
+      type: "checkbox",
+      label: "Ship routes",
+      note: "Draws remaining ship routes on the map",
     },
     {
       for: "highlightClanSpawns",
@@ -707,6 +727,8 @@ const settingsManager = new (function () {
     WindowManager.closeWindow("settings");
     discontinuedSettings.forEach((settingName) => delete settings[settingName]);
     localStorage.setItem("fx_settings", JSON.stringify(settings));
+    if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
+    else localStorage.setItem("fx_ui_language", settings.uiLanguage);
     window.location.reload();
   };
 
@@ -721,7 +743,7 @@ const settingsManager = new (function () {
     input.removeEventListener("change", handleFileSelect);
     input.value = "";
     if (!selectedFile.name.endsWith(".json"))
-      return alert("Invalid file format");
+      return alert(t("Invalid file format"));
     const fileReader = new FileReader();
     fileReader.onload = function () {
       let result;
@@ -729,14 +751,16 @@ const settingsManager = new (function () {
         result = JSON.parse(fileReader.result);
         if (
           confirm(
-            'Warning: This will override all current settings, click "OK" to confirm'
+            t('Warning: This will override all current settings, click "OK" to confirm')
           )
         )
           __fx.settings = settings = result;
+        if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
+        else if (settings.uiLanguage) localStorage.setItem("fx_ui_language", settings.uiLanguage);
         localStorage.setItem("fx_settings", JSON.stringify(settings));
         window.location.reload();
       } catch (error) {
-        alert("Error\n" + error);
+        alert(t("Error") + "\n" + error);
       }
     };
     fileReader.readAsText(selectedFile);
@@ -765,11 +789,12 @@ const settingsManager = new (function () {
   this.resetAll = function () {
     if (
       !confirm(
-        "Are you Really SURE you want to RESET ALL SETTINGS back to the default?"
+        t("Are you Really SURE you want to RESET ALL SETTINGS back to the default?")
       )
     )
       return;
     localStorage.removeItem("fx_settings");
+    localStorage.removeItem("fx_ui_language");
     window.location.reload();
   };
   this.applySettings = function () {

@@ -39,7 +39,7 @@ export default (/** @type {ModUtils} */ { replaceCode, safeDictionary: dict }) =
             if (spawnName && __fx.settings.showTeamTags) {
                 var spawnTag = "";
                 if (game.gIsTeamGame && typeof TeamManager !== "undefined" && TeamManager.ids) {
-                    var teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"];
+                    var teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"].map(function(name) { return __fx.t ? __fx.t(name) : name; });
                     var teamIndex = TeamManager.ids[i];
                     if (teamNames[teamIndex]) spawnTag = "[" + teamNames[teamIndex] + "]";
                     window.__fx.teamIds = TeamManager.ids;

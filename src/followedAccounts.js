@@ -79,6 +79,7 @@ function render() {
     row.className = "nickname-row";
     const name = document.createElement("span");
     name.className = "nickname-account";
+    name.dataset.noI18n = "1";
     name.textContent = accountName;
     const input = document.createElement("input");
     input.type = "text";

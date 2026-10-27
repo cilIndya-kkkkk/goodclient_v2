@@ -6,6 +6,7 @@ const container = document.getElementById("windowContainer");
 function create(info) {
   const window = document.createElement("div");
   info.element = window;
+  window.dataset.windowName = info.name;
   window.className =
     "window" +
     (info.classes !== undefined

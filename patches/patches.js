@@ -12,7 +12,7 @@ export default (/** @type {ModUtils} */ modUtils) => {
 		ctx.fillStyle = Colors.nl;
 		ctx.fillText(clientInfo.gameVersion, h___.w, 0);
         /* here */`,
-        `const text = "Win count: " + __fx.wins.count;
+        `const text = (__fx.t ? __fx.t("Win count: ") : "Win count: ") + __fx.wins.count;
         const textLength = ctx.measureText(text).width;
         const size = Math.max(5, s);
         ctx.textAlign = "left";
@@ -74,7 +74,7 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
         `=function(sE){
 		if (${playerId} === sE && !${gIsSingleplayer} && !${dict.game}.${dict.gIsReplay})
 			__fx.wins.count++, window.localStorage.setItem("fx_winCount", __fx.wins.count),
-			xD(0,"Your Win Count is now " + __fx.wins.count,3,sE,ad.gN,ad.kl,-1,!0);
+			xD(0,(__fx.t ? __fx.t("Your Win Count is now ") : "Your Win Count is now ") + __fx.wins.count,3,sE,ad.gN,ad.kl,-1,!0);
 		a8.gD[sE]&&(o.ha(sE,2),b.h9<100?xD(0,__L([a8.jx[sE]]),3,sE,ad.gN,ad.kl,-1,!0):xD(0,__L([a8.jx[sE]]),3,sE,ad.gN,ad.kl,-1,!0))`);
 
 
@@ -82,8 +82,8 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
         // add buttons
         replaceRawCode(`,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1)]`,
             `,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1),
-            new nQ("FX Client settings", function() { __fx.WindowManager.openWindow("settings"); }, "rgba(0, 0, 20, 0.5)"),
-            new nQ("Join/Create custom lobby", function() { __fx.customLobby.showJoinPrompt(); }, "rgba(20, 9, 77, 0.5)")]`)
+            new nQ(__fx.t ? __fx.t("FX Client settings") : "FX Client settings", function() { __fx.WindowManager.openWindow("settings"); }, "rgba(0, 0, 20, 0.5)"),
+            new nQ(__fx.t ? __fx.t("Join/Create custom lobby") : "Join/Create custom lobby", function() { __fx.customLobby.showJoinPrompt(); }, "rgba(20, 9, 77, 0.5)")]`)
         // set position
         replaceRawCode(`aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);`,
             `aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);

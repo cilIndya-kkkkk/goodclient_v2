@@ -15,7 +15,7 @@ export default (/** @type {ModUtils} */ { modifyCode, waitForMinification, match
     ${insert(`var ___teamTag = "";
       if (__fx.settings.showTeamTags) {
         var ___teamIds = window.__fx.teamIds;
-        var ___teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"];
+        var ___teamNames = ["Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "Black", "White"].map(function(___name) { return __fx.t ? __fx.t(___name) : ___name; });
         if (___teamIds && ___teamIds[i] != null && ___teamNames[___teamIds[i]]) ___teamTag = "[" + ___teamNames[___teamIds[i]] + "]";
         else if (__fx.getTeamTag) ___teamTag = __fx.getTeamTag(playerData.${dict.rawPlayerNames}[i]);
       }

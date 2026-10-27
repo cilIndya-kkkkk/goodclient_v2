@@ -251,6 +251,12 @@ export default function initToolbox() {
     persistSettings();
     render();
   });
+  const shipRoutesButton = makeButton("Ship routes", () => {
+    const settings = getSettings();
+    settings.showShipRoutes = !settings.showShipRoutes;
+    persistSettings();
+    render();
+  });
   const nameSizeLabel = document.createElement("span");
   nameSizeLabel.textContent = "Name size";
   const nameSizeSlider = document.createElement("input");
@@ -267,7 +273,7 @@ export default function initToolbox() {
     nameSizeValue.textContent = `${size}px`;
   });
   displaySection.append(
-    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, teamTagButton, clearSpawnButton),
+    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, teamTagButton, shipRoutesButton, clearSpawnButton),
     makeRow(nameSizeLabel, nameSizeSlider, nameSizeValue),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
@@ -510,6 +516,7 @@ export default function initToolbox() {
     spawnClanButton.classList.toggle("active", Boolean(settings.highlightClanSpawns));
     spawnNamesButton.classList.toggle("active", Boolean(settings.showSpawnPointNames));
     teamTagButton.classList.toggle("active", Boolean(settings.showTeamTags));
+    shipRoutesButton.classList.toggle("active", Boolean(settings.showShipRoutes));
     const nameSize = Number(settings.spawnPointNameSize) || 12;
     nameSizeSlider.value = String(nameSize);
     nameSizeValue.textContent = `${nameSize}px`;
@@ -523,6 +530,8 @@ export default function initToolbox() {
     const tick = Number(automation.lastTick ?? -1);
     const attackCount = Array.isArray(automation.attacks) ? automation.attacks.length : 0;
     statusLine.textContent = `tick ${tick} · opening ${settings.openingAutomationEnabled ? "on" : "off"} · infinite ${settings.infiniteExpansionEnabled ? "on" : "off"} · bot ${mode} · opening attacks ${attackCount}`;
+    const shipState = window.__fx.shipRouteStatus;
+    if (shipState) statusLine.textContent += ` · ships ${shipState.ships} · paths ${shipState.paths ?? '-'} · routes ${shipState.routes}`;
   }
 
   window.addEventListener("keydown", (event) => {

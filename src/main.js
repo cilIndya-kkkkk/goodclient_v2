@@ -3,7 +3,9 @@ import initAutomationControls from './automationControls.js';
 import initToolbox from './toolbox.js';
 import initTheme from './theme.js';
 import { getTeamTag } from './teamTags.js';
+import initShipRoutes from './shipRoutes.js';
 import { reportError } from './debugging.js';
+import { initI18n } from './i18n.js';
 
 window.__fx = window.__fx || {};
 window.__fx.reportError = reportError;
@@ -31,8 +33,11 @@ import followedAccounts from './followedAccounts.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
+initI18n();
 __fx.version = version + " " + lastUpdated;
 __fx.isCustomLobbyVersion = window.location.href.startsWith("https://fxclient.github.io/custom-lobbies")
+const relayParam = new URLSearchParams(window.location.search).get("relay") || "";
+__fx.relayBase = /^wss?:\/\//i.test(relayParam) ? relayParam : "";
 
 const savedVersion = localStorage.getItem("fx_version");
 if (savedVersion !== version && !__fx.isCustomLobbyVersion) {
@@ -65,6 +70,7 @@ __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
 __fx.theme = initTheme();
+__fx.shipRoutes = initShipRoutes();
 __fx.toolbox = initToolbox();
 __fx.getTeamTag = getTeamTag;
 __fx.selectedSpawnPlayer = -1;
