@@ -8,6 +8,7 @@ import { t } from "./i18n.js";
 
 const POSITION_STORAGE_KEY = "fx_toolbox_position";
 const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position";
+const PRESETS_KEY = "fx_opening_presets";
 const BOT_MODES = [
   { value: "off", label: "Bot Off" },
   { value: "v20reserve", label: "V20 Reserve" },
@@ -170,7 +171,7 @@ export default function initToolbox() {
   }
 
   const validateButton = makeButton("Validate", () => validateOpening());
-  const applyButton = makeButton("Apply & Restart", () => {
+  function applyCurrentOpening() {
     if (!validateOpening()) return;
     const settings = getSettings();
     settings.openingAutomationTickOffset = offsetInput.value.trim();
@@ -186,8 +187,103 @@ export default function initToolbox() {
     }
     openingStatus.classList.remove("bad");
     render();
-  });
+  }
+  const applyButton = makeButton("Apply & Restart", applyCurrentOpening);
   const defaultButton = makeButton("Load default", loadDefaultStrategy);
+
+  const presetSelect = document.createElement("select");
+  presetSelect.className = "fx-toolbox-input";
+  presetSelect.style.flex = "1";
+  const presetNameInput = document.createElement("input");
+  presetNameInput.type = "text";
+  presetNameInput.className = "fx-toolbox-input";
+  presetNameInput.style.flex = "1";
+  presetNameInput.placeholder = t("Preset name");
+  const savePresetButton = makeButton(t("Save preset"), () => savePreset());
+  const loadPresetButton = makeButton(t("Load"), () => loadPreset());
+  const deletePresetButton = makeButton(t("Delete"), () => deletePreset());
+  const presetRow = makeRow(presetSelect, presetNameInput, savePresetButton, loadPresetButton, deletePresetButton);
+
+  function loadPresets() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PRESETS_KEY) || "[]");
+      return Array.isArray(parsed)
+        ? parsed.filter((preset) => preset && preset.name && typeof preset.strategy === "string")
+        : [];
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  function storePresets(presets) {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  }
+
+  function renderPresets() {
+    const presets = loadPresets();
+    const selected = presetSelect.value;
+    presetSelect.textContent = "";
+    if (!presets.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = t("No saved openings");
+      option.disabled = true;
+      option.selected = true;
+      presetSelect.append(option);
+      return;
+    }
+    for (const preset of presets) {
+      const option = document.createElement("option");
+      option.value = preset.name;
+      option.textContent = preset.name;
+      option.dataset.noI18n = "1";
+      presetSelect.append(option);
+    }
+    if (presets.some((preset) => preset.name === selected)) presetSelect.value = selected;
+  }
+
+  function savePreset() {
+    if (!validateOpening()) return;
+    const name = presetNameInput.value.trim() || presetSelect.value.trim();
+    if (!name) {
+      openingStatus.textContent = t("Enter a preset name");
+      openingStatus.classList.add("bad");
+      return;
+    }
+    const presets = loadPresets().filter((preset) => preset.name !== name);
+    presets.push({ name, strategy: strategyInput.value.trim(), offset: offsetInput.value.trim() });
+    storePresets(presets);
+    presetNameInput.value = "";
+    renderPresets();
+    presetSelect.value = name;
+    openingStatus.textContent = `${t("Preset saved")}: ${name}`;
+    openingStatus.classList.remove("bad");
+  }
+
+  function loadPreset() {
+    const preset = loadPresets().find((item) => item.name === presetSelect.value);
+    if (!preset) return;
+    strategyInput.value = preset.strategy;
+    offsetInput.value = preset.offset || "-9.5";
+    presetNameInput.value = preset.name;
+    if (!validateOpening()) return;
+    applyCurrentOpening();
+    openingStatus.textContent = `${t("Loaded preset")}: ${preset.name}`;
+    openingStatus.classList.remove("bad");
+  }
+
+  function deletePreset() {
+    const name = presetSelect.value;
+    if (!name) return;
+    storePresets(loadPresets().filter((preset) => preset.name !== name));
+    presetNameInput.value = "";
+    renderPresets();
+    openingStatus.textContent = `${t("Preset deleted")}: ${name}`;
+    openingStatus.classList.remove("bad");
+  }
+
+  renderPresets();
+
   function ensureSettingsCloseButton() {
     const footer = document.querySelector(".window.settings footer");
     if (!footer || document.getElementById("fxToolboxSettingsClose")) return;
@@ -214,6 +310,7 @@ export default function initToolbox() {
   const settingsButton = makeButton("FX Settings", openFxSettings);
 
   openingSection.append(
+    presetRow,
     makeRow(offsetLabel, offsetInput),
     strategyInput,
     makeRow(validateButton, applyButton, defaultButton, settingsButton),

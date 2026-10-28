@@ -193,6 +193,13 @@ const ZH = {
   "Unknown track": "未知歌曲",
   "No tracks yet": "还没有歌曲",
   "Tick offset (100 ticks/cycle)": "Tick 偏移（100 tick/周期）",
+  "Preset name": "预设名称",
+  "Save preset": "保存预设",
+  "No saved openings": "暂无保存的开局",
+  "Enter a preset name": "输入预设名称",
+  "Preset saved": "预设已保存",
+  "Loaded preset": "已加载预设",
+  "Preset deleted": "预设已删除",
   "Validate opening": "验证开图",
 
   "Custom Lobby": "自定义大厅",
