@@ -23,6 +23,7 @@
   "dependencies": {
     "core-js": "^3.44.0",
     "js-beautify": "^1.14.11",
+    "jsmediatags": "^3.9.7",
     "obscenity": "^0.4.6",
     "uglify-js": "^3.19.2"
   },

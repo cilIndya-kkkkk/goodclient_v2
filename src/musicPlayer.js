@@ -1,3 +1,4 @@
+import jsmediatags from "jsmediatags/dist/jsmediatags.min.js";
 import { t } from "./i18n.js";
 
 const TOGGLE_POSITION_KEY = "fx_music_toggle_position";
@@ -9,6 +10,8 @@ const SHUFFLE_KEY = "fx_music_shuffle";
 const AUTOPLAY_KEY = "fx_music_autoplay";
 const DB_NAME = "fx_music";
 const STORE_NAME = "tracks";
+
+const DEFAULT_ARTIST = "Various Artists";
 
 const DEFAULT_TRACKS = [
   {
@@ -63,12 +66,38 @@ function loadStoredUrls() {
 function saveStoredUrls(urlTracks) {
   const entries = urlTracks
     .filter((track) => track.type === "url")
-    .map(({ id, title, src }) => ({ id, title, src }));
+    .map(({ id, title, artist, src }) => ({ id, title, artist, src }));
   localStorage.setItem(URLS_KEY, JSON.stringify(entries));
 }
 
 function makeId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readTags(source) {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (tags) => {
+      if (done) return;
+      done = true;
+      resolve(tags || {});
+    };
+    try {
+      jsmediatags.read(source, {
+        onSuccess: (result) => {
+          const tags = (result && result.tags) || {};
+          finish({
+            title: String(tags.title || "").trim(),
+            artist: String(tags.artist || tags.albumartist || "").trim(),
+          });
+        },
+        onError: () => finish({}),
+      });
+    } catch (_error) {
+      finish({});
+    }
+    setTimeout(() => finish({}), 4000);
+  });
 }
 
 function openDatabase() {
@@ -358,7 +387,7 @@ export default function initMusicPlayer() {
       return;
     }
     nowTitle.textContent = track.title || t("Unknown track");
-    nowMeta.textContent = track.artist ? `${track.artist} · ${typeLabel(track)}` : typeLabel(track);
+    nowMeta.textContent = `${track.artist || DEFAULT_ARTIST} · ${typeLabel(track)}`;
   }
 
   function updatePlayButton() {
@@ -379,7 +408,7 @@ export default function initMusicPlayer() {
       title.textContent = track.title || t("Unknown track");
       const meta = document.createElement("span");
       meta.className = "fx-music-track-meta";
-      meta.textContent = typeLabel(track);
+      meta.textContent = `${track.artist || DEFAULT_ARTIST} · ${typeLabel(track)}`;
       row.append(title, meta);
       if (track.type !== "builtin") {
         const removeButton = makeButton("×", "fx-music-remove");
@@ -544,10 +573,13 @@ export default function initMusicPlayer() {
     for (const file of files) {
       if (!file) continue;
       if (!file.type.startsWith("audio/") && !/\.(mp3|m4a|ogg|wav|flac|aac|opus)$/i.test(file.name)) continue;
+      const fallbackTitle = file.name.replace(/\.[^.]+$/, "") || t("Local file");
+      const tags = await readTags(file);
       const id = makeId("local");
-      const title = file.name.replace(/\.[^.]+$/, "") || t("Local file");
-      playlist.push({ id, title, src: URL.createObjectURL(file), type: "local" });
-      saveLocalTrackToDb({ id, title, blob: file, createdAt: Date.now() }).catch(() => {});
+      const title = tags.title || fallbackTitle;
+      const artist = tags.artist || DEFAULT_ARTIST;
+      playlist.push({ id, title, artist, src: URL.createObjectURL(file), type: "local" });
+      saveLocalTrackToDb({ id, title, artist, blob: file, createdAt: Date.now() }).catch(() => {});
       added += 1;
     }
     renderList();
@@ -570,11 +602,20 @@ export default function initMusicPlayer() {
     }
     const fileName = decodeURIComponent(url.pathname.split("/").filter(Boolean).pop() || "");
     const title = fileName.replace(/\.[^.]+$/, "") || t("Cloud track");
-    playlist.push({ id: makeId("url"), title, src: url.href, type: "url" });
+    const track = { id: makeId("url"), title, artist: DEFAULT_ARTIST, src: url.href, type: "url" };
+    playlist.push(track);
     saveStoredUrls(playlist);
     urlInput.value = "";
     renderList();
     setStatus(`${t("Added")}: ${title}`);
+    readTags(url.href).then((tags) => {
+      if (!tags.title && !tags.artist) return;
+      if (tags.title) track.title = tags.title;
+      if (tags.artist) track.artist = tags.artist;
+      saveStoredUrls(playlist);
+      renderList();
+      if (playlist[currentIndex] === track) updateNowPlaying();
+    });
   }
 
   function applyInitialState() {
@@ -753,6 +794,7 @@ export default function initMusicPlayer() {
         .map((entry) => ({
           id: entry.id,
           title: entry.title || t("Local file"),
+          artist: entry.artist || DEFAULT_ARTIST,
           src: URL.createObjectURL(entry.blob),
           type: "local",
         }));

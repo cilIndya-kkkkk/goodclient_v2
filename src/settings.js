@@ -14,7 +14,7 @@ const __fx = window.__fx;
 const DEFAULT_MENU_BACKGROUND = "linear-gradient(160deg, #fff9e8, #f6e6c3 55%, #efe0b8)";
 
 var settings = {
-  uiLanguage: "auto",
+  uiLanguage: "en",
   //"showBotDonations": false,
   displayWinCounter: true,
   displayTickNumber: true,

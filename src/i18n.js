@@ -290,7 +290,11 @@ export function isZh() {
   const saved = localStorage.getItem("fx_ui_language");
   if (saved === "zh") return true;
   if (saved === "en") return false;
-  return /^zh/i.test(navigator.language || "");
+  const configured = window.__fx && window.__fx.settings && window.__fx.settings.uiLanguage;
+  if (configured === "zh") return true;
+  if (configured === "en") return false;
+  if (configured === "auto") return /^zh/i.test(navigator.language || "");
+  return false;
 }
 
 export function t(text) {
