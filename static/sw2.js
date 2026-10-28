@@ -15,6 +15,14 @@ self.addEventListener("fetch", (e) => {
   if (!(url.startsWith('http:') || url.startsWith('https:'))) {
     return;
   }
+  // Do not cache/route media: range requests must go straight to the server so
+  // the browser can stream and seek instead of buffering the whole file.
+  const isMedia = e.request.destination === "audio" || e.request.destination === "video"
+    || /\.(mp3|m4a|ogg|wav|flac|aac|opus)(\?|$)/i.test(url)
+    || e.request.headers.has("range");
+  if (isMedia) {
+    return;
+  }
   e.respondWith(
     (async () => {
       const cache = await caches.open(cacheName);

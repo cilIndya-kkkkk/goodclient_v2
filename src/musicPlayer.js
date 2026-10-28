@@ -408,14 +408,18 @@ export default function initMusicPlayer() {
   function setupAutoplayGesture() {
     const resume = () => {
       document.removeEventListener("pointerdown", resume, true);
+      document.removeEventListener("touchstart", resume, true);
       document.removeEventListener("keydown", resume, true);
+      document.removeEventListener("click", resume, true);
       if (autoplayPending && autoplay && audio.paused) {
         autoplayPending = false;
         audio.play().catch(() => {});
       }
     };
     document.addEventListener("pointerdown", resume, true);
+    document.addEventListener("touchstart", resume, true);
     document.addEventListener("keydown", resume, true);
+    document.addEventListener("click", resume, true);
   }
 
   function handlePlayFailure(error, quiet = false) {
