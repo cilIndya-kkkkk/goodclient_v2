@@ -4,6 +4,7 @@ import { normalizeStrategy } from "./openingAutomation.js";
 import { openingTickOffsetToInternalTicks } from "./openingTickOffset.js";
 import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "./botAttackRate.js";
 import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
+import { t } from "./i18n.js";
 
 const POSITION_STORAGE_KEY = "fx_toolbox_position";
 const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position";
@@ -304,7 +305,8 @@ export default function initToolbox() {
     localStorage.removeItem(TOGGLE_POSITION_STORAGE_KEY);
     applyTogglePosition(8, 8, false);
   });
-  statusSection.append(statusLine, makeRow(resetToggleButton));
+  const musicButton = makeButton(t("Music player"), () => window.__fx.musicPlayer?.open());
+  statusSection.append(statusLine, makeRow(resetToggleButton, musicButton));
 
   body.append(automationSection, openingSection, displaySection, themeSection, statusSection);
   panel.append(header, body);

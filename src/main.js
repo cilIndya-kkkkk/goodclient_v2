@@ -1,6 +1,7 @@
 import openingAutomation, { OpeningAutomationInput } from './openingAutomation.js';
 import initAutomationControls from './automationControls.js';
 import initToolbox from './toolbox.js';
+import initMusicPlayer from './musicPlayer.js';
 import initTheme from './theme.js';
 import { getTeamTag } from './teamTags.js';
 import initShipRoutes from './shipRoutes.js';
@@ -72,6 +73,12 @@ __fx.automationControls = initAutomationControls();
 __fx.theme = initTheme();
 __fx.shipRoutes = initShipRoutes();
 __fx.toolbox = initToolbox();
+try {
+  __fx.musicPlayer = initMusicPlayer();
+  console.log("Music player ready");
+} catch (error) {
+  console.error("Music player failed to initialize", error);
+}
 __fx.getTeamTag = getTeamTag;
 __fx.selectedSpawnPlayer = -1;
 __fx.onLeaderboardPlayerClick = (player) => {

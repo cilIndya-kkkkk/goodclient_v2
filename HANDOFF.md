@@ -15,6 +15,7 @@ Server is running from Termux home on port 8001:
 - Team-mode automation targeting was patched (team-aware canAttack + target range includes enemy players); needs real team-mode testing.
 - Theme: cream/pale green; DOM UI themed; whole-screen tint. Menu background is a plain cream gradient (line dog removed).
 - Chinese UI: `src/i18n.js` auto-detects Chinese and translates FX windows (settings, toolbox, automation, custom lobby, player list). Switch with Settings -> Interface language or `?lang=zh`. The game's own UI language is set in the game's Options -> Language (choose Chinese).
+- Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
 - Ship routes: implemented locally. Tools -> Display -> Ship routes (default on).
   - Status shows `ships N · paths M · routes K`.
@@ -44,6 +45,8 @@ Server is running from Termux home on port 8001:
 - `src/toolbox.js` - Tools UI, settings toggles, status.
 - `src/theme.js` - theme/tint.
 - `src/i18n.js` - Chinese/English UI dictionary and DOM translation.
+- `src/musicPlayer.js` - floating music player (bundled tracks, local files, cloud URLs).
+- `assets/music/` - bundled MP3s copied into the build.
 - `patches/gc_openingAutomation.js` - Omen automation + team-mode targeting.
 - `patches/nameRendering.js` - map troop labels + team tags.
 - `patches/highlightSpawnpoints.js` - spawn names/team tags.
