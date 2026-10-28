@@ -56,5 +56,5 @@ export default definePatch(({ matchCode, insertCode, modifyCode, matchRawCode })
         if (!soundsLoaded) { return }
         var timeNow = performance.now();
         /*...*/
-    }`, `__fx.lobbyReminders.setSound(function () { notificationSound.play(); });`)
+    }`, `__fx.lobbyReminders.setSound(function () { notificationSound.play().catch(() => {}); });`)
 })

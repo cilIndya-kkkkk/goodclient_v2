@@ -418,6 +418,24 @@ export default function initMusicPlayer() {
     document.addEventListener("keydown", resume, true);
   }
 
+  function handlePlayFailure(error, quiet = false) {
+    const name = error && error.name;
+    const message = (error && error.message) || "";
+    if (name === "AbortError" || /interrupted/i.test(message)) {
+      updatePlayButton();
+      return;
+    }
+    if (name === "NotAllowedError" || /user didn't interact|not allowed/i.test(message)) {
+      autoplayPending = true;
+      setStatus(t("Click anywhere to start music"));
+      setupAutoplayGesture();
+      updatePlayButton();
+      return;
+    }
+    if (!quiet) setStatus(`${t("Playback error")}: ${message}`);
+    updatePlayButton();
+  }
+
   function playIndex(index, shouldPlay = true, quiet = false) {
     const track = playlist[index];
     if (!track) return;
@@ -429,16 +447,7 @@ export default function initMusicPlayer() {
     if (shouldPlay) {
       audio.play().then(() => {
         autoplayPending = false;
-      }).catch((error) => {
-        if (quiet) {
-          autoplayPending = true;
-          setStatus(t("Click anywhere to start music"));
-          setupAutoplayGesture();
-        } else {
-          setStatus(`${t("Playback error")}: ${error.message}`);
-        }
-        updatePlayButton();
-      });
+      }).catch((error) => handlePlayFailure(error, quiet));
     }
   }
 
@@ -461,7 +470,7 @@ export default function initMusicPlayer() {
       return;
     }
     if (audio.paused) {
-      audio.play().catch((error) => setStatus(`${t("Playback error")}: ${error.message}`));
+      audio.play().catch((error) => handlePlayFailure(error));
     } else {
       audio.pause();
     }
@@ -490,7 +499,7 @@ export default function initMusicPlayer() {
     if (!playlist.length) return;
     if (repeat === "one") {
       audio.currentTime = 0;
-      audio.play().catch((error) => setStatus(`${t("Playback error")}: ${error.message}`));
+      audio.play().catch((error) => handlePlayFailure(error));
       return;
     }
     if (repeat === "off" && !shuffle && currentIndex === playlist.length - 1) {

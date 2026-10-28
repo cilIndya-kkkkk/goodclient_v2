@@ -35,6 +35,13 @@ import followedAccounts from './followedAccounts.js';
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
 initI18n();
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  const message = (reason && reason.message) || "";
+  if (reason && (reason.name === "AbortError" || /play\(\) request was interrupted/i.test(message))) {
+    event.preventDefault();
+  }
+});
 __fx.version = version + " " + lastUpdated;
 __fx.isCustomLobbyVersion = window.location.href.startsWith("https://fxclient.github.io/custom-lobbies")
 const relayParam = new URLSearchParams(window.location.search).get("relay") || "";
