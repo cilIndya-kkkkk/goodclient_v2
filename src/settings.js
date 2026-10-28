@@ -13,6 +13,51 @@ const __fx = window.__fx;
 
 const DEFAULT_MENU_BACKGROUND = "linear-gradient(160deg, #fff9e8, #f6e6c3 55%, #efe0b8)";
 
+function getCurrentBuildTimestamp() {
+  const script = Array.from(document.scripts).find((item) => /(^|\/)fx\.bundle\.js(\?|$)/.test(item.src));
+  if (!script) return "";
+  try {
+    return new URL(script.src, location.href).search.replace(/^\?/, "");
+  } catch (_error) {
+    return "";
+  }
+}
+
+async function forceReload() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (_error) {}
+  const url = new URL(location.href);
+  url.searchParams.set("v", String(Date.now()));
+  location.replace(url.href);
+}
+
+async function checkForUpdates(statusElement) {
+  if (statusElement) statusElement.textContent = t("Checking for updates…");
+  try {
+    const response = await fetch(`build-info.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(String(response.status));
+    const info = await response.json();
+    if (!info || !info.buildTimestamp) throw new Error("missing build info");
+    const current = getCurrentBuildTimestamp();
+    if (current && info.buildTimestamp === current) {
+      if (statusElement) statusElement.textContent = t("You are up to date");
+      return;
+    }
+    if (statusElement) statusElement.textContent = t("New version found. Reloading…");
+    await forceReload();
+  } catch (_error) {
+    if (statusElement) statusElement.textContent = t("Update check failed");
+  }
+}
+
 var settings = {
   uiLanguage: "en",
   //"showBotDonations": false,
@@ -655,14 +700,19 @@ const settingsManager = new (function () {
     },
     function Footer(container) {
       const versionInfo = document.createElement("p");
-      versionInfo.innerText = `FX Client v${versionData.version}`;
+      const build = getCurrentBuildTimestamp();
+      versionInfo.innerText = `FX Client v${versionData.version}${build ? " · build " + build : ""}`;
       const links = document.createElement("p");
       links.innerHTML = `<a href="https://discord.gg/dyxcwdNKwK" target="_blank">Discord server</a> |
         <a href="https://github.com/fxclient/FXclient#readme">Github repository</a>`;
       const changelogButton = document.createElement("button");
       changelogButton.innerText = "Changelog";
       changelogButton.addEventListener("click", displayChangelog);
-      container.append(versionInfo, links, changelogButton);
+      const updateButton = document.createElement("button");
+      updateButton.innerText = t("Check for updates");
+      const updateStatus = document.createElement("small");
+      updateButton.addEventListener("click", () => checkForUpdates(updateStatus));
+      container.append(versionInfo, links, changelogButton, document.createElement("br"), updateButton, updateStatus);
     }
   ];
   const settingsContainer = document.querySelector(".settings .scrollable");

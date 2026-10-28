@@ -200,6 +200,11 @@ const ZH = {
   "Preset saved": "预设已保存",
   "Loaded preset": "已加载预设",
   "Preset deleted": "预设已删除",
+  "Check for updates": "检查更新",
+  "Checking for updates…": "正在检查更新…",
+  "You are up to date": "已是最新版本",
+  "New version found. Reloading…": "发现新版本，正在刷新…",
+  "Update check failed": "检查更新失败",
   "Validate opening": "验证开图",
 
   "Custom Lobby": "自定义大厅",
