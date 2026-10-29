@@ -19,6 +19,6 @@ ${insert(`window.__fx.lobbyTeamsHost = {
   }
 };
 if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerToggleButton) {
-  window.__fx.lobbyTeams.registerToggleButton(dM.kA[0].button);
+  window.__fx.lobbyTeams.registerToggleButton(dM.kA[0].button, dM.dp);
 }`)}`)
 });

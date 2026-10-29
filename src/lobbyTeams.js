@@ -250,6 +250,7 @@ function createPanel() {
 export default function initLobbyTeams() {
   const { panel, title, body, close } = createPanel();
   let toggleButton = null;
+  let toggleRow = null;
   let toggleHandler = null;
   let refreshTimer = null;
 
@@ -355,13 +356,25 @@ export default function initLobbyTeams() {
     else openPanel();
   }
 
-  function registerToggleButton(button) {
-    if (toggleButton && toggleHandler) {
+  function registerToggleButton(button, row) {
+    if (toggleRow && toggleHandler) {
+      toggleRow.removeEventListener("click", toggleHandler);
+    } else if (toggleButton && toggleHandler) {
       toggleButton.removeEventListener("click", toggleHandler);
     }
+
     toggleButton = button || null;
-    toggleHandler = () => togglePanel();
-    if (toggleButton) toggleButton.addEventListener("click", toggleHandler);
+    toggleRow = row || null;
+    toggleHandler = (event) => {
+      if (toggleRow && toggleButton) {
+        const rect = toggleButton.getBoundingClientRect();
+        if (event.clientX > rect.right + 4) return;
+      }
+      togglePanel();
+    };
+
+    if (toggleRow) toggleRow.addEventListener("click", toggleHandler);
+    else if (toggleButton) toggleButton.addEventListener("click", toggleHandler);
   }
 
   close.addEventListener("click", (event) => {
