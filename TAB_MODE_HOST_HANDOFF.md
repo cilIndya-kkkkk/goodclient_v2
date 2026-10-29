@@ -225,3 +225,11 @@ This is mostly careful code reading + a multi-file refactor with no automated br
 4. Defer `tab.html` + swap until the user confirms the full-UI/closed-window questions.
 
 This removes the update prompt and the “turns into full client” failure with a small, low-risk change.
+
+### Status (2026-10-29): minimum next step implemented
+
+- `static/bot.html`: client markup minus SW registration and `#updateNotification`; an inline script forces `?bot=1` into the URL on load and reload.
+- `build.js` stamps `index.html` and `bot.html` (and still `sw2.js`).
+- `src/tabMode.js`: `isTabBotInstance()` accepts `bot=1`, legacy `tabbot=1`, or a path ending in `bot.html`. The iframe loads `bot.html?bot=1&v=<stamp>`; the stamp comes from the `fx.bundle.js?<stamp>` script tag, and `relay` is passed through.
+- `npm run build-client` and `npm run build-only` both pass. No browser test has been run in this environment yet.
+- Still to do: the `tab.html` host, swapping, and the clean-view API (sections 4.1–4.3), pending answers to section 7.

@@ -1,12 +1,16 @@
 import { t } from "./i18n.js";
 
-const TAB_BOT_PARAM = "tabbot";
+const BOT_PARAM = "bot";
+const LEGACY_BOT_PARAM = "tabbot";
+const BOT_PAGE = "bot.html";
 const TOGGLE_POSITION_KEY = "fx_tabmode_toggle_position";
 const PANEL_POSITION_KEY = "fx_tabmode_panel_position";
 const POLL_INTERVAL = 800;
 
 export function isTabBotInstance() {
-  return new URLSearchParams(location.search).get(TAB_BOT_PARAM) === "1";
+  const params = new URLSearchParams(location.search);
+  if (params.get(BOT_PARAM) === "1" || params.get(LEGACY_BOT_PARAM) === "1") return true;
+  return /(^|\/)bot\.html$/.test(location.pathname);
 }
 
 export function initBotCleanView() {
@@ -29,9 +33,29 @@ export function initBotCleanView() {
   };
 }
 
+function currentBuildVersion() {
+  // Prefer the stamp on the fx.bundle.js <script> (same source as the update checker);
+  // the bundle's `buildTimestamp` global is stale after `build-client` (no re-patch).
+  const script = Array.from(document.scripts).find((item) => /(^|\/)fx\.bundle\.js\?\d+/.test(item.src));
+  if (script) {
+    try {
+      const stamp = new URL(script.src, location.href).search.replace(/^\?/, "");
+      if (stamp) return stamp;
+    } catch (_error) {}
+  }
+  // eslint-disable-next-line no-undef
+  if (typeof buildTimestamp !== "undefined" && buildTimestamp) return String(buildTimestamp);
+  return String(Date.now());
+}
+
 function botUrl() {
-  const url = new URL(location.href);
-  url.searchParams.set(TAB_BOT_PARAM, "1");
+  // Separate minimal page: no service worker registration, no update prompt.
+  // Versioned so the service worker (which caches by full URL) cannot serve a stale copy.
+  const url = new URL(BOT_PAGE, location.href);
+  url.searchParams.set(BOT_PARAM, "1");
+  url.searchParams.set("v", currentBuildVersion());
+  const relay = new URLSearchParams(location.search).get("relay");
+  if (relay) url.searchParams.set("relay", relay);
   return url.href;
 }
 

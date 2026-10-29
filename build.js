@@ -17,7 +17,10 @@ fs.cpSync("./static/", "./build/", { recursive: true });
 fs.cpSync("./assets/", "./build/assets/", { recursive: true });
 const buildTimestamp = Date.now().toString();
 fs.writeFileSync("./build/build-info.json", JSON.stringify({ buildTimestamp }));
-fs.writeFileSync("./build/index.html", fs.readFileSync("./build/index.html").toString().replace(/buildTimestamp/g, buildTimestamp));
+for (const page of ["index.html", "bot.html"]) {
+	const file = `./build/${page}`;
+	if (fs.existsSync(file)) fs.writeFileSync(file, fs.readFileSync(file).toString().replace(/buildTimestamp/g, buildTimestamp));
+}
 fs.writeFileSync("./build/sw2.js", fs.readFileSync("./build/sw2.js").toString().replace("buildTimestamp", buildTimestamp));
 
 const buildClientCode = () => /** @type {Promise<void>} */(new Promise((resolve, reject) => {
