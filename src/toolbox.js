@@ -405,7 +405,7 @@ export default function initToolbox(options = {}) {
   botStatusLine.textContent = t("Bot not loaded");
 
   function getBotTabMode() {
-    return getHost()?.tabMode || window.__fx.tabMode || null;
+    return getHost()?.tabMode || null;
   }
   function getBotFx() {
     return getBotTabMode()?.getBotFx?.() || null;

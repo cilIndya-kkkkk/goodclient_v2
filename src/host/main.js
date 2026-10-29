@@ -1,5 +1,6 @@
 import { initI18n } from "../i18n.js";
 import initMusicPlayer from "../musicPlayer.js";
+import initHostTabMode from "./tabMode.js";
 
 function currentBuildVersion() {
   const script = Array.from(document.scripts).find((item) => /(^|\/)host\.bundle\.js\?\d+/.test(item.src));
@@ -89,6 +90,9 @@ mainFrame.allow = "autoplay; fullscreen";
 mainFrame.src = frameUrl("client.html", { host: "1" }) + (location.hash || "");
 document.body.appendChild(mainFrame);
 attachGestureForwarding(mainFrame);
+
+const tabMode = initHostTabMode({ mainFrame, frameUrl, attachGestureForwarding });
+window.__fxHost.tabMode = tabMode;
 
 window.addEventListener("hashchange", () => {
   try {
