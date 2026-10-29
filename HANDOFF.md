@@ -53,7 +53,7 @@ Server is running from Termux home on port 8001:
   - UI change per user: the start button is now a standalone Tools-style floating `Bot` button (top-left, below Tools/Music) that opens/closes its own panel. The `Open Tab Mode` button was removed from Tools; `Tools → Bot settings` keeps status, Reload, and automation controls and points at the Bot button.
   - Also fixed earlier overlap: `open()` closes Tools and the music panel first; their panel z-index is `2147483646` so Tab Mode stays on top.
   - Remaining for Phase 1: manual browser test (button drag/click, panel opens without reload, bot iframe loads, Tools bot settings react to the bot). Then Phase 2 clean view, then the command layer.
-- Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
+- Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel and Tab Mode Phase 1 (`b691a7f feat: add Tab Mode bot shell with Tools bot settings`); the Pages Actions deploy succeeded. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
 
