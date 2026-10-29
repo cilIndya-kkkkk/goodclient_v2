@@ -1,37 +1,13 @@
 import { t } from "./i18n.js";
+import { isBotInstance } from "./instance.js";
 
 const BOT_PARAM = "bot";
-const LEGACY_BOT_PARAM = "tabbot";
 const BOT_PAGE = "bot.html";
 const TOGGLE_POSITION_KEY = "fx_tabmode_toggle_position";
 const PANEL_POSITION_KEY = "fx_tabmode_panel_position";
 const POLL_INTERVAL = 800;
 
-export function isTabBotInstance() {
-  const params = new URLSearchParams(location.search);
-  if (params.get(BOT_PARAM) === "1" || params.get(LEGACY_BOT_PARAM) === "1") return true;
-  return /(^|\/)bot\.html$/.test(location.pathname);
-}
-
-export function initBotCleanView() {
-  if (!isTabBotInstance()) return null;
-  function apply() {
-    try {
-      const game = window.c;
-      const ui = window.nr;
-      if (game && ui && typeof ui.nE === "function" && game.gG !== true) ui.nE(true);
-    } catch (_error) {}
-  }
-  apply();
-  window.addEventListener("load", apply);
-  const timer = setInterval(apply, 500);
-  return {
-    apply,
-    stop() {
-      clearInterval(timer);
-    },
-  };
-}
+export { isBotInstance as isTabBotInstance };
 
 function currentBuildVersion() {
   // Prefer the stamp on the fx.bundle.js <script> (same source as the update checker);
@@ -162,7 +138,7 @@ function clampToViewport(element, left, top) {
 }
 
 export default function initTabMode() {
-  if (isTabBotInstance()) return null;
+  if (isBotInstance()) return null;
 
   const toggle = document.createElement("button");
   toggle.type = "button";

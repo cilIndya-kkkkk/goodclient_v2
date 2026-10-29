@@ -7,9 +7,12 @@ import replayHistory from './replayHistory.js'
 import { LobbyReminderRulesInput } from './lobbyReminderRulesInput.js';
 import { FollowedAccountNicknames } from './followedAccounts.js';
 import { t } from './i18n.js';
+import { isBotInstance, getHost } from './instance.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
+const SETTINGS_KEY = isBotInstance() ? "fx_settings_bot" : "fx_settings";
+const HOSTFIX_KEY = "fx_automation_enabled_for_hostfix" + (isBotInstance() ? "_bot" : "");
 
 const DEFAULT_MENU_BACKGROUND = "linear-gradient(160deg, #fff9e8, #f6e6c3 55%, #efe0b8)";
 
@@ -24,6 +27,11 @@ function getCurrentBuildTimestamp() {
 }
 
 async function forceReload() {
+  const host = getHost();
+  if (host && typeof host.forceReload === "function") {
+    await host.forceReload();
+    return;
+  }
   try {
     if ("serviceWorker" in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
@@ -776,7 +784,7 @@ const settingsManager = new (function () {
     this.applySettings();
     WindowManager.closeWindow("settings");
     discontinuedSettings.forEach((settingName) => delete settings[settingName]);
-    localStorage.setItem("fx_settings", JSON.stringify(settings));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
     else localStorage.setItem("fx_ui_language", settings.uiLanguage);
     window.location.reload();
@@ -807,7 +815,7 @@ const settingsManager = new (function () {
           __fx.settings = settings = result;
         if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
         else if (settings.uiLanguage) localStorage.setItem("fx_ui_language", settings.uiLanguage);
-        localStorage.setItem("fx_settings", JSON.stringify(settings));
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         window.location.reload();
       } catch (error) {
         alert(t("Error") + "\n" + error);
@@ -843,7 +851,7 @@ const settingsManager = new (function () {
       )
     )
       return;
-    localStorage.removeItem("fx_settings");
+    localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem("fx_ui_language");
     window.location.reload();
   };
@@ -863,6 +871,11 @@ const settingsManager = new (function () {
 })();
 
 export function tryEnterFullscreen() {
+  const host = getHost();
+  if (host && typeof host.requestFullscreen === "function") {
+    host.requestFullscreen();
+    return;
+  }
   if (document.fullscreenElement !== null || !document.fullscreenEnabled) return
   document.documentElement
     .requestFullscreen({ navigationUI: "hide" })
@@ -896,20 +909,25 @@ WindowManager.add({
   },
 });
 
-if (localStorage.getItem("fx_settings") !== null) {
+if (isBotInstance() && localStorage.getItem(SETTINGS_KEY) === null) {
+  const baseSettings = localStorage.getItem("fx_settings");
+  if (baseSettings !== null) localStorage.setItem(SETTINGS_KEY, baseSettings);
+}
+
+if (localStorage.getItem(SETTINGS_KEY) !== null) {
   __fx.settings = settings = {
     ...settings,
-    ...JSON.parse(localStorage.getItem("fx_settings")),
+    ...JSON.parse(localStorage.getItem(SETTINGS_KEY)),
   };
 }
 
-if (localStorage.getItem("fx_automation_enabled_for_hostfix") !== "1") {
+if (localStorage.getItem(HOSTFIX_KEY) !== "1") {
   settings.openingAutomationEnabled = true;
   settings.infiniteExpansionEnabled = true;
   settings.autoAttackLowDensityBots = true;
   settings.autoAttackLowDensityBotsMode = "v20reserve";
-  localStorage.setItem("fx_automation_enabled_for_hostfix", "1");
-  localStorage.setItem("fx_settings", JSON.stringify(settings));
+  localStorage.setItem(HOSTFIX_KEY, "1");
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 // migrate old emoji settings to new
@@ -920,7 +938,7 @@ if (settings.emojiBar !== undefined || settings.customEmojiBar !== undefined) {
   }
   delete settings.emojiBar;
   delete settings.customEmojiBar;
-  localStorage.setItem("fx_settings", JSON.stringify(settings));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 settingsManager.applySettings();
@@ -931,5 +949,5 @@ export function getSettings() {
 }
 
 export function persistSettings() {
-  localStorage.setItem("fx_settings", JSON.stringify(settings));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }

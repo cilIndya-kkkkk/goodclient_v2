@@ -1189,3 +1189,14 @@ label.checkbox .checkmark:after {
 	height: 100%;
 	border: 0;
 }
+
+body.fx-clean #fxToolboxToggle,
+body.fx-clean #fxToolbox,
+body.fx-clean #fxMusicToggle,
+body.fx-clean #fxMusic,
+body.fx-clean #fxTabModeToggle,
+body.fx-clean #fxTabMode,
+body.fx-clean #demonAutomationControls,
+body.fx-clean .window {
+	display: none !important;
+}

@@ -5,9 +5,11 @@ import initMusicPlayer from './musicPlayer.js';
 import initTheme from './theme.js';
 import { getTeamTag } from './teamTags.js';
 import initShipRoutes from './shipRoutes.js';
-import initTabMode, { isTabBotInstance, initBotCleanView } from './tabMode.js';
+import initTabMode from './tabMode.js';
 import { reportError } from './debugging.js';
 import { initI18n } from './i18n.js';
+import { isBotInstance, isEmbedded } from './instance.js';
+import initCleanView from './cleanView.js';
 
 window.__fx = window.__fx || {};
 window.__fx.reportError = reportError;
@@ -36,13 +38,9 @@ import followedAccounts from './followedAccounts.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
-const isTabBot = isTabBotInstance();
-if (isTabBot) {
-  try {
-    Object.defineProperty(window, "devicePixelRatio", { configurable: true, get: () => 1 });
-  } catch (_error) {}
-}
-if (!isTabBot) initI18n();
+const isTabBot = isBotInstance();
+const embedded = isEmbedded();
+initI18n();
 window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason;
   const message = (reason && reason.message) || "";
@@ -89,9 +87,10 @@ __fx.automationControls = isTabBot ? null : initAutomationControls();
 __fx.theme = isTabBot ? null : initTheme();
 __fx.shipRoutes = isTabBot ? null : initShipRoutes();
 __fx.tabMode = initTabMode();
-__fx.botCleanView = initBotCleanView();
+__fx.cleanView = initCleanView();
+if (isTabBot) __fx.cleanView.setEnabled(true, { hideFx: true, lowDpr: true });
 __fx.toolbox = isTabBot ? null : initToolbox();
-if (isTabBot) {
+if (isTabBot || embedded) {
   __fx.musicPlayer = null;
 } else {
   try {
@@ -101,6 +100,8 @@ if (isTabBot) {
     console.error("Music player failed to initialize", error);
   }
 }
+__fx.isBotInstance = isBotInstance;
+__fx.isEmbedded = () => isEmbedded();
 __fx.getTeamTag = getTeamTag;
 __fx.selectedSpawnPlayer = -1;
 __fx.onLeaderboardPlayerClick = (player) => {
