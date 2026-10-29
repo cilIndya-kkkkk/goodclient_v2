@@ -40,10 +40,15 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     if (y < rect.top || y > rect.bottom) return;
     if (mark()) api().toggle();
   }
+  function inPanel(target) {
+    return target && target.closest && target.closest('[data-window-name="lobbyTeams"]');
+  }
   function hit(event) {
+    if (inPanel(event.target)) return;
     hitAt(event.clientX, event.clientY);
   }
   function touchHit(event) {
+    if (inPanel(event.target)) return;
     var touch = event.changedTouches && event.changedTouches[0];
     if (touch) hitAt(touch.clientX, touch.clientY);
   }

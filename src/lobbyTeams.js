@@ -221,6 +221,74 @@ export function solveTeamGroups(players, teamCount) {
   return groups;
 }
 
+function makeDraggable(element, handle) {
+  handle.style.cursor = "move";
+  handle.style.userSelect = "none";
+  handle.style.touchAction = "none";
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+  let startTop = 0;
+
+  function start(x, y) {
+    const rect = element.getBoundingClientRect();
+    startX = x;
+    startY = y;
+    startLeft = rect.left;
+    startTop = rect.top;
+    element.style.left = `${rect.left}px`;
+    element.style.top = `${rect.top}px`;
+    element.style.right = "auto";
+    element.style.bottom = "auto";
+    element.style.margin = "0";
+    element.style.transform = "none";
+    dragging = true;
+  }
+
+  function move(x, y) {
+    if (!dragging) return;
+    const rect = element.getBoundingClientRect();
+    const left = Math.max(0, Math.min(startLeft + x - startX, window.innerWidth - rect.width));
+    const top = Math.max(0, Math.min(startTop + y - startY, window.innerHeight - rect.height));
+    element.style.left = `${left}px`;
+    element.style.top = `${top}px`;
+  }
+
+  function end() {
+    dragging = false;
+  }
+
+  handle.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    start(event.clientX, event.clientY);
+  });
+  document.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    event.preventDefault();
+    move(event.clientX, event.clientY);
+  });
+  document.addEventListener("pointerup", end);
+  document.addEventListener("pointercancel", end);
+
+  handle.addEventListener("touchstart", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    event.preventDefault();
+    start(touch.clientX, touch.clientY);
+  }, { passive: false });
+  document.addEventListener("touchmove", (event) => {
+    if (!dragging) return;
+    const touch = event.touches[0];
+    if (!touch) return;
+    event.preventDefault();
+    move(touch.clientX, touch.clientY);
+  }, { passive: false });
+  document.addEventListener("touchend", end);
+  document.addEventListener("touchcancel", end);
+}
+
 function createWindow() {
   const element = WindowManager.create({ name: "lobbyTeams", classes: "scrollable selectable", closable: false });
   element.style.width = "min(360px, 90vw)";
@@ -229,12 +297,14 @@ function createWindow() {
   element.style.padding = "10px 12px";
   element.style.fontSize = "14px";
   element.style.borderWidth = "2px";
+  element.style.transition = "none";
 
   const title = document.createElement("h1");
   title.id = "fxLobbyTeamsTitle";
   title.textContent = t("Team split");
   title.style.fontSize = "18px";
   title.style.margin = "0 0 8px";
+  makeDraggable(element, title);
 
   const body = document.createElement("div");
   body.id = "fxLobbyTeamsBody";
