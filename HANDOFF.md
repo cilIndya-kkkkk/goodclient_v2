@@ -28,7 +28,7 @@ Server is running from Termux home on port 8001:
   - Manual lobby-code input + Join bot.
   - Panel controls automation; Auto All On when bot enters a game.
   - Only works with FX custom lobbies; normal public lobbies cannot be mirrored.
-- Lobby team split (2026-10-29): in a team lobby, click the current-game info area under the mode tabs (left side, e.g. `Africa 5 Teams`) to show a fixed floating panel below it. Click the same area again to hide it.
+- Lobby team split (2026-10-29): target is the standard territorial.io multiplayer lobby (the screen with `Team / BR / 1v1 / Zombie` tabs and `Chat / Players`), NOT the FX custom-lobby window. In a team lobby, click the current-game info area under the mode tabs (left side, e.g. `Africa 5 Teams`) to show a fixed floating panel below it. Click the same area again to hide it.
   - Shows every team in order: `Team 1: ...`, `Team 2: ...` up to the lobby's team count, including empty teams. Each row has the team color dot and all ready players assigned to that team.
   - Uses only ready players, and only for team modes (`kc < 7`, 2-8 teams). Refreshes every 500 ms while open; closes automatically when leaving team mode/lobby.
   - The panel is display-only: it is not draggable and does not resize itself after opening.
@@ -39,7 +39,8 @@ Server is running from Termux home on port 8001:
 
 ## Known issues / next steps
 
-1. Test the lobby team split panel in a real team lobby (click current-game info area, open/close, panel position on mobile, ready-state changes, 2-8 team modes). Tune `positionPanel()` in `src/lobbyTeams.js` if it overlaps the list.
+1. Test the lobby team split panel in a real standard team lobby (click current-game info area, open/close, panel position on mobile, ready-state changes, 2-8 team modes). Tune `positionPanel()` in `src/lobbyTeams.js` if it overlaps the list.
+   - 2026-10-29: user reported not seeing the panel. Confirm they are on the standard territorial.io lobby (not the FX custom-lobby window) and on the latest build; old service-worker cache may still serve the previous Players-tab version.
 2. Test the new ship troop badges; if labels overlap or positions are off, tune `src/shipRoutes.js`.
 3. Team color mapping currently swaps Black/White; other team colors may still be mismatched. Need real team-mode check.
 4. Team-mode bot v20/Land Max needs a real multiplayer team test.
