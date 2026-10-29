@@ -192,28 +192,32 @@ export function solveTeamSlots(players, teamCount) {
   return { teamOf, slotColor };
 }
 
-export function solveTeamSplit(players, teamCount) {
+export function solveTeamGroups(players, teamCount) {
   const list = Array.isArray(players) ? players : [];
-  const { teamOf, slotColor } = solveTeamSlots(list, teamCount);
-  const groups = new Map();
-  for (let ai = 0; ai < list.length; ai += 1) {
-    const slot = teamOf[ai];
-    const colorIndex = slot ? slotColor[slot] : 0;
-    if (!groups.has(colorIndex)) groups.set(colorIndex, []);
-    groups.get(colorIndex).push(String(list[ai].name || ""));
+  const requested = Math.max(2, Math.min(8, Number(teamCount) || 2));
+  const { teamOf, slotColor } = solveTeamSlots(list, requested);
+  const groups = [];
+  for (let slot = 1; slot <= requested; slot += 1) {
+    const color = TEAM_PALETTE[slotColor[slot]] || null;
+    groups.push({
+      team: slot,
+      name: `Team ${slot}`,
+      css: color ? color.css : "#888888",
+      players: [],
+    });
   }
 
-  return [...groups.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([colorIndex, names]) => {
-      const color = TEAM_PALETTE[colorIndex] || null;
-      return {
-        colorIndex,
-        name: color ? color.name : "Unassigned",
-        css: color ? color.css : "#888888",
-        players: names,
-      };
-    });
+  const unassigned = [];
+  for (let ai = 0; ai < list.length; ai += 1) {
+    const slot = teamOf[ai];
+    const name = String(list[ai].name || "");
+    if (slot >= 1 && slot <= requested) groups[slot - 1].players.push(name);
+    else unassigned.push(name);
+  }
+  if (unassigned.length) {
+    groups.push({ team: 0, name: "Unassigned", css: "#888888", players: unassigned });
+  }
+  return groups;
 }
 
 function createPanel() {
@@ -245,10 +249,8 @@ function createPanel() {
 
 export default function initLobbyTeams() {
   const { panel, title, body, close } = createPanel();
-  let playersButton = null;
-  let chatButton = null;
-  let playersHandler = null;
-  let chatHandler = null;
+  let toggleButton = null;
+  let toggleHandler = null;
   let refreshTimer = null;
 
   function hostState() {
@@ -272,7 +274,7 @@ export default function initLobbyTeams() {
     const width = Math.min(420, window.innerWidth - 16);
     panel.style.width = `${width}px`;
 
-    const rect = playersButton?.getBoundingClientRect?.();
+    const rect = toggleButton?.getBoundingClientRect?.();
     if (rect && rect.width > 0 && rect.bottom > 0) {
       const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
       panel.style.left = `${left}px`;
@@ -307,11 +309,9 @@ export default function initLobbyTeams() {
       return;
     }
 
-    const groups = solveTeamSplit(state.players, state.mode + 2);
+    const groups = solveTeamGroups(state.players, state.mode + 2);
     const fragment = document.createDocumentFragment();
     for (const group of groups) {
-      if (!group.players.length) continue;
-
       const row = document.createElement("div");
       row.className = "fx-lobby-team-row";
 
@@ -321,7 +321,7 @@ export default function initLobbyTeams() {
 
       const name = document.createElement("span");
       name.className = "fx-lobby-team-name";
-      name.textContent = t(group.name);
+      name.textContent = group.team ? `${t("Team")} ${group.team}` : t(group.name);
 
       const colon = document.createElement("span");
       colon.className = "fx-lobby-team-colon";
@@ -347,7 +347,7 @@ export default function initLobbyTeams() {
     positionPanel();
     stopRefresh();
     render();
-    if (panel.classList.contains("open")) refreshTimer = setInterval(render, 1000);
+    if (panel.classList.contains("open")) refreshTimer = setInterval(render, 500);
   }
 
   function togglePanel() {
@@ -355,21 +355,13 @@ export default function initLobbyTeams() {
     else openPanel();
   }
 
-  function registerPlayersTab(players, chat) {
-    if (playersButton && playersHandler) {
-      playersButton.removeEventListener("click", playersHandler);
+  function registerToggleButton(button) {
+    if (toggleButton && toggleHandler) {
+      toggleButton.removeEventListener("click", toggleHandler);
     }
-    if (chatButton && chatHandler) {
-      chatButton.removeEventListener("click", chatHandler);
-    }
-
-    playersButton = players || null;
-    chatButton = chat || null;
-    playersHandler = () => togglePanel();
-    chatHandler = () => closePanel();
-
-    if (playersButton) playersButton.addEventListener("click", playersHandler);
-    if (chatButton) chatButton.addEventListener("click", chatHandler);
+    toggleButton = button || null;
+    toggleHandler = () => togglePanel();
+    if (toggleButton) toggleButton.addEventListener("click", toggleHandler);
   }
 
   close.addEventListener("click", (event) => {
@@ -379,5 +371,5 @@ export default function initLobbyTeams() {
 
   window.addEventListener("resize", positionPanel);
 
-  return { registerPlayersTab, close: closePanel };
+  return { registerToggleButton, close: closePanel };
 }

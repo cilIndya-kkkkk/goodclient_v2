@@ -18,7 +18,7 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     return { mode: room.kc, ready: ready, players: players };
   }
 };
-if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerPlayersTab) {
-  window.__fx.lobbyTeams.registerPlayersTab(k3.kA[1].button, k3.kA[0].button);
+if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerToggleButton) {
+  window.__fx.lobbyTeams.registerToggleButton(dM.kA[0].button);
 }`)}`)
 });

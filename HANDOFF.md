@@ -28,17 +28,18 @@ Server is running from Termux home on port 8001:
   - Manual lobby-code input + Join bot.
   - Panel controls automation; Auto All On when bot enters a game.
   - Only works with FX custom lobbies; normal public lobbies cannot be mirrored.
-- Lobby team split (2026-10-29): in a team lobby, click the lobby **Players** tab to show a floating panel with all ready players grouped by the game's locally calculated team colors. Click Players again (or Chat) to close.
-  - Format: color dot + localized color name + `:` + comma-separated player names.
-  - Uses only ready players, and only for team modes (`kc < 7`, 2-8 teams).
+- Lobby team split (2026-10-29): in a team lobby, click the current-game info area under the mode tabs (left side, e.g. `Africa 5 Teams`) to show a fixed floating panel below it. Click the same area again to hide it.
+  - Shows every team in order: `Team 1: ...`, `Team 2: ...` up to the lobby's team count, including empty teams. Each row has the team color dot and all ready players assigned to that team.
+  - Uses only ready players, and only for team modes (`kc < 7`, 2-8 teams). Refreshes every 500 ms while open; closes automatically when leaving team mode/lobby.
+  - The panel is display-only: it is not draggable and does not resize itself after opening.
   - Reproduces the game's TeamManager assignment: nearest team color, clan grouping, second-choice fill. Validated against the game's own function with 200 random cases (0 differences).
-  - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.registerPlayersTab(...)` in `src/lobbyTeams.js`.
+  - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.registerToggleButton(...)` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.
-- Remote GitHub `goodclient_v2` is now up to date through `d1246f1` (`feat: show locally calculated team split in lobby`). Earlier pushes had github.com git/TLS problems; if it recurs, the old workaround was a forced-IP Node HTTPS request (no account password).
+- Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. Earlier pushes had github.com git/TLS problems; if it recurs, the old workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
 
-1. Test the lobby team split panel in a real team lobby (open/close, panel position on mobile, ready-state changes, 2-8 team modes). Tune `positionPanel()` in `src/lobbyTeams.js` if it overlaps the list.
+1. Test the lobby team split panel in a real team lobby (click current-game info area, open/close, panel position on mobile, ready-state changes, 2-8 team modes). Tune `positionPanel()` in `src/lobbyTeams.js` if it overlaps the list.
 2. Test the new ship troop badges; if labels overlap or positions are off, tune `src/shipRoutes.js`.
 3. Team color mapping currently swaps Black/White; other team colors may still be mismatched. Need real team-mode check.
 4. Team-mode bot v20/Land Max needs a real multiplayer team test.
@@ -49,8 +50,8 @@ Server is running from Termux home on port 8001:
 
 ## Key files
 
-- `patches/lobbyTeams.js` - exposes lobby mode, ready players and tab buttons to the client.
-- `src/lobbyTeams.js` - lobby team assignment + floating panel UI.
+- `patches/lobbyTeams.js` - exposes lobby mode, ready players and the current-game info button to the client.
+- `src/lobbyTeams.js` - lobby team assignment + fixed floating panel UI.
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.
 - `src/shipRoutes.js` - route drawing, colors, troop badges, route status.
 - `src/toolbox.js` - Tools UI, settings toggles, status.

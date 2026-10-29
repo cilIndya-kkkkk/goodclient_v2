@@ -255,6 +255,7 @@ const ZH = {
   "Kicked from lobby": "已被踢出大厅",
 
   "Players": "玩家",
+  "Team": "队伍",
   "Team split": "大厅分队",
   "No ready players": "暂无已准备玩家",
   "Unassigned": "未分配",
