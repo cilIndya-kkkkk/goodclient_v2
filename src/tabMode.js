@@ -9,6 +9,26 @@ export function isTabBotInstance() {
   return new URLSearchParams(location.search).get(TAB_BOT_PARAM) === "1";
 }
 
+export function initBotCleanView() {
+  if (!isTabBotInstance()) return null;
+  function apply() {
+    try {
+      const game = window.c;
+      const ui = window.nr;
+      if (game && ui && typeof ui.nE === "function" && game.gG !== true) ui.nE(true);
+    } catch (_error) {}
+  }
+  apply();
+  window.addEventListener("load", apply);
+  const timer = setInterval(apply, 500);
+  return {
+    apply,
+    stop() {
+      clearInterval(timer);
+    },
+  };
+}
+
 function botUrl() {
   const url = new URL(location.href);
   url.searchParams.set(TAB_BOT_PARAM, "1");

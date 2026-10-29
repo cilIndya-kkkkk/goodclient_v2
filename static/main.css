@@ -1089,8 +1089,12 @@ label.checkbox .checkmark:after {
 	z-index: 2147483647;
 	display: none;
 	flex-direction: column;
-	width: min(760px, 94vw);
-	height: min(560px, 86vh);
+	width: min(38vw, 460px);
+	height: min(38vh, 340px);
+	min-width: 260px;
+	min-height: 190px;
+	max-width: 94vw;
+	max-height: 86vh;
 	background: rgba(9, 13, 18, 0.97);
 	border: 1px solid rgba(110, 210, 160, 0.55);
 	box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);

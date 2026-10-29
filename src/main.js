@@ -5,7 +5,7 @@ import initMusicPlayer from './musicPlayer.js';
 import initTheme from './theme.js';
 import { getTeamTag } from './teamTags.js';
 import initShipRoutes from './shipRoutes.js';
-import initTabMode from './tabMode.js';
+import initTabMode, { isTabBotInstance, initBotCleanView } from './tabMode.js';
 import { reportError } from './debugging.js';
 import { initI18n } from './i18n.js';
 
@@ -36,7 +36,13 @@ import followedAccounts from './followedAccounts.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
-initI18n();
+const isTabBot = isTabBotInstance();
+if (isTabBot) {
+  try {
+    Object.defineProperty(window, "devicePixelRatio", { configurable: true, get: () => 1 });
+  } catch (_error) {}
+}
+if (!isTabBot) initI18n();
 window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason;
   const message = (reason && reason.message) || "";
@@ -79,16 +85,21 @@ __fx.followedAccounts = followedAccounts;
 
 __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
-__fx.automationControls = initAutomationControls();
-__fx.theme = initTheme();
-__fx.shipRoutes = initShipRoutes();
+__fx.automationControls = isTabBot ? null : initAutomationControls();
+__fx.theme = isTabBot ? null : initTheme();
+__fx.shipRoutes = isTabBot ? null : initShipRoutes();
 __fx.tabMode = initTabMode();
-__fx.toolbox = initToolbox();
-try {
-  __fx.musicPlayer = initMusicPlayer();
-  console.log("Music player ready");
-} catch (error) {
-  console.error("Music player failed to initialize", error);
+__fx.botCleanView = initBotCleanView();
+__fx.toolbox = isTabBot ? null : initToolbox();
+if (isTabBot) {
+  __fx.musicPlayer = null;
+} else {
+  try {
+    __fx.musicPlayer = initMusicPlayer();
+    console.log("Music player ready");
+  } catch (error) {
+    console.error("Music player failed to initialize", error);
+  }
 }
 __fx.getTeamTag = getTeamTag;
 __fx.selectedSpawnPlayer = -1;

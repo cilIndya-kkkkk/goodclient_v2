@@ -52,7 +52,10 @@ Server is running from Termux home on port 8001:
   - 2026-10-29 fix: the game's DOM cleanup (`aI2.b` in `build/game.js`) removes direct `DIV`/`INPUT`/`BUTTON` children of `document.body`. Tab Mode's button/panel were direct body children, got detached, and `open()` acted on detached nodes while Tools (which re-attaches every 500 ms) disappeared. Tab Mode UI now mounts inside `#windowContainer` (a `SPAN`, never cleaned) and `ensureAttached()` runs every 1.5 s.
   - UI change per user: the start button is now a standalone Tools-style floating `Bot` button (top-left, below Tools/Music) that opens/closes its own panel. The `Open Tab Mode` button was removed from Tools; `Tools → Bot settings` keeps status, Reload, and automation controls and points at the Bot button.
   - Also fixed earlier overlap: `open()` closes Tools and the music panel first; their panel z-index is `2147483646` so Tab Mode stays on top.
-  - Remaining for Phase 1: manual browser test (button drag/click, panel opens without reload, bot iframe loads, Tools bot settings react to the bot). Then Phase 2 clean view, then the command layer.
+  - 2026-10-29 perf/size pass: the panel is now TulipBot-sized but slightly larger (`width: min(38vw, 460px)`, `height: min(38vh, 340px)`, min 260x190) instead of 760x560.
+  - 2026-10-29 perf: the `?tabbot=1` instance caps `window.devicePixelRatio` at 1 (the game only reads it for canvas scale), and skips music, theme, ship routes, toolbox and the in-game automation panel plus the i18n DOM observer. Automation, settings, custom lobby, lobby teams and game rendering stay enabled. The iframe is still lazy-created and hidden (not unloaded) when the panel closes.
+  - Phase 2 (clean view, 2026-10-29): `?tabbot=1` now forces the game's built-in UI-hidden mode by polling `window.c.gG` and calling `window.nr.nE(true)` (`initBotCleanView` in `src/tabMode.js`). These are top-level `var`s from the pinned `game.js`; with UI hidden the game draws only the map (and a small bar). Note: `c.gG === true` short-circuits the game's native click handler, so Phase 3 send-ships must translate clicks to game coordinates itself instead of relying on native map clicks.
+  - Remaining: manual test of the new size/perf + clean view (Bot panel should be ~min(38vw,460px) x min(38vh,340px), and the bot should show a clean map with no game HUD). Then Phase 3 command layer (attack player/team, hoard, send ships).
 - Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel and Tab Mode Phase 1 (`b691a7f feat: add Tab Mode bot shell with Tools bot settings`); the Pages Actions deploy succeeded. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
@@ -101,4 +104,4 @@ Ask the assistant to read:
 ~/tulipbot/README.md
 ```
 
-Then continue from Tab Mode Phase 2 (clean/no-UI bot view), after manually testing Phase 1. Remaining earlier tests: lobby team split manual check / ship troop badges / team mode / TulipBot custom lobby.
+Then continue from Tab Mode Phase 3 (command layer: attack player/team, hoard, send ships), after manually testing the Phase 1/2 shell + clean view. Remaining earlier tests: lobby team split manual check / ship troop badges / team mode / TulipBot custom lobby.
