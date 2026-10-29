@@ -953,3 +953,92 @@ label.checkbox .checkmark:after {
 	line-height: 1.4;
 	word-break: break-word;
 }
+#fxLobbyTeams {
+	position: fixed;
+	z-index: 2147483646;
+	display: none;
+	width: min(420px, 92vw);
+	max-height: 45vh;
+	background: rgba(9, 13, 18, 0.97);
+	border: 1px solid rgba(110, 210, 160, 0.55);
+	box-shadow: 0 0 24px rgba(0, 0, 0, 0.75);
+	color: #dbe7f0;
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 13px;
+}
+
+#fxLobbyTeams.open {
+	display: flex;
+	flex-direction: column;
+}
+
+#fxLobbyTeamsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 9px;
+	background: rgba(20, 34, 28, 0.95);
+	border-bottom: 1px solid rgba(110, 210, 160, 0.35);
+	color: #a8f0c8;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+#fxLobbyTeamsClose {
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: rgba(0, 0, 0, 0.35);
+	color: #dbe7f0;
+	font: inherit;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+#fxLobbyTeamsBody {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 7px 10px 9px;
+}
+
+.fx-lobby-team-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 5px;
+	padding: 2px 0;
+	line-height: 1.45;
+}
+
+.fx-lobby-team-dot {
+	flex: 0 0 auto;
+	width: 10px;
+	height: 10px;
+	margin-top: 3px;
+	border: 1px solid rgba(255, 255, 255, 0.55);
+	border-radius: 50%;
+}
+
+.fx-lobby-team-name {
+	flex: 0 0 auto;
+	font-weight: 700;
+}
+
+.fx-lobby-team-colon {
+	flex: 0 0 auto;
+}
+
+.fx-lobby-team-players {
+	min-width: 0;
+	color: #b9c8d3;
+	word-break: break-word;
+}
+
+.fx-lobby-teams-empty {
+	color: #8aa5a0;
+	font-size: 12px;
+}
