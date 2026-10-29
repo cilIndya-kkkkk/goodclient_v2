@@ -33,7 +33,8 @@ Server is running from Termux home on port 8001:
   - Uses only ready players, and only for team modes (`kc < 7`, 2-8 teams). Refreshes every 500 ms while open; closes automatically when leaving team mode/lobby.
   - The panel is display-only: it is not draggable and does not resize itself after opening.
   - Reproduces the game's TeamManager assignment: nearest team color, clan grouping, second-choice fill. Validated against the game's own function with 200 random cases (0 differences).
-  - The game patch now uses a document-level capture click listener and hit-tests the current-game info button's bounding rect, then calls `__fx.lobbyTeams.toggle()`. This avoids the lobby layout/overlay swallowing the click and does not depend on client registration timing. Clicks on the right/next-game info are ignored.
+  - The game patch now uses document-level capture listeners for both `pointerdown` and `click`, hit-tests the current-game info button's bounding rect, flashes a green outline, then calls `__fx.lobbyTeams.toggle()`. This avoids layout/overlay swallowing the click and does not depend on client registration timing. Clicks on the right/next-game info are ignored.
+  - Client toggle is debounced (250ms) to avoid double toggles from pointerdown+click or duplicate listeners. Panel position is clamped inside the viewport; if the panel is "open" but outside the viewport, the next click repositions it instead of closing.
   - The info button shows `▾` when the client API is ready, or `!` if `__fx.lobbyTeams.toggle` is missing (usually a stale/mixed client bundle). If the panel opens but lobby data is missing, it shows `No lobby data` for 4s before closing.
   - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.registerToggleButton(...)` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.

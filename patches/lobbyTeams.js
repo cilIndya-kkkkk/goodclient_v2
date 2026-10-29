@@ -32,14 +32,18 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     if (ready && client.setAnchor) client.setAnchor(button);
     return ready;
   }
-  document.addEventListener("click", function (event) {
+  function hit(event) {
     if (!button.isConnected) return;
     var rect = button.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
     if (event.clientX < rect.left || event.clientX > rect.right) return;
     if (event.clientY < rect.top || event.clientY > rect.bottom) return;
+    button.style.outline = "2px solid #7fffa0";
+    setTimeout(function () { button.style.outline = ""; }, 250);
     if (mark()) api().toggle();
-  }, true);
+  }
+  document.addEventListener("pointerdown", hit, true);
+  document.addEventListener("click", hit, true);
   mark();
   (function poll() {
     if (mark()) return;

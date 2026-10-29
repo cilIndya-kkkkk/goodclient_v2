@@ -254,6 +254,7 @@ export default function initLobbyTeams() {
   let toggleHandler = null;
   let refreshTimer = null;
   let invalidSince = null;
+  let lastToggleAt = 0;
 
   function hostState() {
     return window.__fx?.lobbyTeamsHost?.getState?.() || null;
@@ -278,9 +279,10 @@ export default function initLobbyTeams() {
 
     const rect = toggleButton?.getBoundingClientRect?.();
     if (rect && rect.width > 0 && rect.bottom > 0) {
-      const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
+      const top = Math.max(8, Math.min(rect.bottom + 8, window.innerHeight - 120));
       panel.style.left = `${left}px`;
-      panel.style.top = `${rect.bottom + 8}px`;
+      panel.style.top = `${top}px`;
       panel.style.right = "auto";
       panel.style.bottom = "auto";
       panel.style.transform = "none";
@@ -360,8 +362,20 @@ export default function initLobbyTeams() {
   }
 
   function togglePanel() {
-    if (panel.classList.contains("open")) closePanel();
-    else openPanel();
+    const now = Date.now();
+    if (now - lastToggleAt < 250) return;
+    lastToggleAt = now;
+    if (panel.classList.contains("open")) {
+      const rect = panel.getBoundingClientRect();
+      const visible = rect.width > 0 && rect.height > 0 &&
+        rect.bottom > 0 && rect.top < window.innerHeight &&
+        rect.right > 0 && rect.left < window.innerWidth;
+      if (visible) {
+        closePanel();
+        return;
+      }
+    }
+    openPanel();
   }
 
   function registerToggleButton(button, row) {
