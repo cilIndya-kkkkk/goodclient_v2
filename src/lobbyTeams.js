@@ -223,9 +223,35 @@ export function solveTeamGroups(players, teamCount) {
 function createPanel() {
   const panel = document.createElement("div");
   panel.id = "fxLobbyTeams";
+  Object.assign(panel.style, {
+    position: "fixed",
+    zIndex: "2147483647",
+    display: "none",
+    flexDirection: "column",
+    width: "min(420px, 92vw)",
+    maxHeight: "45vh",
+    background: "rgba(9, 13, 18, 0.97)",
+    border: "1px solid rgba(110, 210, 160, 0.55)",
+    boxShadow: "0 0 24px rgba(0, 0, 0, 0.75)",
+    color: "#dbe7f0",
+    fontFamily: "'Trebuchet MS', Arial, sans-serif",
+    fontSize: "13px",
+  });
 
   const header = document.createElement("div");
   header.id = "fxLobbyTeamsHeader";
+  Object.assign(header.style, {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    padding: "6px 9px",
+    background: "rgba(20, 34, 28, 0.95)",
+    borderBottom: "1px solid rgba(110, 210, 160, 0.35)",
+    color: "#a8f0c8",
+    fontSize: "12px",
+    fontWeight: "700",
+  });
 
   const title = document.createElement("span");
   title.id = "fxLobbyTeamsTitle";
@@ -235,11 +261,30 @@ function createPanel() {
   close.id = "fxLobbyTeamsClose";
   close.textContent = "×";
   close.setAttribute("aria-label", "Close");
+  Object.assign(close.style, {
+    flex: "0 0 auto",
+    width: "22px",
+    height: "22px",
+    padding: "0",
+    border: "1px solid rgba(255, 255, 255, 0.25)",
+    background: "rgba(0, 0, 0, 0.35)",
+    color: "#dbe7f0",
+    font: "inherit",
+    fontSize: "16px",
+    lineHeight: "1",
+    cursor: "pointer",
+  });
 
   header.append(title, close);
 
   const body = document.createElement("div");
   body.id = "fxLobbyTeamsBody";
+  Object.assign(body.style, {
+    flex: "1",
+    minHeight: "0",
+    overflowY: "auto",
+    padding: "7px 10px 9px",
+  });
 
   panel.append(header, body);
   document.body.appendChild(panel);
@@ -269,6 +314,7 @@ export default function initLobbyTeams() {
 
   function closePanel() {
     panel.classList.remove("open");
+    panel.style.display = "none";
     stopRefresh();
   }
 
@@ -355,6 +401,7 @@ export default function initLobbyTeams() {
   function openPanel() {
     invalidSince = null;
     panel.classList.add("open");
+    panel.style.display = "flex";
     positionPanel();
     stopRefresh();
     render();
