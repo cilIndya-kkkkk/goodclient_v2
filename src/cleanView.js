@@ -30,9 +30,13 @@ export default function initCleanView() {
     };
   }
 
-  function hideGameUi() {
+  function syncGameUi() {
     const { game, ui } = gameGlobals();
-    if (game && ui && typeof ui.nE === "function" && game.gG !== true) {
+    if (!game || !ui || typeof ui.nE !== "function") return;
+    const spawnSelection = game.ao === true;
+    if (spawnSelection) {
+      if (game.gG === true) ui.nE(false);
+    } else if (game.gG !== true) {
       ui.nE(true);
     }
   }
@@ -63,8 +67,8 @@ export default function initCleanView() {
 
   function startPolling() {
     if (pollTimer !== null) return;
-    hideGameUi();
-    pollTimer = setInterval(hideGameUi, 500);
+    syncGameUi();
+    pollTimer = setInterval(syncGameUi, 500);
   }
 
   function stopPolling() {

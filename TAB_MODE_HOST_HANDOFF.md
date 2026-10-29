@@ -244,7 +244,7 @@ The `TAB_MODE_HOST_PROMPT.md` refactor has been implemented locally (not pushed 
 - `src/host/main.js` owns `#fxMainFrame`, lazy `#fxBotFrame`, host music and `window.__fxHost`.
 - `src/host/tabMode.js` owns the Bot button, window chrome (`Swap` / `Reload bot` / `Close`), slot-based iframe layout, swap, drag, size/position persistence, status polling and clean-state calls.
 - `src/instance.js` centralizes `isBotInstance()` / `getHost()` / `isEmbedded()`.
-- `src/cleanView.js` hides game UI via `c.gG` + `nr.nE()` polling, adds `body.fx-clean`, and installs the dynamic DPR getter.
+- `src/cleanView.js` hides game UI via `c.gG` + `nr.nE()` polling, adds `body.fx-clean`, and installs the dynamic DPR getter. Exception: while `c.ao === true` (spawn selection), the game UI is shown so the spawn buttons remain usable; it hides again after spawning.
 - Settings are isolated (`fx_settings_bot`; first run copies `fx_settings`). Toolbox positions and the hostfix flag are per-instance; `fx_ui_language` stays shared.
 - Tools variants: main embedded = full + Bot settings + window size sliders; bot = Automation-only; direct `client.html` = full without Bot settings.
 - Music runs only in the host. Client/bot iframes skip it; host forwards iframe pointer/key/touch gestures to the autoplay handler.
