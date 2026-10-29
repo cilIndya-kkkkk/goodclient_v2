@@ -20,7 +20,6 @@ ${insert(`window.__fx.lobbyTeamsHost = {
 };
 (function () {
   var button = dM.kA[0].button;
-  var row = dM.dp;
   var attempts = 0;
   function api() {
     return window.__fx && window.__fx.lobbyTeams;
@@ -33,10 +32,14 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     if (ready && client.setAnchor) client.setAnchor(button);
     return ready;
   }
-  row.addEventListener("click", function (event) {
-    if (event.clientX > button.getBoundingClientRect().right + 4) return;
+  document.addEventListener("click", function (event) {
+    if (!button.isConnected) return;
+    var rect = button.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    if (event.clientX < rect.left || event.clientX > rect.right) return;
+    if (event.clientY < rect.top || event.clientY > rect.bottom) return;
     if (mark()) api().toggle();
-  });
+  }, true);
   mark();
   (function poll() {
     if (mark()) return;
