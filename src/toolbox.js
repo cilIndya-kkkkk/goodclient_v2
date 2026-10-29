@@ -404,14 +404,14 @@ export default function initToolbox(options = {}) {
   widthLabel.textContent = t("Window width");
   const widthSlider = document.createElement("input");
   widthSlider.type = "range";
-  widthSlider.min = "260";
+  widthSlider.min = "320";
   widthSlider.step = "10";
   const widthValue = document.createElement("span");
   const heightLabel = document.createElement("span");
   heightLabel.textContent = t("Window height");
   const heightSlider = document.createElement("input");
   heightSlider.type = "range";
-  heightSlider.min = "190";
+  heightSlider.min = "360";
   heightSlider.step = "10";
   const heightValue = document.createElement("span");
 
@@ -443,8 +443,8 @@ export default function initToolbox(options = {}) {
     const tab = getBotTabMode();
     const box = tab && typeof tab.getRect === "function" ? tab.getRect() : null;
     const viewport = hostViewport();
-    widthSlider.max = String(Math.max(260, Math.round(viewport.width)));
-    heightSlider.max = String(Math.max(190, Math.round(viewport.height)));
+    widthSlider.max = String(Math.max(320, Math.round(viewport.width)));
+    heightSlider.max = String(Math.max(360, Math.round(viewport.height)));
     widthSlider.disabled = !box;
     heightSlider.disabled = !box;
     if (!box) return;

@@ -1162,6 +1162,84 @@ body.fx-host #updateNotification {
 	background: #000;
 }
 
+#fxTabModeControls {
+	flex: 0 0 auto;
+	max-height: 42%;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	padding: 6px 8px;
+	border-top: 1px solid rgba(110, 210, 160, 0.35);
+	background: rgba(15, 25, 21, 0.96);
+	font-size: 11px;
+}
+
+.fx-tabmode-control-row {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	flex-wrap: wrap;
+}
+
+.fx-tabmode-control-row > span {
+	white-space: nowrap;
+}
+
+.fx-tabmode-control-row input[type="range"] {
+	flex: 1;
+	min-width: 80px;
+	margin: 0;
+}
+
+#fxTabModeControls .fx-tabmode-button {
+	flex: 0 0 auto;
+	padding: 2px 7px;
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	background: rgba(0, 0, 0, 0.55);
+	color: #dbe7f0;
+	font: inherit;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+#fxTabModeControls .fx-tabmode-button.active {
+	background: rgba(30, 130, 25, 0.65);
+	border-color: rgba(160, 255, 190, 0.8);
+}
+
+.fx-tabmode-select {
+	min-width: 0;
+	max-width: 100%;
+	padding: 2px 4px;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	background: rgba(0, 0, 0, 0.55);
+	color: #dbe7f0;
+	font: inherit;
+	font-size: 11px;
+}
+
+#fxTabModeHoardStatus {
+	overflow: hidden;
+	color: #9fd8ba;
+	font-size: 11px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#fxTabModeResize {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	z-index: 5;
+	width: 16px;
+	height: 16px;
+	background: linear-gradient(135deg, transparent 50%, rgba(168, 240, 200, 0.8) 50%);
+	cursor: nwse-resize;
+	touch-action: none;
+}
+
 body.fx-clean #fxToolboxToggle,
 body.fx-clean #fxToolbox,
 body.fx-clean #fxMusicToggle,

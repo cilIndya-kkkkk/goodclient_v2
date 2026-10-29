@@ -1,12 +1,13 @@
 import { t } from "../i18n.js";
+import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "../botAttackRate.js";
 
 const RECT_KEY = "fx_tabmode_window_rect";
 const TOGGLE_KEY = "fx_tabmode_toggle_position";
 const LEGACY_RECT_KEY = "fx_tabmode_panel_position";
-const MIN_WIDTH = 260;
-const MIN_HEIGHT = 190;
-const DEFAULT_WIDTH = 460;
-const DEFAULT_HEIGHT = 340;
+const MIN_WIDTH = 320;
+const MIN_HEIGHT = 360;
+const DEFAULT_WIDTH = 520;
+const DEFAULT_HEIGHT = 520;
 const POLL_INTERVAL = 800;
 
 function clamp(value, min, max) {
@@ -142,7 +143,121 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
   const slot = document.createElement("div");
   slot.id = "fxTabModeSlot";
 
-  panel.append(header, slot);
+  const controls = document.createElement("div");
+  controls.id = "fxTabModeControls";
+
+  function makeControlButton(label, handler) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "fx-tabmode-button";
+    button.textContent = label;
+    button.addEventListener("click", handler);
+    return button;
+  }
+
+  function botAction(action) {
+    const fx = getBotFx();
+    const automation = fx && fx.openingAutomation ? fx.openingAutomation : null;
+    if (!automation) return;
+    action(automation);
+    renderStatus();
+  }
+
+  const autoRow = document.createElement("div");
+  autoRow.className = "fx-tabmode-control-row";
+  const allOnButton = makeControlButton(t("All On"), () => botAction((automation) => automation.setAllAutomationEnabled(true)));
+  const allOffButton = makeControlButton(t("All Off"), () => botAction((automation) => automation.setAllAutomationEnabled(false)));
+  const openingButton = makeControlButton(t("Opening"), () => botAction((automation) => automation.toggleOpeningAutomationEnabled()));
+  const infiniteButton = makeControlButton(t("Infinite"), () => botAction((automation) => automation.toggleInfiniteExpansion()));
+  const modeSelect = document.createElement("select");
+  modeSelect.className = "fx-tabmode-select";
+  for (const mode of [
+    { value: "off", label: "Bot Off" },
+    { value: "v20reserve", label: "V20 Reserve" },
+    { value: "best", label: "Land Max" },
+    { value: "messiah", label: "Messiah" },
+  ]) {
+    const option = document.createElement("option");
+    option.value = mode.value;
+    option.textContent = t(mode.label);
+    modeSelect.append(option);
+  }
+  modeSelect.addEventListener("change", () => botAction((automation) => automation.setAutoAttackMode(modeSelect.value)));
+  autoRow.append(allOnButton, allOffButton, openingButton, infiniteButton, modeSelect);
+
+  const spendRow = document.createElement("div");
+  spendRow.className = "fx-tabmode-control-row";
+  const spendLabel = document.createElement("span");
+  spendLabel.textContent = t("Bot send");
+  const spendSlider = document.createElement("input");
+  spendSlider.type = "range";
+  spendSlider.min = "0";
+  spendSlider.max = "100";
+  spendSlider.step = "5";
+  const spendValue = document.createElement("span");
+  spendSlider.addEventListener("input", () => {
+    spendValue.textContent = `${spendSlider.value}%`;
+    botAction((automation) => automation.setBotSpendPercent(Number(spendSlider.value)));
+  });
+  spendRow.append(spendLabel, spendSlider, spendValue);
+
+  const rateRow = document.createElement("div");
+  rateRow.className = "fx-tabmode-control-row";
+  const rateLabel = document.createElement("span");
+  rateLabel.textContent = t("Bot rate");
+  const rateSlider = document.createElement("input");
+  rateSlider.type = "range";
+  rateSlider.min = "0";
+  rateSlider.max = "20";
+  rateSlider.step = "1";
+  const rateValue = document.createElement("span");
+  rateSlider.addEventListener("input", () => {
+    rateValue.textContent = `${rateSlider.value}/cy`;
+    botAction((automation) => automation.setBestAttackIntervalMs(attacksPerCycleToIntervalMs(Number(rateSlider.value))));
+  });
+  rateRow.append(rateLabel, rateSlider, rateValue);
+
+  const hoardRow = document.createElement("div");
+  hoardRow.className = "fx-tabmode-control-row";
+  const hoardButton = makeControlButton(t("Hoard"), () => {
+    const fx = getBotFx();
+    const commander = fx && fx.botCommander ? fx.botCommander : null;
+    if (!commander) return;
+    commander.hoard(!commander.getState().enabled);
+    renderStatus();
+  });
+  const mainPlayerLabel = document.createElement("span");
+  mainPlayerLabel.textContent = t("Main player");
+  const mainPlayerSelect = document.createElement("select");
+  mainPlayerSelect.className = "fx-tabmode-select";
+  let mainPlayersKey = null;
+  mainPlayerSelect.addEventListener("change", () => {
+    const fx = getBotFx();
+    const commander = fx && fx.botCommander ? fx.botCommander : null;
+    if (!commander) return;
+    if (!mainPlayerSelect.value) {
+      commander.setMainPlayer("");
+      renderStatus();
+      return;
+    }
+    const id = Number(mainPlayerSelect.value);
+    const player = commander.getPlayerList().find((item) => item.id === id);
+    commander.setMainPlayer(player ? { id: player.id, name: player.name } : id);
+    renderStatus();
+  });
+  hoardRow.append(hoardButton, mainPlayerLabel, mainPlayerSelect);
+
+  const hoardStatus = document.createElement("div");
+  hoardStatus.id = "fxTabModeHoardStatus";
+  hoardStatus.textContent = t("Hoard Off");
+
+  controls.append(autoRow, spendRow, rateRow, hoardRow, hoardStatus);
+
+  const resizeHandle = document.createElement("div");
+  resizeHandle.id = "fxTabModeResize";
+  resizeHandle.title = t("Resize");
+
+  panel.append(header, slot, controls, resizeHandle);
   document.body.append(toggle, panel);
 
   function ensureBotFrame() {
@@ -251,7 +366,78 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     }
   }
 
+  function renderControls() {
+    const fx = getBotFx();
+    const automation = fx && fx.openingAutomation ? fx.openingAutomation : null;
+    if (!automation) {
+      for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton]) button.disabled = true;
+      modeSelect.disabled = true;
+      spendSlider.disabled = true;
+      rateSlider.disabled = true;
+      mainPlayerSelect.disabled = true;
+      hoardStatus.textContent = t("Bot not loaded");
+      return;
+    }
+
+    const settings = fx.settings || {};
+    const mode = automation.getAutoAttackMode();
+    for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton]) button.disabled = false;
+    modeSelect.disabled = false;
+    spendSlider.disabled = false;
+    rateSlider.disabled = false;
+    allOnButton.classList.toggle("active", Boolean(settings.openingAutomationEnabled && settings.infiniteExpansionEnabled && mode !== "off"));
+    allOffButton.classList.toggle("active", !settings.openingAutomationEnabled && !settings.infiniteExpansionEnabled && mode === "off");
+    openingButton.classList.toggle("active", Boolean(settings.openingAutomationEnabled));
+    infiniteButton.classList.toggle("active", Boolean(settings.infiniteExpansionEnabled));
+    if (document.activeElement !== modeSelect) modeSelect.value = mode;
+
+    const spend = automation.getBotSpendPercent();
+    if (document.activeElement !== spendSlider) spendSlider.value = String(spend);
+    spendValue.textContent = `${spend}%`;
+    const rate = intervalMsToAttacksPerCycle(automation.getBestAttackIntervalMs());
+    if (document.activeElement !== rateSlider) rateSlider.value = String(rate);
+    rateValue.textContent = `${rate}/cy`;
+
+    const commander = fx.botCommander || null;
+    hoardButton.disabled = !commander;
+    if (!commander) {
+      mainPlayerSelect.disabled = true;
+      hoardStatus.textContent = t("Bot not loaded");
+      return;
+    }
+
+    const state = commander.getState();
+    hoardButton.textContent = state.enabled ? t("Stop hoard") : t("Hoard");
+    hoardButton.classList.toggle("active", Boolean(state.enabled));
+    const players = commander.getPlayerList();
+    const optionsKey = players.map((player) => `${player.id}:${player.name}`).join("|");
+    if (optionsKey !== mainPlayersKey) {
+      mainPlayersKey = optionsKey;
+      mainPlayerSelect.textContent = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("Select main player");
+      mainPlayerSelect.append(placeholder);
+      for (const player of players) {
+        const option = document.createElement("option");
+        option.value = String(player.id);
+        option.textContent = `${player.name} #${player.id}`;
+        option.dataset.noI18n = "1";
+        mainPlayerSelect.append(option);
+      }
+    }
+    const selected = players.find((player) => player.name === state.mainPlayerName)
+      || players.find((player) => player.id === state.mainPlayerId);
+    mainPlayerSelect.value = selected ? String(selected.id) : "";
+    mainPlayerSelect.disabled = !players.length;
+    hoardStatus.textContent =
+      `${t("Hoard")} ${state.enabled ? t("On") : t("Off")} · ` +
+      `${t("Density")} ${Number(state.density || 0).toFixed(1)} · ` +
+      `${state.mainPlayerName || t("No main player")}`;
+  }
+
   function renderStatus() {
+    renderControls();
     const fx = getBotFx();
     const automation = fx && fx.openingAutomation ? fx.openingAutomation : null;
     if (!botFrame) {
@@ -451,6 +637,37 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
 
   header.addEventListener("pointerup", finishPanelDrag);
   header.addEventListener("pointercancel", finishPanelDrag);
+
+  let resizeDrag = null;
+  resizeHandle.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    resizeDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      width: rect.width,
+      height: rect.height,
+    };
+    resizeHandle.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  });
+  resizeHandle.addEventListener("pointermove", (event) => {
+    if (!resizeDrag || resizeDrag.pointerId !== event.pointerId) return;
+    rect = clampRect({
+      left: rect.left,
+      top: rect.top,
+      width: resizeDrag.width + event.clientX - resizeDrag.startX,
+      height: resizeDrag.height + event.clientY - resizeDrag.startY,
+    });
+    applyRect();
+  });
+  function finishResize(event) {
+    if (!resizeDrag || resizeDrag.pointerId !== event.pointerId) return;
+    resizeDrag = null;
+    saveRect(rect);
+  }
+  resizeHandle.addEventListener("pointerup", finishResize);
+  resizeHandle.addEventListener("pointercancel", finishResize);
 
   swapButton.addEventListener("click", swap);
   reloadButton.addEventListener("click", reload);

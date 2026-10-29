@@ -164,6 +164,7 @@ const ZH = {
   "Select main player": "选择主玩家",
   "No main player": "未选择主玩家",
   "Density": "密度",
+  "Resize": "调整大小",
   "Log": "日志",
   "Opening Automation": "开图自动化",
   "Music": "音乐",

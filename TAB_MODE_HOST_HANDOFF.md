@@ -264,6 +264,6 @@ Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention 
 - Game support command exposed as `__fx.openingAutomation.sendSupport(target, percent)`; g table now includes `GameCommandSender.sendSupport` (`a5f`) and validates it at build time.
 - `src/botCommander.js` provides `__fx.botCommander` with `hoard(on)`, `setMainPlayer`, `getPlayerList`, `getState`.
 - Hoard disables opening/infinite/bot attack, restores the previous state on off, and sends 10% support when `troops/land >= 130` at most every 6s.
-- Tools → Bot settings has `Hoard`, a `Main player` selector from the bot's live player list, and a status line.
+- The host Tab Mode window has the automation controls below the bot (All On/Off, Opening, Infinite, bot mode, Bot send/Bot rate sliders) plus Hoard, main-player selector, density status, and a bottom-right resize handle. Tools → Bot settings still has the same hoard controls and window size sliders.
 - Main player is stored by raw name and re-resolved each game; support is same-team only.
-- Pending user confirmation: 130 absolute vs percentage, 6s cadence, and whether hoard belongs in the Tab Mode window too.
+- Pending user confirmation: 130 absolute vs percentage, 6s cadence. The hoard controls now live in the Tab Mode window as requested.
