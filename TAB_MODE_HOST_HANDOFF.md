@@ -256,4 +256,4 @@ Build: `npm run build-client` and `npm run build-only` pass. Webpack now has two
 
 Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention to: bot tick while closed, no reload on close/reopen/swap, main never hidden when closing while swapped, clean/DPR on swap, Tools size sliders, and host-only music surviving swaps/reloads.
 
-Not pushed yet. Local commits: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6).
+Not pushed yet. Local commits: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).

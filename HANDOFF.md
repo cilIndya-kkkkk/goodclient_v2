@@ -52,7 +52,7 @@ Server is running from Termux home on port 8001:
   - Tools variants: main embedded = full Tools + Bot settings + width/height sliders; bot = Automation-only Tools (no settings/opening presets/display/theme/status/music/FX Settings); direct `client.html` = full Tools without Bot settings. Music only runs in the host; embedded main and bot skip it, and host forwards iframe gestures to the music autoplay handler.
   - Embedded fixes: update-checker `forceReload` and fullscreen go through `__fxHost`; custom-lobby "Copy link" uses `__fxHost.getTopUrl()`; Tools music button opens host music.
   - Build: webpack entries `fxClient -> fx.bundle.js` and `host -> host.bundle.js`; dynamic chunks use content hashes; `index.html`/`client.html`/`bot.html` are stamped with `buildTimestamp`; `build-only` passes.
-  - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6).
+  - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
   - Not pushed yet. Manual test checklist is in `TAB_MODE_HOST_PROMPT.md` §6 / the final report.
 - Remote GitHub `goodclient_v2` was last pushed before the host refactor; the local branch is ahead. HTTPS push is unreliable on this network (SSL EOF / connect failures). When the user asks to deploy, use the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
