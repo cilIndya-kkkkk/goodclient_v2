@@ -400,6 +400,60 @@ export default function initToolbox(options = {}) {
   );
 
   const botSection = makeSection(t("Bot settings"));
+  const widthLabel = document.createElement("span");
+  widthLabel.textContent = t("Window width");
+  const widthSlider = document.createElement("input");
+  widthSlider.type = "range";
+  widthSlider.min = "260";
+  widthSlider.step = "10";
+  const widthValue = document.createElement("span");
+  const heightLabel = document.createElement("span");
+  heightLabel.textContent = t("Window height");
+  const heightSlider = document.createElement("input");
+  heightSlider.type = "range";
+  heightSlider.min = "190";
+  heightSlider.step = "10";
+  const heightValue = document.createElement("span");
+
+  function hostViewport() {
+    try {
+      if (window.parent && window.parent !== window) {
+        return { width: window.parent.innerWidth, height: window.parent.innerHeight };
+      }
+    } catch (_error) {}
+    return { width: window.innerWidth, height: window.innerHeight };
+  }
+
+  function applyHostSize() {
+    const tab = getBotTabMode();
+    if (!tab || typeof tab.setSize !== "function") return;
+    tab.setSize(Number(widthSlider.value), Number(heightSlider.value));
+  }
+
+  widthSlider.addEventListener("input", () => {
+    widthValue.textContent = `${widthSlider.value}px`;
+    applyHostSize();
+  });
+  heightSlider.addEventListener("input", () => {
+    heightValue.textContent = `${heightSlider.value}px`;
+    applyHostSize();
+  });
+
+  function updateSizeControls() {
+    const tab = getBotTabMode();
+    const box = tab && typeof tab.getRect === "function" ? tab.getRect() : null;
+    const viewport = hostViewport();
+    widthSlider.max = String(Math.max(260, Math.round(viewport.width)));
+    heightSlider.max = String(Math.max(190, Math.round(viewport.height)));
+    widthSlider.disabled = !box;
+    heightSlider.disabled = !box;
+    if (!box) return;
+    widthSlider.value = String(Math.round(box.width));
+    heightSlider.value = String(Math.round(box.height));
+    widthValue.textContent = `${Math.round(box.width)}px`;
+    heightValue.textContent = `${Math.round(box.height)}px`;
+  }
+
   const botStatusLine = document.createElement("div");
   botStatusLine.className = "fx-toolbox-status";
   botStatusLine.textContent = t("Bot not loaded");
@@ -441,9 +495,11 @@ export default function initToolbox(options = {}) {
     botStatusLine,
     makeRow(botReloadButton),
     makeRow(botAllOnButton, botAllOffButton, botOpeningButton, botInfiniteButton, tabBotModeSelect),
+    makeRow(widthLabel, widthSlider, widthValue),
+    makeRow(heightLabel, heightSlider, heightValue),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
-      textContent: t("Click the Bot button to load the bot. These controls apply only to that bot.")
+      textContent: t("Click the Bot button to open Tab Mode. These controls apply only to that bot.")
     }))
   );
 
@@ -698,6 +754,7 @@ export default function initToolbox(options = {}) {
       }
       botReloadButton.disabled = !getBotTabMode();
       tabBotModeSelect.disabled = !botLoaded;
+      updateSizeControls();
 
       if (!getBotTabMode()) {
         botStatusLine.textContent = t("Tab Mode unavailable");

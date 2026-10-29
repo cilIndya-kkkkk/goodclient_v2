@@ -323,3 +323,17 @@ Phase 1 implemented (needs browser test):
 - i18n and CSS updated; `npm run build-client` passes.
 
 Next: manual Phase 1 test, then Phase 2 (clean/no-UI view for the bot), then Phase 3 command layer (attack player/team, hoard, send ships).
+
+## 12. Host refactor supersedes the in-client Tab Mode (2026-10-29)
+
+The in-client single-iframe Tab Mode described in section 11 has been replaced by the host-page architecture in `TAB_MODE_HOST_PROMPT.md`:
+
+- `index.html` host + `client.html` main iframe + `bot.html` bot iframe.
+- Host owns all iframe layout and the Bot window; no postMessage layer is needed (same origin).
+- Swap only changes CSS layout + cleanView state; no iframe is reparented or reloaded.
+- Music runs only in the host; client/bot iframes skip it.
+- Settings are isolated with `fx_settings_bot`; Tools has full/bot variants.
+- `src/cleanView.js` provides the clean view + dynamic DPR controller.
+- The old `src/tabMode.js` in-client implementation was deleted.
+
+See `HANDOFF.md` and `TAB_MODE_HOST_HANDOFF.md` for current status and the test checklist. Phase 3 (attack/hoard/send ships) remains next.

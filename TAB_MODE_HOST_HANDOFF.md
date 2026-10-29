@@ -233,3 +233,27 @@ This removes the update prompt and the “turns into full client” failure with
 - `src/tabMode.js`: `isTabBotInstance()` accepts `bot=1`, legacy `tabbot=1`, or a path ending in `bot.html`. The iframe loads `bot.html?bot=1&v=<stamp>`; the stamp comes from the `fx.bundle.js?<stamp>` script tag, and `relay` is passed through.
 - `npm run build-client` and `npm run build-only` both pass. No browser test has been run in this environment yet.
 - Still to do: the `tab.html` host, swapping, and the clean-view API (sections 4.1–4.3), pending answers to section 7.
+
+### Status (2026-10-29, later): full host refactor implemented
+
+The `TAB_MODE_HOST_PROMPT.md` refactor has been implemented locally (not pushed yet). Current shape:
+
+- `index.html` is the thin host (SW + update prompt + `host.bundle.js`).
+- `client.html` is the main client iframe (`?host=1&v=<stamp>`); it can still be opened standalone.
+- `bot.html` is the minimal bot iframe (`?bot=1&v=<stamp>`) with no SW/update prompt.
+- `src/host/main.js` owns `#fxMainFrame`, lazy `#fxBotFrame`, host music and `window.__fxHost`.
+- `src/host/tabMode.js` owns the Bot button, window chrome (`Swap` / `Reload bot` / `Close`), slot-based iframe layout, swap, drag, size/position persistence, status polling and clean-state calls.
+- `src/instance.js` centralizes `isBotInstance()` / `getHost()` / `isEmbedded()`.
+- `src/cleanView.js` hides game UI via `c.gG` + `nr.nE()` polling, adds `body.fx-clean`, and installs the dynamic DPR getter.
+- Settings are isolated (`fx_settings_bot`; first run copies `fx_settings`). Toolbox positions and the hostfix flag are per-instance; `fx_ui_language` stays shared.
+- Tools variants: main embedded = full + Bot settings + window size sliders; bot = Automation-only; direct `client.html` = full without Bot settings.
+- Music runs only in the host. Client/bot iframes skip it; host forwards iframe pointer/key/touch gestures to the autoplay handler.
+- Embedded client fixes: update-checker reload/fullscreen go through `__fxHost`; custom-lobby copy link uses host URL; Tools music button opens host music.
+
+Close behavior: the bot iframe is **not** unloaded and not `display:none`. It uses `opacity:0` + `pointer-events:none` + `inert`, keeps its last slot size, and stays in the DOM so automation/ticks can continue. This was chosen over `visibility:hidden`/`display:none` to avoid throttling; it still needs a real browser tick test.
+
+Build: `npm run build-client` and `npm run build-only` pass. Webpack now has two entries (`fx.bundle.js`, `host.bundle.js`), dynamic chunks use content hashes, and `index/client/bot` are stamped. Only `index.html` has SW registration/update markup.
+
+Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention to: bot tick while closed, no reload on close/reopen/swap, main never hidden when closing while swapped, clean/DPR on swap, Tools size sliders, and host-only music surviving swaps/reloads.
+
+Not pushed yet. Local commits: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus the final stage-6 commit.

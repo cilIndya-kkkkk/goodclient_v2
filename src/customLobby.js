@@ -1,4 +1,5 @@
 import WindowManager from "./windowManager.js";
+import { getHost } from "./instance.js";
 
 const customLobbiesUnavailable = false;
 //const socketURL = "ws://localhost:8080/";
@@ -152,7 +153,8 @@ function createButton(text, action) {
 const startButton = createButton("Start game", startGame);
 const leaveButton = createButton("Leave lobby", () => leaveLobby());
 const copyLinkButton = createButton("Copy link", () => {
-    navigator.clipboard.writeText(`${window.location.href}#lobby=${currentCode}`);
+    const base = getHost()?.getTopUrl?.() || window.location.href;
+    navigator.clipboard.writeText(`${base}#lobby=${currentCode}`);
     copyLinkButton.textContent = "Copied!";
     setTimeout(() => copyLinkButton.textContent = "Copy link", 1000);
 });

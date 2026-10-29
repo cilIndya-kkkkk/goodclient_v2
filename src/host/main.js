@@ -87,9 +87,9 @@ const mainFrame = document.createElement("iframe");
 mainFrame.id = "fxMainFrame";
 mainFrame.title = "GoodClient";
 mainFrame.allow = "autoplay; fullscreen";
+attachGestureForwarding(mainFrame);
 mainFrame.src = frameUrl("client.html", { host: "1" }) + (location.hash || "");
 document.body.appendChild(mainFrame);
-attachGestureForwarding(mainFrame);
 
 const tabMode = initHostTabMode({ mainFrame, frameUrl, attachGestureForwarding });
 window.__fxHost.tabMode = tabMode;

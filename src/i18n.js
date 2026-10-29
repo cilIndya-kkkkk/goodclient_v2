@@ -274,6 +274,7 @@ const ZH = {
   "Open Tab Mode": "打开分屏模式",
   "Reload bot": "重载机器人",
   "Click the Bot button to load the bot. These controls apply only to that bot.": "点击 Bot 按钮加载机器人。这些控制只作用于该机器人。",
+  "Click the Bot button to open Tab Mode. These controls apply only to that bot.": "点击 Bot 按钮打开分屏模式。这些控制只作用于该机器人。",
   "These controls apply only to the bot shown in Tab Mode.": "这些控制只作用于分屏模式中显示的机器人。",
   "Team split": "大厅分队",
   "No lobby data": "暂无大厅数据",

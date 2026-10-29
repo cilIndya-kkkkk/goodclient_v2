@@ -151,7 +151,6 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     botFrame.id = "fxBotFrame";
     botFrame.title = "Bot";
     botFrame.allow = "autoplay; fullscreen";
-    botFrame.src = frameUrl("bot.html", { bot: "1" });
     botFrame.style.left = "0";
     botFrame.style.top = "0";
     botFrame.style.width = "0";
@@ -165,6 +164,7 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
       applyCleanStates();
       layout();
     });
+    botFrame.src = frameUrl("bot.html", { bot: "1" });
     return botFrame;
   }
 
