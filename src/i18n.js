@@ -313,6 +313,7 @@ const PATTERNS = [
     const mode = { off: "关闭", v20reserve: "V20 保留", best: "最大领地", messiah: "弥赛亚" }[m[4]] || m[4];
     return `tick ${m[1]} · 开图 ${m[2] === "on" ? "开" : "关"} · 无限 ${m[3] === "on" ? "开" : "关"} · 机器人 ${mode} · 攻击 ${m[5]}`;
   }],
+  [/^Bot ready · tick (-?\d+) · Opening (On|Off) · Infinite (On|Off) · Bot (.+)$/, (m) => `机器人就绪 · tick ${m[1]} · 开图 ${m[2] === "On" ? "开" : "关"} · 无限 ${m[3] === "On" ? "开" : "关"} · 机器人 ${m[4]}`],
   [/^(.*) · ships (\d+) · paths ([\d-]+) · routes (\d+)$/, (m) => `${t(m[1])} · 船只 ${m[2]} · 路径 ${m[3]} · 路线 ${m[4]}`],
   [/^in FX Client v(.+)$/, (m) => `FX 客户端 v${m[1]}`],
   [/^FX Client v(.+)$/, (m) => `FX 客户端 v${m[1]}`],
