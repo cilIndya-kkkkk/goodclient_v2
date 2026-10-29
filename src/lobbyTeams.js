@@ -223,10 +223,18 @@ export function solveTeamGroups(players, teamCount) {
 
 function createWindow() {
   const element = WindowManager.create({ name: "lobbyTeams", classes: "scrollable selectable", closable: false });
+  element.style.width = "min(360px, 90vw)";
+  element.style.maxHeight = "55vh";
+  element.style.marginTop = "10vh";
+  element.style.padding = "10px 12px";
+  element.style.fontSize = "14px";
+  element.style.borderWidth = "2px";
 
   const title = document.createElement("h1");
   title.id = "fxLobbyTeamsTitle";
   title.textContent = t("Team split");
+  title.style.fontSize = "18px";
+  title.style.margin = "0 0 8px";
 
   const body = document.createElement("div");
   body.id = "fxLobbyTeamsBody";
