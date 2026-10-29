@@ -18,7 +18,18 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     return { mode: room.kc, ready: ready, players: players };
   }
 };
-if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerToggleButton) {
-  window.__fx.lobbyTeams.registerToggleButton(dM.kA[0].button, dM.dp);
-}`)}`)
+(function () {
+  var button = dM.kA[0].button;
+  var row = dM.dp;
+  var attempts = 0;
+  button.classList.add("fx-lobby-teams-toggle");
+  function register() {
+    if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerToggleButton) {
+      window.__fx.lobbyTeams.registerToggleButton(button, row);
+      return;
+    }
+    if (++attempts < 100) setTimeout(register, 100);
+  }
+  register();
+})();`)}`)
 });

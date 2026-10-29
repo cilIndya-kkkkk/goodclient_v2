@@ -1042,3 +1042,13 @@ label.checkbox .checkmark:after {
 	color: #8aa5a0;
 	font-size: 12px;
 }
+
+.fx-lobby-teams-toggle {
+	cursor: pointer;
+}
+
+.fx-lobby-teams-toggle::after {
+	content: " ▾";
+	font-size: 0.8em;
+	opacity: 0.8;
+}
