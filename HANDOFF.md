@@ -35,7 +35,7 @@ Server is running from Termux home on port 8001:
   - Reproduces the game's TeamManager assignment: nearest team color, clan grouping, second-choice fill. Validated against the game's own function with 200 random cases (0 differences).
   - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.registerToggleButton(...)` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.
-- Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. Earlier pushes had github.com git/TLS problems; if it recurs, the old workaround was a forced-IP Node HTTPS request (no account password).
+- Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
 
