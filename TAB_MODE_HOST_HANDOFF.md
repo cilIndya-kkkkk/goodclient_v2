@@ -257,3 +257,13 @@ Build: `npm run build-client` and `npm run build-only` pass. Webpack now has two
 Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention to: bot tick while closed, no reload on close/reopen/swap, main never hidden when closing while swapped, clean/DPR on swap, Tools size sliders, and host-only music surviving swaps/reloads.
 
 2026-10-29: user confirmed the host page and basic Tab Mode open work in a real browser (port 8002). Not pushed yet. Local commits: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
+
+
+### Hoard first pass (2026-10-29)
+
+- Game support command exposed as `__fx.openingAutomation.sendSupport(target, percent)`; g table now includes `GameCommandSender.sendSupport` (`a5f`) and validates it at build time.
+- `src/botCommander.js` provides `__fx.botCommander` with `hoard(on)`, `setMainPlayer`, `getPlayerList`, `getState`.
+- Hoard disables opening/infinite/bot attack, restores the previous state on off, and sends 10% support when `troops/land >= 130` at most every 6s.
+- Tools → Bot settings has `Hoard`, a `Main player` selector from the bot's live player list, and a status line.
+- Main player is stored by raw name and re-resolved each game; support is same-team only.
+- Pending user confirmation: 130 absolute vs percentage, 6s cadence, and whether hoard belongs in the Tab Mode window too.

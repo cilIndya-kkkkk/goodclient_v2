@@ -1,4 +1,5 @@
 import openingAutomation, { OpeningAutomationInput } from './openingAutomation.js';
+import initBotCommander from './botCommander.js';
 import initAutomationControls from './automationControls.js';
 import initToolbox from './toolbox.js';
 import initMusicPlayer from './musicPlayer.js';
@@ -82,6 +83,7 @@ __fx.followedAccounts = followedAccounts;
 
 __fx.openingAutomation = openingAutomation;
 __fx.OpeningAutomationInput = OpeningAutomationInput;
+__fx.botCommander = isTabBot ? initBotCommander() : null;
 __fx.automationControls = isTabBot ? null : initAutomationControls();
 __fx.theme = isTabBot ? null : initTheme();
 __fx.shipRoutes = isTabBot ? null : initShipRoutes();

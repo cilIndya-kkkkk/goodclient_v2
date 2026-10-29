@@ -21,6 +21,7 @@ const g = {
   getAttackValue: "q9",
   gameCommandSender: "a1M",
   sendAttack: "xn",
+  sendSupport: "a5f",
   cancelAttack: "xr",
   canAttack: "a1W",
   mapIsRendered: "u4",
@@ -45,6 +46,7 @@ function applyOpeningAutomation(modUtils) {
     [`${g.attackManager}.${g.getAttackTarget}(`, "AttackManager.getAttackTarget"],
     [`${g.attackManager}.${g.getAttackValue}(`, "AttackManager.getAttackValue"],
     [`${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack}(`, "GameCommandSender.sendAttack"],
+    [`${g.protocolHandler}.${g.gameCommandSender}.${g.sendSupport}(`, "GameCommandSender.sendSupport"],
     [`${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack}(`, "GameCommandSender.cancelAttack"],
     [`${g.teamUtils}.${g.canAttack}(`, "TeamUtils.canAttack"],
     [`${dict.mapHolder}.${g.mapIsRendered}`, "MapManager.mapIsRendered"],
@@ -281,6 +283,26 @@ function applyOpeningAutomation(modUtils) {
                 var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
                 if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack} === "function") {
                     ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack}(sliderValue, target);
+                    return true;
+                }
+                return false;
+            };
+            __fx.openingAutomation.sendSupport=(target, percent)=> {
+                if (${dict.game}.${dict.gIsReplay}) return false;
+                if (!${dict.game}.${dict.gIsTeamGame}) return false;
+                var player = ${dict.game}.${dict.playerId};
+                target = Number(target);
+                var maxPlayers = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                if (!isFinite(target) || target < 0 || target >= maxPlayers || target === player) return false;
+                if ((${dict.playerData}.${dict.playerTerritories}[target] || 0) <= 0) return false;
+                if (typeof ${g.teamUtils} === "undefined" || typeof ${g.teamUtils}.${g.canAttack} !== "function") return false;
+                if (${g.teamUtils}.${g.canAttack}(player, target)) return false;
+                percent = Number(percent);
+                if (!isFinite(percent)) percent = 0.1;
+                percent = Math.max(0, Math.min(1, percent));
+                var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
+                if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.sendSupport} === "function") {
+                    ${g.protocolHandler}.${g.gameCommandSender}.${g.sendSupport}(sliderValue, target);
                     return true;
                 }
                 return false;
