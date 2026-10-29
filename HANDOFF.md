@@ -33,7 +33,8 @@ Server is running from Termux home on port 8001:
   - Uses only ready players, and only for team modes (`kc < 7`, 2-8 teams). Refreshes every 500 ms while open; closes automatically when leaving team mode/lobby.
   - The panel is display-only: it is not draggable and does not resize itself after opening.
   - Reproduces the game's TeamManager assignment: nearest team color, clan grouping, second-choice fill. Validated against the game's own function with 200 random cases (0 differences).
-  - Trigger uses the current-game info button and falls back to the whole info row (`dM.dp`) with a left-side hit test; clicks on the right/next-game info are ignored. The info button gets a `▾` marker when the hook is registered, and registration retries for 10s if the client API is not ready yet.
+  - The game patch now attaches the click listener directly to the info row (`dM.dp`, left-side hit test) and calls `__fx.lobbyTeams.toggle()`; it no longer depends on client registration timing. Clicks on the right/next-game info are ignored.
+  - The info button shows `▾` when the client API is ready, or `!` if `__fx.lobbyTeams.toggle` is missing (usually a stale/mixed client bundle). If the panel opens but lobby data is missing, it shows `No lobby data` for 4s before closing.
   - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.registerToggleButton(...)` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.
 - Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).

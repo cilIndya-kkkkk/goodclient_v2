@@ -1043,12 +1043,19 @@ label.checkbox .checkmark:after {
 	font-size: 12px;
 }
 
-.fx-lobby-teams-toggle {
+.fx-lobby-teams-ready,
+.fx-lobby-teams-missing {
 	cursor: pointer;
 }
 
-.fx-lobby-teams-toggle::after {
+.fx-lobby-teams-ready::after {
 	content: " ▾";
 	font-size: 0.8em;
 	opacity: 0.8;
+}
+
+.fx-lobby-teams-missing::after {
+	content: " !";
+	color: #ff8a8a;
+	font-size: 0.9em;
 }

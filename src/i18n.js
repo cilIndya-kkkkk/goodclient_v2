@@ -257,6 +257,8 @@ const ZH = {
   "Players": "玩家",
   "Team": "队伍",
   "Team split": "大厅分队",
+  "No lobby data": "暂无大厅数据",
+  "Not a team lobby": "当前不是团队大厅",
   "No ready players": "暂无已准备玩家",
   "Unassigned": "未分配",
   "Player": "玩家",

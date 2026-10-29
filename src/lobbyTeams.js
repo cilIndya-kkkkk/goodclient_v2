@@ -253,6 +253,7 @@ export default function initLobbyTeams() {
   let toggleRow = null;
   let toggleHandler = null;
   let refreshTimer = null;
+  let invalidSince = null;
 
   function hostState() {
     return window.__fx?.lobbyTeamsHost?.getState?.() || null;
@@ -295,9 +296,20 @@ export default function initLobbyTeams() {
   function render() {
     const state = hostState();
     if (!state || state.mode >= 7) {
-      closePanel();
+      if (invalidSince === null) invalidSince = Date.now();
+      if (Date.now() - invalidSince > 4000) {
+        closePanel();
+        return;
+      }
+      title.textContent = t("Team split");
+      body.textContent = "";
+      const message = document.createElement("div");
+      message.className = "fx-lobby-teams-empty";
+      message.textContent = t(!state ? "No lobby data" : "Not a team lobby");
+      body.appendChild(message);
       return;
     }
+    invalidSince = null;
 
     title.textContent = `${t("Team split")} · ${state.ready}`;
     body.textContent = "";
@@ -339,11 +351,7 @@ export default function initLobbyTeams() {
   }
 
   function openPanel() {
-    const state = hostState();
-    if (!state || state.mode >= 7) {
-      closePanel();
-      return;
-    }
+    invalidSince = null;
     panel.classList.add("open");
     positionPanel();
     stopRefresh();
@@ -384,5 +392,12 @@ export default function initLobbyTeams() {
 
   window.addEventListener("resize", positionPanel);
 
-  return { registerToggleButton, close: closePanel };
+  return {
+    toggle: togglePanel,
+    setAnchor(button) {
+      toggleButton = button || null;
+    },
+    registerToggleButton,
+    close: closePanel,
+  };
 }

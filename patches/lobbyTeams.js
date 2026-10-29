@@ -22,14 +22,25 @@ ${insert(`window.__fx.lobbyTeamsHost = {
   var button = dM.kA[0].button;
   var row = dM.dp;
   var attempts = 0;
-  button.classList.add("fx-lobby-teams-toggle");
-  function register() {
-    if (window.__fx && window.__fx.lobbyTeams && window.__fx.lobbyTeams.registerToggleButton) {
-      window.__fx.lobbyTeams.registerToggleButton(button, row);
-      return;
-    }
-    if (++attempts < 100) setTimeout(register, 100);
+  function api() {
+    return window.__fx && window.__fx.lobbyTeams;
   }
-  register();
+  function mark() {
+    var client = api();
+    var ready = Boolean(client && client.toggle);
+    button.classList.remove(ready ? "fx-lobby-teams-missing" : "fx-lobby-teams-ready");
+    button.classList.add(ready ? "fx-lobby-teams-ready" : "fx-lobby-teams-missing");
+    if (ready && client.setAnchor) client.setAnchor(button);
+    return ready;
+  }
+  row.addEventListener("click", function (event) {
+    if (event.clientX > button.getBoundingClientRect().right + 4) return;
+    if (mark()) api().toggle();
+  });
+  mark();
+  (function poll() {
+    if (mark()) return;
+    if (++attempts < 100) setTimeout(poll, 100);
+  })();
 })();`)}`)
 });
