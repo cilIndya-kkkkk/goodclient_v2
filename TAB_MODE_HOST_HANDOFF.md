@@ -262,8 +262,8 @@ Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention 
 ### Hoard first pass (2026-10-29)
 
 - Game support command exposed as `__fx.openingAutomation.sendSupport(target, percent)`; g table now includes `GameCommandSender.sendSupport` (`a5f`) and validates it at build time.
-- `src/botCommander.js` provides `__fx.botCommander` with `hoard(on)`, `setMainPlayer`, `getPlayerList`, `getState`.
-- Hoard disables opening/infinite/bot attack, restores the previous state on off, and sends 10% support when `troops/land >= 130` at most every 6s.
-- The host Tab Mode window has the automation controls below the bot (All On/Off, Opening, Infinite, bot mode, Bot send/Bot rate sliders) plus Hoard, main-player selector, density status, and a bottom-right resize handle. Tools → Bot settings still has the same hoard controls and window size sliders.
-- Main player is stored by raw name and re-resolved each game; support is same-team only.
+- `src/botCommander.js` provides `__fx.botCommander` with map-target selection (`startSelection` / `cancelSelection` / `confirmSelection` / `stopHoard`) and state. `__fx.botMap.playerAt(clientX, clientY)` resolves the clicked player; `canSupport` / `getMaxSupportPercent` come from the game's own support math.
+- Hoard is map-selected: press Hoard, click a teammate on the bot map, then click the green Donate button. If density at confirmation is below 130 it donates once (10% or max transferable); if >=130 it donates initially and retries every 6s while density stays >=130. It disables opening/infinite/bot attack and restores the previous state when stopped.
+- The host Tab Mode window has the automation controls below the bot (All On/Off, Opening, Infinite, bot mode, Bot send/Bot rate sliders) plus Hoard, density/target status, and a bottom-right resize handle. There is no main-player dropdown; selection is done on the map.
+- Main player is stored by raw name and re-resolved each game; support is same-team only. The green Donate button appears only for a same-team target with a valid transferable amount.
 - Pending user confirmation: 130 absolute vs percentage, 6s cadence. The hoard controls now live in the Tab Mode window as requested.

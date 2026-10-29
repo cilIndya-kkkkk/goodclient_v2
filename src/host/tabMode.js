@@ -223,29 +223,13 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     const fx = getBotFx();
     const commander = fx && fx.botCommander ? fx.botCommander : null;
     if (!commander) return;
-    commander.hoard(!commander.getState().enabled);
+    const state = commander.getState();
+    if (state.selecting) commander.cancelSelection();
+    else if (state.enabled) commander.stopHoard();
+    else commander.startSelection();
     renderStatus();
   });
-  const mainPlayerLabel = document.createElement("span");
-  mainPlayerLabel.textContent = t("Main player");
-  const mainPlayerSelect = document.createElement("select");
-  mainPlayerSelect.className = "fx-tabmode-select";
-  let mainPlayersKey = null;
-  mainPlayerSelect.addEventListener("change", () => {
-    const fx = getBotFx();
-    const commander = fx && fx.botCommander ? fx.botCommander : null;
-    if (!commander) return;
-    if (!mainPlayerSelect.value) {
-      commander.setMainPlayer("");
-      renderStatus();
-      return;
-    }
-    const id = Number(mainPlayerSelect.value);
-    const player = commander.getPlayerList().find((item) => item.id === id);
-    commander.setMainPlayer(player ? { id: player.id, name: player.name } : id);
-    renderStatus();
-  });
-  hoardRow.append(hoardButton, mainPlayerLabel, mainPlayerSelect);
+  hoardRow.append(hoardButton);
 
   const hoardStatus = document.createElement("div");
   hoardStatus.id = "fxTabModeHoardStatus";
@@ -374,7 +358,6 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
       modeSelect.disabled = true;
       spendSlider.disabled = true;
       rateSlider.disabled = true;
-      mainPlayerSelect.disabled = true;
       hoardStatus.textContent = t("Bot not loaded");
       return;
     }
@@ -401,39 +384,22 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     const commander = fx.botCommander || null;
     hoardButton.disabled = !commander;
     if (!commander) {
-      mainPlayerSelect.disabled = true;
       hoardStatus.textContent = t("Bot not loaded");
       return;
     }
 
     const state = commander.getState();
-    hoardButton.textContent = state.enabled ? t("Stop hoard") : t("Hoard");
-    hoardButton.classList.toggle("active", Boolean(state.enabled));
-    const players = commander.getPlayerList();
-    const optionsKey = players.map((player) => `${player.id}:${player.name}`).join("|");
-    if (optionsKey !== mainPlayersKey) {
-      mainPlayersKey = optionsKey;
-      mainPlayerSelect.textContent = "";
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = t("Select main player");
-      mainPlayerSelect.append(placeholder);
-      for (const player of players) {
-        const option = document.createElement("option");
-        option.value = String(player.id);
-        option.textContent = `${player.name} #${player.id}`;
-        option.dataset.noI18n = "1";
-        mainPlayerSelect.append(option);
-      }
+    hoardButton.textContent = state.selecting ? t("Cancel") : state.enabled ? t("Stop hoard") : t("Hoard");
+    hoardButton.classList.toggle("active", Boolean(state.selecting || state.enabled));
+    if (state.selecting) {
+      hoardStatus.textContent = t("Click a teammate on the map");
+    } else {
+      hoardStatus.textContent =
+        `${t("Hoard")} ${state.enabled ? t("On") : t("Off")} · ` +
+        `${t("Density")} ${Number(state.density || 0).toFixed(1)} · ` +
+        `${state.mainPlayerName || t("No main player")}` +
+        `${state.looping ? " · " + t("Loop") : ""}`;
     }
-    const selected = players.find((player) => player.name === state.mainPlayerName)
-      || players.find((player) => player.id === state.mainPlayerId);
-    mainPlayerSelect.value = selected ? String(selected.id) : "";
-    mainPlayerSelect.disabled = !players.length;
-    hoardStatus.textContent =
-      `${t("Hoard")} ${state.enabled ? t("On") : t("Off")} · ` +
-      `${t("Density")} ${Number(state.density || 0).toFixed(1)} · ` +
-      `${state.mainPlayerName || t("No main player")}`;
   }
 
   function renderStatus() {
@@ -497,6 +463,12 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
 
   function close() {
     if (!openState) return;
+    try {
+      const fx = getBotFx();
+      if (fx && fx.botCommander && typeof fx.botCommander.cancelSelection === "function") {
+        fx.botCommander.cancelSelection();
+      }
+    } catch (_error) {}
     if (swappedState) {
       swappedState = false;
       layout();

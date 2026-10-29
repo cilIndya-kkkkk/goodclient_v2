@@ -468,10 +468,6 @@ export default function initToolbox(options = {}) {
     const fx = getBotFx();
     return fx && fx.openingAutomation ? fx.openingAutomation : null;
   }
-  function getBotCommander() {
-    const fx = getBotFx();
-    return fx && fx.botCommander ? fx.botCommander : null;
-  }
   function botAction(action) {
     const automation = getBotAutomation();
     if (!automation) return;
@@ -495,48 +491,6 @@ export default function initToolbox(options = {}) {
   tabBotModeSelect.addEventListener("change", () => {
     botAction((automation) => automation.setAutoAttackMode(tabBotModeSelect.value));
   });
-
-  const botHoardButton = makeButton(t("Hoard"), () => {
-    const commander = getBotCommander();
-    if (!commander) return;
-    commander.hoard(!commander.getState().enabled);
-    render();
-  });
-  const botMainPlayerLabel = document.createElement("span");
-  botMainPlayerLabel.textContent = t("Main player");
-  const botMainPlayerSelect = document.createElement("select");
-  botMainPlayerSelect.className = "fx-toolbox-input";
-  let botMainPlayerKey = "";
-  botMainPlayerSelect.addEventListener("change", () => {
-    const commander = getBotCommander();
-    if (!commander) return;
-    if (!botMainPlayerSelect.value) {
-      commander.setMainPlayer("");
-      render();
-      return;
-    }
-    const id = Number(botMainPlayerSelect.value);
-    const player = commander.getPlayerList().find((item) => item.id === id);
-    commander.setMainPlayer(player ? { id: player.id, name: player.name } : id);
-    render();
-  });
-  const botHoardStatus = document.createElement("div");
-  botHoardStatus.className = "fx-toolbox-status";
-  botHoardStatus.textContent = t("Hoard Off");
-
-  botSection.append(
-    botStatusLine,
-    makeRow(botReloadButton),
-    makeRow(botAllOnButton, botAllOffButton, botOpeningButton, botInfiniteButton, tabBotModeSelect),
-    makeRow(botHoardButton, botMainPlayerLabel, botMainPlayerSelect),
-    botHoardStatus,
-    makeRow(widthLabel, widthSlider, widthValue),
-    makeRow(heightLabel, heightSlider, heightValue),
-    makeRow(Object.assign(document.createElement("span"), {
-      className: "fx-toolbox-note",
-      textContent: t("Click the Bot button to open Tab Mode. These controls apply only to that bot.")
-    }))
-  );
 
   const statusSection = makeSection("Status");
   const statusLine = document.createElement("div");
@@ -790,42 +744,6 @@ export default function initToolbox(options = {}) {
       botReloadButton.disabled = !getBotTabMode();
       tabBotModeSelect.disabled = !botLoaded;
       updateSizeControls();
-
-      const commander = getBotCommander();
-      const commanderState = commander ? commander.getState() : null;
-      botHoardButton.disabled = !commander;
-      botHoardButton.classList.toggle("active", Boolean(commanderState?.enabled));
-      botHoardButton.textContent = commanderState?.enabled ? t("Stop hoard") : t("Hoard");
-      if (commander) {
-        const players = commander.getPlayerList();
-        const optionsKey = players.map((player) => `${player.id}:${player.name}`).join("|");
-        if (optionsKey !== botMainPlayerKey) {
-          botMainPlayerKey = optionsKey;
-          botMainPlayerSelect.textContent = "";
-          const placeholder = document.createElement("option");
-          placeholder.value = "";
-          placeholder.textContent = t("Select main player");
-          botMainPlayerSelect.append(placeholder);
-          for (const player of players) {
-            const option = document.createElement("option");
-            option.value = String(player.id);
-            option.textContent = `${player.name} #${player.id}`;
-            option.dataset.noI18n = "1";
-            botMainPlayerSelect.append(option);
-          }
-        }
-        const selected = players.find((player) => player.name === commanderState?.mainPlayerName)
-          || players.find((player) => player.id === commanderState?.mainPlayerId);
-        botMainPlayerSelect.value = selected ? String(selected.id) : "";
-        botMainPlayerSelect.disabled = !players.length;
-        botHoardStatus.textContent =
-          `${t("Hoard")} ${commanderState?.enabled ? t("On") : t("Off")} · ` +
-          `${t("Density")} ${Number(commanderState?.density || 0).toFixed(1)} · ` +
-          `${commanderState?.mainPlayerName || t("No main player")}`;
-      } else {
-        botMainPlayerSelect.disabled = true;
-        botHoardStatus.textContent = t("Bot not loaded");
-      }
 
       if (!getBotTabMode()) {
         botStatusLine.textContent = t("Tab Mode unavailable");

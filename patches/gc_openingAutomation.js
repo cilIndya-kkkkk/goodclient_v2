@@ -25,6 +25,16 @@ const g = {
   cancelAttack: "xr",
   canAttack: "a1W",
   mapIsRendered: "u4",
+  mapRenderer: "ix",
+  screenToX: "zR",
+  screenToY: "zT",
+  screenToTileX: "oR",
+  screenToTile: "j3",
+  screenInBounds: "zV",
+  supportUtils: "aa",
+  supportMath: "bY",
+  supportAmount: "a3b",
+  supportCalc: "aLr",
 };
 
 export default definePatch((modUtils) => {
@@ -50,6 +60,13 @@ function applyOpeningAutomation(modUtils) {
     [`${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack}(`, "GameCommandSender.cancelAttack"],
     [`${g.teamUtils}.${g.canAttack}(`, "TeamUtils.canAttack"],
     [`${dict.mapHolder}.${g.mapIsRendered}`, "MapManager.mapIsRendered"],
+    [`${g.mapRenderer}.${g.screenToX}(`, "MapRenderer.screenToX"],
+    [`${g.mapRenderer}.${g.screenToY}(`, "MapRenderer.screenToY"],
+    [`${g.mapRenderer}.${g.screenToTileX}(`, "MapRenderer.screenToTileX"],
+    [`${g.mapRenderer}.${g.screenToTile}(`, "MapRenderer.screenToTile"],
+    [`${g.mapRenderer}.${g.screenInBounds}(`, "MapRenderer.screenInBounds"],
+    [`${g.supportUtils}.${g.supportMath}.${g.supportAmount}(`, "SupportMath.supportAmount"],
+    [`${g.supportUtils}.${g.supportMath}.${g.supportCalc}(`, "SupportMath.supportCalc"],
   ].forEach(([access, readableName]) => {
     if (!script.includes(access))
       missingRawNames.push(`"${access}" (${readableName})`);
@@ -287,7 +304,7 @@ function applyOpeningAutomation(modUtils) {
                 }
                 return false;
             };
-            __fx.openingAutomation.sendSupport=(target, percent)=> {
+            var __fxCanSupportTarget = (target)=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
                 if (!${dict.game}.${dict.gIsTeamGame}) return false;
                 var player = ${dict.game}.${dict.playerId};
@@ -297,6 +314,23 @@ function applyOpeningAutomation(modUtils) {
                 if ((${dict.playerData}.${dict.playerTerritories}[target] || 0) <= 0) return false;
                 if (typeof ${g.teamUtils} === "undefined" || typeof ${g.teamUtils}.${g.canAttack} !== "function") return false;
                 if (${g.teamUtils}.${g.canAttack}(player, target)) return false;
+                return true;
+            };
+            __fx.openingAutomation.getMaxSupportPercent=(target)=> {
+                if (!__fxCanSupportTarget(target)) return 0;
+                var player = ${dict.game}.${dict.playerId};
+                var support = ${g.supportUtils}.${g.supportMath};
+                if (!support || typeof support.${g.supportAmount} !== "function" || typeof support.${g.supportCalc} !== "function") return 0;
+                var best = -1;
+                for (var sliderValue = 0; sliderValue < 1024; sliderValue++) {
+                    var amount = support.${g.supportAmount}(player, sliderValue);
+                    if (support.${g.supportCalc}(player, amount, Number(target))) best = sliderValue;
+                }
+                return best < 0 ? 0 : (best + 1) / 1024;
+            };
+            __fx.openingAutomation.canSupport=(target)=> __fxCanSupportTarget(target) && __fx.openingAutomation.getMaxSupportPercent(target) > 0;
+            __fx.openingAutomation.sendSupport=(target, percent)=> {
+                if (!__fxCanSupportTarget(target)) return false;
                 percent = Number(percent);
                 if (!isFinite(percent)) percent = 0.1;
                 percent = Math.max(0, Math.min(1, percent));
@@ -306,6 +340,20 @@ function applyOpeningAutomation(modUtils) {
                     return true;
                 }
                 return false;
+            };
+            __fx.botMap = __fx.botMap || {};
+            __fx.botMap.playerAt = function(clientX, clientY) {
+                try {
+                    var scale = (__fx.hoveringTooltip && __fx.hoveringTooltip.canvasPixelScale) || 1;
+                    var coordX = ${g.mapRenderer}.${g.screenToX}(Number(clientX) * scale);
+                    var coordY = ${g.mapRenderer}.${g.screenToY}(Number(clientY) * scale);
+                    if (!${g.mapRenderer}.${g.screenInBounds}(coordX, coordY)) return -1;
+                    var tile = ${g.mapRenderer}.${g.screenToTile}(${g.mapRenderer}.${g.screenToTileX}(coordX, coordY));
+                    if (!${g.mapData}.${g.isOwnedTile}(tile)) return -1;
+                    return ${g.mapData}.${g.getTileOwner}(tile);
+                } catch (_error) {
+                    return -1;
+                }
             };
             __fx.openingAutomation.cancelPlayerAttack=(target)=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;

@@ -1270,3 +1270,34 @@ body.fx-clean .window {
 	opacity: 0;
 	pointer-events: none;
 }
+
+#fxBotDonateTarget {
+	position: fixed;
+	z-index: 2147483647;
+	display: none;
+	padding: 8px 14px;
+	border: 2px solid #b9ffd0;
+	border-radius: 8px;
+	background: #1f9d55;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+	color: #fff;
+	font: 700 14px 'Trebuchet MS', Arial, sans-serif;
+	cursor: pointer;
+}
+
+#fxBotHoardHint {
+	position: fixed;
+	top: 8px;
+	left: 50%;
+	z-index: 2147483646;
+	display: none;
+	padding: 4px 10px;
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	border-radius: 6px;
+	transform: translateX(-50%);
+	background: rgba(0, 0, 0, 0.78);
+	color: #fff;
+	font: 700 12px 'Trebuchet MS', Arial, sans-serif;
+	pointer-events: none;
+	white-space: nowrap;
+}

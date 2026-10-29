@@ -1,4 +1,5 @@
 import { getVar } from "./gameInterface.js";
+import { t } from "./i18n.js";
 
 const MAIN_PLAYER_KEY = "fx_hoard_main_player_name";
 const DENSITY_THRESHOLD = 130;
@@ -12,13 +13,20 @@ function asNumber(value) {
 }
 
 export default function initBotCommander() {
+  let selecting = false;
   let enabled = false;
+  let looping = false;
   let timer = null;
   let saved = null;
   let lastSupportAt = 0;
   let lastSupportOk = null;
+  let lastSelectAt = 0;
   let mainPlayerName = localStorage.getItem(MAIN_PLAYER_KEY) || "";
   let mainPlayerId = -1;
+  let pendingTargetId = -1;
+  let pendingTargetName = "";
+  let donateButton = null;
+  let hint = null;
 
   function gameReady() {
     const state = asNumber(getVar("gameState"));
@@ -127,70 +135,224 @@ export default function initBotCommander() {
     };
   }
 
-  function trySupport() {
-    if (!enabled || !gameReady()) return false;
-    const now = Date.now();
-    if (now - lastSupportAt < SUPPORT_INTERVAL_MS) return false;
-    const target = resolveMainPlayer();
-    if (target < 0) return false;
-    const stats = currentStats();
-    if (stats.land <= 0 || stats.density < DENSITY_THRESHOLD) return false;
-    const automation = window.__fx && window.__fx.openingAutomation;
-    if (!automation || typeof automation.sendSupport !== "function") return false;
-    lastSupportAt = now;
-    lastSupportOk = Boolean(automation.sendSupport(target, SUPPORT_PERCENT));
+  function automation() {
+    return window.__fx && window.__fx.openingAutomation ? window.__fx.openingAutomation : null;
+  }
+
+  function canSupport(target) {
+    const api = automation();
+    return Boolean(api && typeof api.canSupport === "function" && api.canSupport(target));
+  }
+
+  function maxSupportPercent(target) {
+    const api = automation();
+    if (!api || typeof api.getMaxSupportPercent !== "function") return 0;
+    return Math.max(0, Math.min(1, asNumber(api.getMaxSupportPercent(target))));
+  }
+
+  function donateOnce(target) {
+    const api = automation();
+    if (!api || typeof api.sendSupport !== "function") return false;
+    lastSupportAt = Date.now();
+    lastSupportOk = null;
+    const maxPercent = maxSupportPercent(target);
+    if (maxPercent <= 0) return false;
+    const percent = Math.min(SUPPORT_PERCENT, maxPercent);
+    lastSupportOk = Boolean(api.sendSupport(target, percent));
     return lastSupportOk;
   }
 
   function tick() {
-    trySupport();
+    if (!enabled || !looping || !gameReady()) return;
+    if (Date.now() - lastSupportAt < SUPPORT_INTERVAL_MS) return;
+    const stats = currentStats();
+    if (stats.density < DENSITY_THRESHOLD) return;
+    const target = resolveMainPlayer();
+    if (target < 0) return;
+    donateOnce(target);
   }
 
-  function hoard(value) {
-    const next = Boolean(value);
-    if (next === enabled) return enabled;
-    const automation = window.__fx && window.__fx.openingAutomation;
-    if (!automation) return enabled;
+  function startLoop() {
+    if (timer !== null) clearInterval(timer);
+    timer = setInterval(tick, TICK_INTERVAL_MS);
+  }
 
-    if (next) {
+  function stopLoop() {
+    if (timer !== null) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+
+  function uiHost() {
+    return document.getElementById("windowContainer") || document.body;
+  }
+
+  function ensureUi() {
+    if (!donateButton) {
+      donateButton = document.createElement("button");
+      donateButton.type = "button";
+      donateButton.id = "fxBotDonateTarget";
+      donateButton.textContent = t("Donate");
+      donateButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        confirmSelection();
+      });
+      uiHost().appendChild(donateButton);
+    }
+    if (!hint) {
+      hint = document.createElement("div");
+      hint.id = "fxBotHoardHint";
+      hint.textContent = t("Click a teammate on the map");
+      uiHost().appendChild(hint);
+    }
+  }
+
+  function positionDonateButton(x, y) {
+    ensureUi();
+    donateButton.style.left = `${Math.round(x)}px`;
+    donateButton.style.top = `${Math.round(Math.max(8, y - 42))}px`;
+  }
+
+  function showDonateButton(x, y) {
+    ensureUi();
+    positionDonateButton(x, y);
+    donateButton.style.display = "block";
+    hint.style.display = "none";
+  }
+
+  function hideDonateButton() {
+    if (donateButton) donateButton.style.display = "none";
+  }
+
+  function showHint() {
+    ensureUi();
+    hint.style.display = "block";
+    hideDonateButton();
+  }
+
+  function hideHint() {
+    if (hint) hint.style.display = "none";
+  }
+
+  function selectAt(clientX, clientY) {
+    if (!selecting) return;
+    const now = Date.now();
+    if (now - lastSelectAt < 300) return;
+    lastSelectAt = now;
+    const playerAt = window.__fx && window.__fx.botMap && window.__fx.botMap.playerAt;
+    if (typeof playerAt !== "function") return;
+    const target = Number(playerAt(clientX, clientY));
+    if (!Number.isFinite(target) || target < 0 || target === ownPlayerId() || !canSupport(target)) {
+      pendingTargetId = -1;
+      pendingTargetName = "";
+      hideDonateButton();
+      return;
+    }
+    const player = getPlayerList().find((item) => item.id === target);
+    pendingTargetId = target;
+    pendingTargetName = player ? player.name : String(playerNames()[target] || "");
+    showDonateButton(clientX, clientY);
+  }
+
+  function pointerSelect(event) {
+    if (!selecting) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    selectAt(event.clientX, event.clientY);
+  }
+
+  function touchSelect(event) {
+    if (!selecting) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (touch) selectAt(touch.clientX, touch.clientY);
+  }
+
+  function startSelection() {
+    if (enabled || selecting) return false;
+    if (!gameReady()) return false;
+    selecting = true;
+    pendingTargetId = -1;
+    pendingTargetName = "";
+    showHint();
+    return true;
+  }
+
+  function cancelSelection() {
+    selecting = false;
+    pendingTargetId = -1;
+    pendingTargetName = "";
+    hideDonateButton();
+    hideHint();
+  }
+
+  function confirmSelection() {
+    if (!selecting || pendingTargetId < 0) return false;
+    const target = pendingTargetId;
+    const targetName = pendingTargetName;
+    const stats = currentStats();
+    selecting = false;
+    hideDonateButton();
+    hideHint();
+    setMainPlayer({ id: target, name: targetName });
+
+    const api = automation();
+    if (!api) return false;
+    if (!enabled) {
       const settings = window.__fx.settings || {};
       saved = {
         opening: Boolean(settings.openingAutomationEnabled),
         infinite: Boolean(settings.infiniteExpansionEnabled),
-        mode: automation.getAutoAttackMode(),
+        mode: api.getAutoAttackMode(),
       };
-      automation.setAllAutomationEnabled(false);
+      api.setAllAutomationEnabled(false);
       enabled = true;
-      lastSupportAt = 0;
-      lastSupportOk = null;
-      if (timer !== null) clearInterval(timer);
-      timer = setInterval(tick, TICK_INTERVAL_MS);
-    } else {
-      enabled = false;
-      if (timer !== null) {
-        clearInterval(timer);
-        timer = null;
-      }
-      if (saved) {
-        automation.setOpeningAutomationEnabled(saved.opening);
-        automation.setInfiniteExpansionEnabled(saved.infinite);
-        automation.setAutoAttackMode(saved.mode);
-        saved = null;
-      }
     }
-    return enabled;
+
+    lastSupportAt = 0;
+    lastSupportOk = null;
+    const donated = donateOnce(target);
+    if (stats.density >= DENSITY_THRESHOLD) {
+      looping = true;
+      startLoop();
+    } else {
+      looping = false;
+      stopLoop();
+    }
+    return donated;
+  }
+
+  function stopHoard() {
+    if (!enabled && !selecting) return false;
+    const wasEnabled = enabled;
+    enabled = false;
+    looping = false;
+    stopLoop();
+    cancelSelection();
+    if (wasEnabled && saved) {
+      const api = automation();
+      if (api) {
+        api.setOpeningAutomationEnabled(saved.opening);
+        api.setInfiniteExpansionEnabled(saved.infinite);
+        api.setAutoAttackMode(saved.mode);
+      }
+      saved = null;
+    }
+    return true;
   }
 
   function getState() {
     const stats = currentStats();
     const target = resolveMainPlayer();
     return {
+      selecting,
       enabled,
+      looping,
       density: stats.density,
       troops: stats.troops,
       land: stats.land,
       mainPlayerId: target,
       mainPlayerName: mainPlayerName || "",
+      pendingTargetName,
       threshold: DENSITY_THRESHOLD,
       supportPercent: SUPPORT_PERCENT,
       lastSupportAt,
@@ -198,8 +360,18 @@ export default function initBotCommander() {
     };
   }
 
+  ensureUi();
+  const canvas = document.getElementById("canvasA");
+  if (canvas) {
+    canvas.addEventListener("pointerdown", pointerSelect, true);
+    canvas.addEventListener("touchend", touchSelect, true);
+  }
+
   return {
-    hoard,
+    startSelection,
+    cancelSelection,
+    confirmSelection,
+    stopHoard,
     setMainPlayer,
     getMainPlayer: () => ({ id: resolveMainPlayer(), name: mainPlayerName || "" }),
     getPlayerList,
