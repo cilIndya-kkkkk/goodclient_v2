@@ -1,4 +1,5 @@
 import { t } from "./i18n.js";
+import WindowManager from "./windowManager.js";
 
 const TEAM_PALETTE = [
   null,
@@ -220,83 +221,24 @@ export function solveTeamGroups(players, teamCount) {
   return groups;
 }
 
-function createPanel() {
-  const panel = document.createElement("div");
-  panel.id = "fxLobbyTeams";
-  Object.assign(panel.style, {
-    position: "fixed",
-    zIndex: "2147483647",
-    display: "none",
-    flexDirection: "column",
-    width: "min(420px, 92vw)",
-    maxHeight: "45vh",
-    background: "rgba(9, 13, 18, 0.97)",
-    border: "1px solid rgba(110, 210, 160, 0.55)",
-    boxShadow: "0 0 24px rgba(0, 0, 0, 0.75)",
-    color: "#dbe7f0",
-    fontFamily: "'Trebuchet MS', Arial, sans-serif",
-    fontSize: "13px",
-  });
+function createWindow() {
+  const element = WindowManager.create({ name: "lobbyTeams", classes: "scrollable selectable", closable: false });
 
-  const header = document.createElement("div");
-  header.id = "fxLobbyTeamsHeader";
-  Object.assign(header.style, {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "8px",
-    padding: "6px 9px",
-    background: "rgba(20, 34, 28, 0.95)",
-    borderBottom: "1px solid rgba(110, 210, 160, 0.35)",
-    color: "#a8f0c8",
-    fontSize: "12px",
-    fontWeight: "700",
-  });
-
-  const title = document.createElement("span");
+  const title = document.createElement("h1");
   title.id = "fxLobbyTeamsTitle";
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.id = "fxLobbyTeamsClose";
-  close.textContent = "×";
-  close.setAttribute("aria-label", "Close");
-  Object.assign(close.style, {
-    flex: "0 0 auto",
-    width: "22px",
-    height: "22px",
-    padding: "0",
-    border: "1px solid rgba(255, 255, 255, 0.25)",
-    background: "rgba(0, 0, 0, 0.35)",
-    color: "#dbe7f0",
-    font: "inherit",
-    fontSize: "16px",
-    lineHeight: "1",
-    cursor: "pointer",
-  });
-
-  header.append(title, close);
+  title.textContent = t("Team split");
 
   const body = document.createElement("div");
   body.id = "fxLobbyTeamsBody";
-  Object.assign(body.style, {
-    flex: "1",
-    minHeight: "0",
-    overflowY: "auto",
-    padding: "7px 10px 9px",
-  });
+  body.style.padding = "0 10px 10px";
 
-  panel.append(header, body);
-  document.body.appendChild(panel);
-
-  return { panel, title, body, close };
+  element.append(title, body);
+  return { element, title, body };
 }
 
 export default function initLobbyTeams() {
-  const { panel, title, body, close } = createPanel();
+  const { title, body } = createWindow();
   let toggleButton = null;
-  let toggleRow = null;
-  let toggleHandler = null;
   let refreshTimer = null;
   let invalidSince = null;
   let lastToggleAt = 0;
@@ -313,32 +255,8 @@ export default function initLobbyTeams() {
   }
 
   function closePanel() {
-    panel.classList.remove("open");
-    panel.style.display = "none";
+    WindowManager.closeWindow("lobbyTeams");
     stopRefresh();
-  }
-
-  function positionPanel() {
-    if (!panel.classList.contains("open")) return;
-    const width = Math.min(420, window.innerWidth - 16);
-    panel.style.width = `${width}px`;
-
-    const rect = toggleButton?.getBoundingClientRect?.();
-    if (rect && rect.width > 0 && rect.bottom > 0) {
-      const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
-      const top = Math.max(8, Math.min(rect.bottom + 8, window.innerHeight - 120));
-      panel.style.left = `${left}px`;
-      panel.style.top = `${top}px`;
-      panel.style.right = "auto";
-      panel.style.bottom = "auto";
-      panel.style.transform = "none";
-    } else {
-      panel.style.left = "50%";
-      panel.style.top = "auto";
-      panel.style.right = "auto";
-      panel.style.bottom = "12px";
-      panel.style.transform = "translateX(-50%)";
-    }
   }
 
   function render() {
@@ -400,65 +318,25 @@ export default function initLobbyTeams() {
 
   function openPanel() {
     invalidSince = null;
-    panel.classList.add("open");
-    panel.style.display = "flex";
-    positionPanel();
+    WindowManager.openWindow("lobbyTeams");
     stopRefresh();
     render();
-    if (panel.classList.contains("open")) refreshTimer = setInterval(render, 500);
+    if (WindowManager.isWindowOpen("lobbyTeams")) refreshTimer = setInterval(render, 500);
   }
 
   function togglePanel() {
     const now = Date.now();
     if (now - lastToggleAt < 250) return;
     lastToggleAt = now;
-    if (panel.classList.contains("open")) {
-      const rect = panel.getBoundingClientRect();
-      const visible = rect.width > 0 && rect.height > 0 &&
-        rect.bottom > 0 && rect.top < window.innerHeight &&
-        rect.right > 0 && rect.left < window.innerWidth;
-      if (visible) {
-        closePanel();
-        return;
-      }
-    }
-    openPanel();
+    if (WindowManager.isWindowOpen("lobbyTeams")) closePanel();
+    else openPanel();
   }
-
-  function registerToggleButton(button, row) {
-    if (toggleRow && toggleHandler) {
-      toggleRow.removeEventListener("click", toggleHandler);
-    } else if (toggleButton && toggleHandler) {
-      toggleButton.removeEventListener("click", toggleHandler);
-    }
-
-    toggleButton = button || null;
-    toggleRow = row || null;
-    toggleHandler = (event) => {
-      if (toggleRow && toggleButton) {
-        const rect = toggleButton.getBoundingClientRect();
-        if (event.clientX > rect.right + 4) return;
-      }
-      togglePanel();
-    };
-
-    if (toggleRow) toggleRow.addEventListener("click", toggleHandler);
-    else if (toggleButton) toggleButton.addEventListener("click", toggleHandler);
-  }
-
-  close.addEventListener("click", (event) => {
-    event.stopPropagation();
-    closePanel();
-  });
-
-  window.addEventListener("resize", positionPanel);
 
   return {
     toggle: togglePanel,
     setAnchor(button) {
       toggleButton = button || null;
     },
-    registerToggleButton,
     close: closePanel,
   };
 }

@@ -32,25 +32,12 @@ ${insert(`window.__fx.lobbyTeamsHost = {
     if (ready && client.setAnchor) client.setAnchor(button);
     return ready;
   }
-  function showHit() {
-    var badge = document.getElementById("fxLobbyTeamsHit");
-    if (!badge) {
-      badge = document.createElement("div");
-      badge.id = "fxLobbyTeamsHit";
-      badge.style.cssText = "position:fixed;top:8px;right:8px;z-index:2147483647;background:#000;color:#fff;padding:4px 8px;font:12px monospace;pointer-events:none;display:none";
-      document.body.appendChild(badge);
-    }
-    badge.textContent = "FX HIT";
-    badge.style.display = "block";
-    setTimeout(function () { badge.style.display = "none"; }, 1500);
-  }
   function hitAt(x, y) {
     if (!button.isConnected) return;
     var rect = button.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
     if (x < rect.left || x > rect.right) return;
     if (y < rect.top || y > rect.bottom) return;
-    showHit();
     if (mark()) api().toggle();
   }
   function hit(event) {
