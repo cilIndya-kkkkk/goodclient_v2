@@ -5,10 +5,11 @@ import { openingTickOffsetToInternalTicks } from "./openingTickOffset.js";
 import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "./botAttackRate.js";
 import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 import { t } from "./i18n.js";
-import { isTabBotInstance } from "./tabMode.js";
+import { isBotInstance, isEmbedded, getHost } from "./instance.js";
 
-const POSITION_STORAGE_KEY = "fx_toolbox_position";
-const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position";
+const POSITION_SUFFIX = isBotInstance() ? "_bot" : "";
+const POSITION_STORAGE_KEY = "fx_toolbox_position" + POSITION_SUFFIX;
+const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position" + POSITION_SUFFIX;
 const PRESETS_KEY = "fx_opening_presets";
 const BOT_MODES = [
   { value: "off", label: "Bot Off" },
@@ -46,7 +47,9 @@ function makeRow(...children) {
   return row;
 }
 
-export default function initToolbox() {
+export default function initToolbox(options = {}) {
+  const variant = options.variant === "bot" ? "bot" : "full";
+  const embedded = isEmbedded() || new URLSearchParams(location.search).get("host") === "1";
   const toggle = document.createElement("button");
   toggle.type = "button";
   toggle.id = "fxToolboxToggle";
@@ -401,8 +404,11 @@ export default function initToolbox() {
   botStatusLine.className = "fx-toolbox-status";
   botStatusLine.textContent = t("Bot not loaded");
 
+  function getBotTabMode() {
+    return getHost()?.tabMode || window.__fx.tabMode || null;
+  }
   function getBotFx() {
-    return window.__fx.tabMode?.getBotFx?.() || null;
+    return getBotTabMode()?.getBotFx?.() || null;
   }
   function getBotAutomation() {
     const fx = getBotFx();
@@ -415,7 +421,7 @@ export default function initToolbox() {
     render();
   }
 
-  const botReloadButton = makeButton(t("Reload bot"), () => window.__fx.tabMode?.reload?.());
+  const botReloadButton = makeButton(t("Reload bot"), () => getBotTabMode()?.reload?.());
   const botAllOnButton = makeButton(t("All On"), () => botAction((automation) => automation.setAllAutomationEnabled(true)));
   const botAllOffButton = makeButton(t("All Off"), () => botAction((automation) => automation.setAllAutomationEnabled(false)));
   const botOpeningButton = makeButton(t("Opening"), () => botAction((automation) => automation.toggleOpeningAutomationEnabled()));
@@ -448,12 +454,14 @@ export default function initToolbox() {
     localStorage.removeItem(TOGGLE_POSITION_STORAGE_KEY);
     applyTogglePosition(8, 8, false);
   });
-  const musicButton = makeButton(t("Music player"), () => window.__fx.musicPlayer?.open());
+  const musicButton = makeButton(t("Music player"), () => getHost()?.music?.open?.() || window.__fx.musicPlayer?.open?.());
   statusSection.append(statusLine, makeRow(resetToggleButton, musicButton));
 
   body.append(automationSection);
-  if (!isTabBotInstance()) body.append(botSection);
-  body.append(openingSection, displaySection, themeSection, statusSection);
+  if (variant === "full") {
+    if (embedded) body.append(botSection);
+    body.append(openingSection, displaySection, themeSection, statusSection);
+  }
   panel.append(header, body);
 
   function isInGame() {
@@ -680,7 +688,7 @@ export default function initToolbox() {
     const shipState = window.__fx.shipRouteStatus;
     if (shipState) statusLine.textContent += ` · ships ${shipState.ships} · paths ${shipState.paths ?? '-'} · routes ${shipState.routes}`;
 
-    if (!isTabBotInstance()) {
+    if (variant === "full" && embedded) {
       const botFx = getBotFx();
       const botAutomation = botFx && botFx.openingAutomation ? botFx.openingAutomation : null;
       const botSettings = botFx && botFx.settings ? botFx.settings : null;
@@ -688,10 +696,10 @@ export default function initToolbox() {
       for (const button of [botAllOnButton, botAllOffButton, botOpeningButton, botInfiniteButton]) {
         button.disabled = !botLoaded;
       }
-      botReloadButton.disabled = !window.__fx.tabMode;
+      botReloadButton.disabled = !getBotTabMode();
       tabBotModeSelect.disabled = !botLoaded;
 
-      if (!window.__fx.tabMode) {
+      if (!getBotTabMode()) {
         botStatusLine.textContent = t("Tab Mode unavailable");
         botStatusLine.classList.add("bad");
       } else if (!botLoaded) {

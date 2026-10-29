@@ -89,7 +89,7 @@ __fx.shipRoutes = isTabBot ? null : initShipRoutes();
 __fx.tabMode = initTabMode();
 __fx.cleanView = initCleanView();
 if (isTabBot) __fx.cleanView.setEnabled(true, { hideFx: true, lowDpr: true });
-__fx.toolbox = isTabBot ? null : initToolbox();
+__fx.toolbox = initToolbox({ variant: isTabBot ? "bot" : "full" });
 if (isTabBot || embedded) {
   __fx.musicPlayer = null;
 } else {
