@@ -1200,3 +1200,23 @@ body.fx-clean #demonAutomationControls,
 body.fx-clean .window {
 	display: none !important;
 }
+
+#fxMainFrame,
+#fxBotFrame {
+	position: fixed;
+	border: 0;
+	background: #000;
+}
+
+#fxMainFrame {
+	inset: 0;
+	z-index: 100;
+	width: 100%;
+	height: 100%;
+}
+
+#fxBotFrame {
+	z-index: 300;
+	opacity: 0;
+	pointer-events: none;
+}

@@ -811,5 +811,11 @@ export default function initMusicPlayer() {
     previous: previousTrack,
     open: () => { panel.classList.add("open"); applyInitialPanelPosition(); },
     close: () => panel.classList.remove("open"),
+    notifyUserGesture: () => {
+      if (autoplayPending && autoplay && audio.paused) {
+        autoplayPending = false;
+        audio.play().catch(() => {});
+      }
+    },
   };
 }

@@ -17,7 +17,7 @@ fs.cpSync("./static/", "./build/", { recursive: true });
 fs.cpSync("./assets/", "./build/assets/", { recursive: true });
 const buildTimestamp = Date.now().toString();
 fs.writeFileSync("./build/build-info.json", JSON.stringify({ buildTimestamp }));
-for (const page of ["index.html", "bot.html"]) {
+for (const page of ["index.html", "client.html", "bot.html"]) {
 	const file = `./build/${page}`;
 	if (fs.existsSync(file)) fs.writeFileSync(file, fs.readFileSync(file).toString().replace(/buildTimestamp/g, buildTimestamp));
 }
@@ -27,10 +27,11 @@ const buildClientCode = () => /** @type {Promise<void>} */(new Promise((resolve,
 	console.log("Building client code...");
 	webpack({
 		mode: 'production',
-		entry: { fxClient: "./src/main.js" },
+		entry: { fxClient: "./src/main.js", host: "./src/host/main.js" },
 		output: {
 			path: path.resolve(import.meta.dirname, 'build'),
-			filename: 'fx.bundle.js',
+			filename: (pathData) => pathData.chunk && pathData.chunk.name === "host" ? "host.bundle.js" : "fx.bundle.js",
+			chunkFilename: "[id].[contenthash:8].chunk.js",
 		},
 	}, (err, stats) => {
 		if (err) {
