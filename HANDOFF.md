@@ -39,6 +39,7 @@ Server is running from Termux home on port 8001:
   - The info button shows `▾` when the client API is ready, or `!` if `__fx.lobbyTeams.toggle` is missing (usually a stale/mixed client bundle).
   - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.toggle()` / `setAnchor()` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.
+- Next major task: **Tab Mode**. Revised plan is in `TAB_MODE_SPEC.md` section 11 (2026-10-29): first a floating Tab Mode button/window showing the bot's normal game UI and moving bot settings into Tools; second hide the bot's in-game UI; third implement attack/hoard/send-ships commands. Confirm the open architecture questions in that section before coding.
 - Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
@@ -56,7 +57,11 @@ Server is running from Termux home on port 8001:
 ## Key files
 
 - `patches/lobbyTeams.js` - exposes lobby mode, ready players and the current-game info button to the client.
-- `src/lobbyTeams.js` - lobby team assignment + fixed floating panel UI.
+- `src/lobbyTeams.js` - lobby team assignment + draggable WindowManager window.
+- `src/windowManager.js` - existing window system used by Tools/Settings/lobby team split; reuse for Tab Mode.
+- `src/toolbox.js` - Tools panel; future home of bot settings.
+- `~/tulipbot/bot.js` - owns the bot iframes/layout if Tab Mode needs to move them.
+- `TAB_MODE_SPEC.md` - Tab Mode plan; read section 11 first.
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.
 - `src/shipRoutes.js` - route drawing, colors, troop badges, route status.
 - `src/toolbox.js` - Tools UI, settings toggles, status.
@@ -75,8 +80,9 @@ Ask the assistant to read:
 
 ```
 ~/goodclient_v2/HANDOFF.md
+~/goodclient_v2/TAB_MODE_SPEC.md
 ~/goodclient_v2/README_DEV.md
 ~/tulipbot/README.md
 ```
 
-Then continue from "test lobby team split panel / ship troop badges / team mode / TulipBot custom lobby".
+Then continue from "Tab Mode shell" (see `TAB_MODE_SPEC.md` section 11). Remaining earlier tests: lobby team split manual check / ship troop badges / team mode / TulipBot custom lobby.
