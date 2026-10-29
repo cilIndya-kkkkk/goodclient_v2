@@ -39,7 +39,20 @@ Server is running from Termux home on port 8001:
   - The info button shows `▾` when the client API is ready, or `!` if `__fx.lobbyTeams.toggle` is missing (usually a stale/mixed client bundle).
   - Host API: `window.__fx.lobbyTeamsHost.getState()` in `patches/lobbyTeams.js`; client API: `__fx.lobbyTeams.toggle()` / `setAnchor()` in `src/lobbyTeams.js`.
   - Built with `npm run build-only` / `build-client`; real lobby UI still needs manual verification.
-- Next major task: **Tab Mode**. Revised plan is in `TAB_MODE_SPEC.md` section 11 (2026-10-29): first a floating Tab Mode button/window showing the bot's normal game UI and moving bot settings into Tools; second hide the bot's in-game UI; third implement attack/hoard/send-ships commands. Confirm the open architecture questions in that section before coding.
+- Next major task: **Tab Mode**. Revised plan is in `TAB_MODE_SPEC.md` section 11 (2026-10-29): first a floating Tab Mode button/window showing the bot's normal game UI and moving bot settings into Tools; second hide the bot's in-game UI; third implement attack/hoard/send-ships commands.
+- Tab Mode Phase 1 (2026-10-29, implemented, needs browser test):
+  - Target is **GoodClient only**; TulipBot is for mass botting and is shelved for this work (do not wire Tab Mode through `~/tulipbot`).
+  - Architecture: the GoodClient page owns a single bot iframe. The floating window hosts that iframe directly, so no cross-page `postMessage` is needed.
+  - `src/tabMode.js` creates a draggable `Tab` toggle (`#fxTabModeToggle`) and a floating panel (`#fxTabMode`) with a header, status line, reload button and iframe (`#fxTabModeFrame`).
+  - The bot iframe is lazy-created on first open, uses the same client URL with `?tabbot=1` (existing query params/hash preserved), and is only hidden/shown afterwards, so toggling does not reload it.
+  - The bot instance skips Tab Mode initialization (no recursive Tab Mode) but keeps its normal UI; clean/no-UI view is Phase 2.
+  - `Tools → Bot settings` (`src/toolbox.js`) targets only the bot shown in Tab Mode: status, Open Tab Mode, Reload bot, All On/Off, Opening, Infinite, bot mode. The section is hidden inside a `?tabbot=1` instance.
+  - Tab Mode strings are in `src/i18n.js` with ZH translations; `#fxTabMode` / `#fxTabModeToggle` are in the i18n roots.
+  - CSS was appended to `static/main.css`; built with `npm run build-client` (Exit OK, only webpack size warnings).
+  - 2026-10-29 fix: the game's DOM cleanup (`aI2.b` in `build/game.js`) removes direct `DIV`/`INPUT`/`BUTTON` children of `document.body`. Tab Mode's button/panel were direct body children, got detached, and `open()` acted on detached nodes while Tools (which re-attaches every 500 ms) disappeared. Tab Mode UI now mounts inside `#windowContainer` (a `SPAN`, never cleaned) and `ensureAttached()` runs every 1.5 s.
+  - UI change per user: the start button is now a standalone Tools-style floating `Bot` button (top-left, below Tools/Music) that opens/closes its own panel. The `Open Tab Mode` button was removed from Tools; `Tools → Bot settings` keeps status, Reload, and automation controls and points at the Bot button.
+  - Also fixed earlier overlap: `open()` closes Tools and the music panel first; their panel z-index is `2147483646` so Tab Mode stays on top.
+  - Remaining for Phase 1: manual browser test (button drag/click, panel opens without reload, bot iframe loads, Tools bot settings react to the bot). Then Phase 2 clean view, then the command layer.
 - Remote GitHub `goodclient_v2` is up to date as of 2026-10-29, including the lobby team split panel. HTTPS push is unreliable on this network (SSL EOF / connect failures). The working fallback is the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
@@ -53,14 +66,17 @@ Server is running from Termux home on port 8001:
 6. Multiple bots/TulipBots: parent page can spawn multiple bot iframes, but each full client is heavy and needs an isolated session/origin.
 7. AI: best next step is telemetry + parameter search over the existing rule-based automation, then replay/imitation learning; avoid end-to-end RL on mobile.
 8. `TAB_MODE_SPEC.md` is still untracked in git. Decide whether to commit it.
+9. Tab Mode Phase 1 needs a real browser test: standalone `Bot` button drag/click, panel open/close without bot iframe reload, bot client inside `?tabbot=1`, Tools → Bot settings reading/changing that bot. First test reported "Tools disappears but no bot UI"; root cause was the game's body cleanup detaching the Tab UI. Retest with the new build. Then implement Phase 2 clean view.
+10. Tab Mode bot and main share the same origin/localStorage (`fx_settings`), so their persisted automation settings overwrite each other on reload. In-memory they are independent while both are loaded. If independent bot settings are needed, namespace the settings key for `?tabbot=1` (not done yet).
 
 ## Key files
 
 - `patches/lobbyTeams.js` - exposes lobby mode, ready players and the current-game info button to the client.
 - `src/lobbyTeams.js` - lobby team assignment + draggable WindowManager window.
-- `src/windowManager.js` - existing window system used by Tools/Settings/lobby team split; reuse for Tab Mode.
-- `src/toolbox.js` - Tools panel; future home of bot settings.
-- `~/tulipbot/bot.js` - owns the bot iframes/layout if Tab Mode needs to move them.
+- `src/windowManager.js` - existing window system used by Tools/Settings/lobby team split.
+- `src/tabMode.js` - Tab Mode toggle/panel and the single bot iframe (`?tabbot=1`); Phase 1 shell.
+- `src/toolbox.js` - Tools panel; now includes `Tools → Bot settings` for the Tab Mode bot.
+- `~/tulipbot/bot.js` - mass-botting controller; currently shelved for Tab Mode work.
 - `TAB_MODE_SPEC.md` - Tab Mode plan; read section 11 first.
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.
 - `src/shipRoutes.js` - route drawing, colors, troop badges, route status.
@@ -85,4 +101,4 @@ Ask the assistant to read:
 ~/tulipbot/README.md
 ```
 
-Then continue from "Tab Mode shell" (see `TAB_MODE_SPEC.md` section 11). Remaining earlier tests: lobby team split manual check / ship troop badges / team mode / TulipBot custom lobby.
+Then continue from Tab Mode Phase 2 (clean/no-UI bot view), after manually testing Phase 1. Remaining earlier tests: lobby team split manual check / ship troop badges / team mode / TulipBot custom lobby.

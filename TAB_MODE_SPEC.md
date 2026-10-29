@@ -304,3 +304,22 @@ The lobby team split feature is implemented and pushed. Tab Mode is the next maj
 5. Does the Tab Mode button live in GoodClient (same page as the main game) or in TulipBot parent?
 
 Sections 3-4 (command semantics, phase order) remain the reference for attack/hoard/send-ships behavior.
+
+### Progress and resolved decisions (2026-10-29)
+
+Resolved with the user:
+
+- Scope is **GoodClient only**. TulipBot is for mass botting and is shelved; do not route Tab Mode through `~/tulipbot`.
+- One bot only (no Bot 1/2/3 selector).
+- The floating window defaults to the bot.
+- `Tools → Bot settings` applies only to the bot shown in Tab Mode.
+- Because GoodClient owns the bot iframe, the window hosts that iframe directly; no parent-page `postMessage` layer is needed for Phase 1.
+
+Phase 1 implemented (needs browser test):
+
+- `src/tabMode.js`: draggable `Tab` toggle + floating panel, lazy single bot iframe, `?tabbot=1` marks the bot instance so it does not create nested Tab Mode UI.
+- Toggle hide/show only; the iframe is not reloaded when the window closes.
+- `src/toolbox.js`: `Bot settings` section targeting the Tab Mode bot; hidden in the `?tabbot=1` instance.
+- i18n and CSS updated; `npm run build-client` passes.
+
+Next: manual Phase 1 test, then Phase 2 (clean/no-UI view for the bot), then Phase 3 command layer (attack player/team, hoard, send ships).

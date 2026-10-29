@@ -5,6 +5,7 @@ import initMusicPlayer from './musicPlayer.js';
 import initTheme from './theme.js';
 import { getTeamTag } from './teamTags.js';
 import initShipRoutes from './shipRoutes.js';
+import initTabMode from './tabMode.js';
 import { reportError } from './debugging.js';
 import { initI18n } from './i18n.js';
 
@@ -81,6 +82,7 @@ __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.automationControls = initAutomationControls();
 __fx.theme = initTheme();
 __fx.shipRoutes = initShipRoutes();
+__fx.tabMode = initTabMode();
 __fx.toolbox = initToolbox();
 try {
   __fx.musicPlayer = initMusicPlayer();

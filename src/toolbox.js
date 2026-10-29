@@ -5,6 +5,7 @@ import { openingTickOffsetToInternalTicks } from "./openingTickOffset.js";
 import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "./botAttackRate.js";
 import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 import { t } from "./i18n.js";
+import { isTabBotInstance } from "./tabMode.js";
 
 const POSITION_STORAGE_KEY = "fx_toolbox_position";
 const TOGGLE_POSITION_STORAGE_KEY = "fx_toolbox_toggle_position";
@@ -395,6 +396,51 @@ export default function initToolbox() {
     }))
   );
 
+  const botSection = makeSection(t("Bot settings"));
+  const botStatusLine = document.createElement("div");
+  botStatusLine.className = "fx-toolbox-status";
+  botStatusLine.textContent = t("Bot not loaded");
+
+  function getBotFx() {
+    return window.__fx.tabMode?.getBotFx?.() || null;
+  }
+  function getBotAutomation() {
+    const fx = getBotFx();
+    return fx && fx.openingAutomation ? fx.openingAutomation : null;
+  }
+  function botAction(action) {
+    const automation = getBotAutomation();
+    if (!automation) return;
+    action(automation);
+    render();
+  }
+
+  const botReloadButton = makeButton(t("Reload bot"), () => window.__fx.tabMode?.reload?.());
+  const botAllOnButton = makeButton(t("All On"), () => botAction((automation) => automation.setAllAutomationEnabled(true)));
+  const botAllOffButton = makeButton(t("All Off"), () => botAction((automation) => automation.setAllAutomationEnabled(false)));
+  const botOpeningButton = makeButton(t("Opening"), () => botAction((automation) => automation.toggleOpeningAutomationEnabled()));
+  const botInfiniteButton = makeButton(t("Infinite"), () => botAction((automation) => automation.toggleInfiniteExpansion()));
+  const tabBotModeSelect = document.createElement("select");
+  tabBotModeSelect.className = "fx-toolbox-input";
+  for (const mode of BOT_MODES) {
+    const option = document.createElement("option");
+    option.value = mode.value;
+    option.textContent = mode.label;
+    tabBotModeSelect.append(option);
+  }
+  tabBotModeSelect.addEventListener("change", () => {
+    botAction((automation) => automation.setAutoAttackMode(tabBotModeSelect.value));
+  });
+  botSection.append(
+    botStatusLine,
+    makeRow(botReloadButton),
+    makeRow(botAllOnButton, botAllOffButton, botOpeningButton, botInfiniteButton, tabBotModeSelect),
+    makeRow(Object.assign(document.createElement("span"), {
+      className: "fx-toolbox-note",
+      textContent: t("Click the Bot button to load the bot. These controls apply only to that bot.")
+    }))
+  );
+
   const statusSection = makeSection("Status");
   const statusLine = document.createElement("div");
   statusLine.className = "fx-toolbox-status";
@@ -405,7 +451,9 @@ export default function initToolbox() {
   const musicButton = makeButton(t("Music player"), () => window.__fx.musicPlayer?.open());
   statusSection.append(statusLine, makeRow(resetToggleButton, musicButton));
 
-  body.append(automationSection, openingSection, displaySection, themeSection, statusSection);
+  body.append(automationSection);
+  if (!isTabBotInstance()) body.append(botSection);
+  body.append(openingSection, displaySection, themeSection, statusSection);
   panel.append(header, body);
 
   function isInGame() {
@@ -631,6 +679,40 @@ export default function initToolbox() {
     statusLine.textContent = `tick ${tick} · opening ${settings.openingAutomationEnabled ? "on" : "off"} · infinite ${settings.infiniteExpansionEnabled ? "on" : "off"} · bot ${mode} · opening attacks ${attackCount}`;
     const shipState = window.__fx.shipRouteStatus;
     if (shipState) statusLine.textContent += ` · ships ${shipState.ships} · paths ${shipState.paths ?? '-'} · routes ${shipState.routes}`;
+
+    if (!isTabBotInstance()) {
+      const botFx = getBotFx();
+      const botAutomation = botFx && botFx.openingAutomation ? botFx.openingAutomation : null;
+      const botSettings = botFx && botFx.settings ? botFx.settings : null;
+      const botLoaded = Boolean(botAutomation);
+      for (const button of [botAllOnButton, botAllOffButton, botOpeningButton, botInfiniteButton]) {
+        button.disabled = !botLoaded;
+      }
+      botReloadButton.disabled = !window.__fx.tabMode;
+      tabBotModeSelect.disabled = !botLoaded;
+
+      if (!window.__fx.tabMode) {
+        botStatusLine.textContent = t("Tab Mode unavailable");
+        botStatusLine.classList.add("bad");
+      } else if (!botLoaded) {
+        botStatusLine.textContent = t("Bot not loaded · click the Bot button to load it");
+        botStatusLine.classList.add("bad");
+      } else {
+        botStatusLine.classList.remove("bad");
+        const botTick = Number(botAutomation.lastTick ?? -1);
+        const botMode = botAutomation.getAutoAttackMode();
+        tabBotModeSelect.value = botMode;
+        botAllOnButton.classList.toggle("active", Boolean(botSettings?.openingAutomationEnabled && botSettings?.infiniteExpansionEnabled && botMode !== "off"));
+        botAllOffButton.classList.toggle("active", !botSettings?.openingAutomationEnabled && !botSettings?.infiniteExpansionEnabled && botMode === "off");
+        botOpeningButton.classList.toggle("active", Boolean(botSettings?.openingAutomationEnabled));
+        botInfiniteButton.classList.toggle("active", Boolean(botSettings?.infiniteExpansionEnabled));
+        botStatusLine.textContent =
+          `${t("Bot ready")} · tick ${botTick} · ` +
+          `${t("Opening")} ${botSettings?.openingAutomationEnabled ? t("On") : t("Off")} · ` +
+          `${t("Infinite")} ${botSettings?.infiniteExpansionEnabled ? t("On") : t("Off")} · ` +
+          `${t("Bot")} ${botMode}`;
+      }
+    }
   }
 
   window.addEventListener("keydown", (event) => {
