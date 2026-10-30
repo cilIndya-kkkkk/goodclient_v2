@@ -1,11 +1,20 @@
 export const CHANGELOG = [
   {
     "date": "2026-10-30",
+    "title": "Attack Player and Boat",
+    "items": [
+      "Attack Player: press it, click an enemy on the bot map, then press the red Attack button. Default is 9%; below 100 density it attacks once, at 100 or above it retries every 6 seconds.",
+      "Boat: press it, then click a target on the bot map. It uses the game's built-in launch-ship action at 4%.",
+      "Attack team was skipped for now."
+    ]
+  },
+  {
+    "date": "2026-10-30",
     "title": "Separate bot account and in-app guides",
     "items": [
       "The Tab Mode bot now has its own localStorage namespace, so it can stay logged in to a different account than the main client. Log in once inside the bot view and it persists across reloads.",
       "Tools now has Changelog and Usage Guide buttons at the top.",
-      "Next up: attack player/team and send-ship commands."
+      "Followed by map-based Attack Player and Boat commands."
     ]
   },
   {
@@ -79,6 +88,11 @@ export const GUIDE = [
     "id": "hoard",
     "title": "Hoard",
     "html": "\n        <p>Hoard makes the bot stop attacking and accumulate troops, then donate to your main player.</p>\n        <ol>\n          <li>Press <strong>Hoard</strong> in the Tab Mode window.</li>\n          <li>Click a <strong>teammate</strong> on the bot map. A green <strong>Donate</strong> button appears.</li>\n          <li>Press Donate to lock the target. Below 130 density it donates once; at 130 or above it donates 10% and retries every 6 seconds.</li>\n        </ol>\n        <p>Press <strong>Stop hoard</strong> to stop and restore the automation flags saved when hoard started.</p>\n        <p class=\"fx-help-tip\">Tip: if Donate does not appear, the clicked tile is not a same-team player or there is no transferable amount.</p>\n      "
+  },
+  {
+    "id": "attackboat",
+    "title": "Attack Player and Boat",
+    "html": "\n        <p>These commands also use map selection in the Tab Mode window.</p>\n        <ul>\n          <li><strong>Attack Player</strong>: press it, click an enemy on the bot map, then press the red <strong>Attack</strong> button. Default is 9%. Below 100 density it attacks once; at 100 or above it attacks immediately and retries every 6 seconds.</li>\n          <li><strong>Boat</strong>: press it, then click a target on the bot map. The game's built-in launch-ship action is used at 4%.</li>\n        </ul>\n        <p>Attack and hoard are mutually exclusive. Boat is one-shot and does not change automation.</p>\n      "
   },
   {
     "id": "display",
