@@ -35,6 +35,11 @@ const g = {
   supportMath: "bY",
   supportAmount: "a3b",
   supportCalc: "aLr",
+  mouseActions: "a8P",
+  setMouse: "a1B",
+  runMouseAction: "a1C",
+  viewport: "aW",
+  pixelScale: "eB",
 };
 
 export default definePatch((modUtils) => {
@@ -67,6 +72,9 @@ function applyOpeningAutomation(modUtils) {
     [`${g.mapRenderer}.${g.screenInBounds}(`, "MapRenderer.screenInBounds"],
     [`${g.supportUtils}.${g.supportMath}.${g.supportAmount}(`, "SupportMath.supportAmount"],
     [`${g.supportUtils}.${g.supportMath}.${g.supportCalc}(`, "SupportMath.supportCalc"],
+    [`${g.mouseActions}.${g.setMouse}(`, "MouseActions.setMouse"],
+    [`${g.mouseActions}.${g.runMouseAction}(`, "MouseActions.runMouseAction"],
+    [`${g.viewport}.${g.pixelScale}`, "Viewport.pixelScale"],
   ].forEach(([access, readableName]) => {
     if (!script.includes(access))
       missingRawNames.push(`"${access}" (${readableName})`);
@@ -374,6 +382,29 @@ function applyOpeningAutomation(modUtils) {
                     return ${g.mapData}.${g.getTileOwner}(tile);
                 } catch (_error) {
                     return -1;
+                }
+            };
+            __fx.botMap.launchShipAt = function(clientX, clientY, percent) {
+                try {
+                    var scale = ${g.viewport}.${g.pixelScale} || 1;
+                    var value = Number(percent);
+                    if (!isFinite(value)) value = 0.04;
+                    value = Math.max(0, Math.min(1, value));
+                    var keybinds = __fx.keybindFunctions;
+                    var previous = keybinds && typeof keybinds.getAttackPercentage === "function" ? keybinds.getAttackPercentage() : null;
+                    if (keybinds && typeof keybinds.setAbsolute === "function") {
+                        keybinds.setAbsolute(value);
+                        if (typeof keybinds.repaintAttackPercentageBar === "function") keybinds.repaintAttackPercentageBar();
+                    }
+                    ${g.mouseActions}.${g.setMouse}(Math.floor(scale * Number(clientX)), Math.floor(scale * Number(clientY)));
+                    ${g.mouseActions}.${g.runMouseAction}(1);
+                    if (previous !== null && keybinds && typeof keybinds.setAbsolute === "function") {
+                        keybinds.setAbsolute(previous);
+                        if (typeof keybinds.repaintAttackPercentageBar === "function") keybinds.repaintAttackPercentageBar();
+                    }
+                    return true;
+                } catch (_error) {
+                    return false;
                 }
             };
             __fx.openingAutomation.cancelPlayerAttack=(target)=> {

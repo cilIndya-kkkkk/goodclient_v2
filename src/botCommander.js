@@ -6,6 +6,7 @@ const HOARD_DENSITY = 130;
 const ATTACK_DENSITY = 100;
 const SUPPORT_PERCENT = 0.1;
 const ATTACK_PERCENT = 0.09;
+const SHIP_PERCENT = 0.04;
 const COMMAND_INTERVAL_MS = 6000;
 const TICK_INTERVAL_MS = 1000;
 
@@ -286,7 +287,9 @@ export default function initBotCommander() {
 
   function showHint(mode) {
     ensureUi();
-    hint.textContent = mode === "attack" ? t("Click an enemy on the map") : t("Click a teammate on the map");
+    hint.textContent = mode === "attack" ? t("Click an enemy on the map")
+      : mode === "boat" ? t("Click a boat target on the map")
+      : t("Click a teammate on the map");
     hint.style.display = "block";
     hideCommandButton();
   }
@@ -300,6 +303,12 @@ export default function initBotCommander() {
     const now = Date.now();
     if (now - lastSelectAt < 300) return;
     lastSelectAt = now;
+    if (selectionMode === "boat") {
+      const launch = window.__fx && window.__fx.botMap && window.__fx.botMap.launchShipAt;
+      if (typeof launch === "function") launch(clientX, clientY, SHIP_PERCENT);
+      cancelSelection();
+      return;
+    }
     const playerAt = window.__fx && window.__fx.botMap && window.__fx.botMap.playerAt;
     if (typeof playerAt !== "function") return;
     const target = Number(playerAt(clientX, clientY));
@@ -331,9 +340,9 @@ export default function initBotCommander() {
 
   function startSelection(mode = "hoard") {
     if (!gameReady()) return false;
-    if (activeMode) endMode();
+    if (mode !== "boat" && activeMode) endMode();
     cancelSelection();
-    selectionMode = mode === "attack" ? "attack" : "hoard";
+    selectionMode = mode === "attack" ? "attack" : mode === "boat" ? "boat" : "hoard";
     pendingTargetId = -1;
     pendingTargetName = "";
     showHint(selectionMode);
@@ -413,6 +422,7 @@ export default function initBotCommander() {
       attackThreshold: ATTACK_DENSITY,
       supportPercent: SUPPORT_PERCENT,
       attackPercent: ATTACK_PERCENT,
+      shipPercent: SHIP_PERCENT,
       lastCommandAt,
       lastCommandOk,
     };

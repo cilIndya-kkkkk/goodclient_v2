@@ -239,7 +239,16 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     else commander.startSelection("attack");
     renderStatus();
   });
-  hoardRow.append(hoardButton, attackButton);
+  const boatButton = makeControlButton(t("Boat"), () => {
+    const fx = getBotFx();
+    const commander = fx && fx.botCommander ? fx.botCommander : null;
+    if (!commander) return;
+    const state = commander.getState();
+    if (state.selectionMode === "boat") commander.cancelSelection();
+    else commander.startSelection("boat");
+    renderStatus();
+  });
+  hoardRow.append(hoardButton, attackButton, boatButton);
 
   const hoardStatus = document.createElement("div");
   hoardStatus.id = "fxTabModeHoardStatus";
@@ -247,8 +256,11 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
   const attackStatus = document.createElement("div");
   attackStatus.id = "fxTabModeAttackStatus";
   attackStatus.textContent = t("Attack Off");
+  const boatStatus = document.createElement("div");
+  boatStatus.id = "fxTabModeBoatStatus";
+  boatStatus.textContent = t("Boat 4%");
 
-  controls.append(autoRow, spendRow, rateRow, hoardRow, hoardStatus, attackStatus);
+  controls.append(autoRow, spendRow, rateRow, hoardRow, hoardStatus, attackStatus, boatStatus);
 
   const resizeHandle = document.createElement("div");
   resizeHandle.id = "fxTabModeResize";
@@ -367,18 +379,19 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     const fx = getBotFx();
     const automation = fx && fx.openingAutomation ? fx.openingAutomation : null;
     if (!automation) {
-      for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton]) button.disabled = true;
+      for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton, boatButton]) button.disabled = true;
       modeSelect.disabled = true;
       spendSlider.disabled = true;
       rateSlider.disabled = true;
       hoardStatus.textContent = t("Bot not loaded");
       attackStatus.textContent = t("Bot not loaded");
+      boatStatus.textContent = t("Bot not loaded");
       return;
     }
 
     const settings = fx.settings || {};
     const mode = automation.getAutoAttackMode();
-    for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton]) button.disabled = false;
+    for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton, boatButton]) button.disabled = false;
     modeSelect.disabled = false;
     spendSlider.disabled = false;
     rateSlider.disabled = false;
@@ -401,6 +414,7 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     if (!commander) {
       hoardStatus.textContent = t("Bot not loaded");
       attackStatus.textContent = t("Bot not loaded");
+      boatStatus.textContent = t("Bot not loaded");
       return;
     }
 
@@ -411,6 +425,8 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     attackButton.textContent = state.selectionMode === "attack" ? t("Cancel")
       : state.mode === "attack" ? t("Stop attack") : t("Attack Player");
     attackButton.classList.toggle("active", Boolean(state.selectionMode === "attack" || state.mode === "attack"));
+    boatButton.textContent = state.selectionMode === "boat" ? t("Cancel") : t("Boat");
+    boatButton.classList.toggle("active", state.selectionMode === "boat");
     if (state.selectionMode === "hoard") {
       hoardStatus.textContent = t("Click a teammate on the map");
     } else {
@@ -429,6 +445,9 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
         `${state.attackTargetName || t("No target")}` +
         `${state.mode === "attack" && state.looping ? " · " + t("Loop") : ""}`;
     }
+    boatStatus.textContent = state.selectionMode === "boat"
+      ? t("Click a boat target on the map")
+      : `${t("Boat")} ${Math.round(Number(state.shipPercent || 0.04) * 100)}%`;
   }
 
   function renderStatus() {

@@ -278,3 +278,12 @@ Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention 
 - Default attack percentage is 9%. Density `<100` = one attack; `>=100` = initial attack plus a 6s retry while density stays `>=100`.
 - Attack and hoard are mutually exclusive; starting one ends the other. Stopping restores automation and cancels the current attack target.
 - Pending confirmation: density/cadence rule and stop-cancel behavior.
+
+
+### Boat command first pass (2026-10-30)
+
+- Host window has `Boat` beside Hoard/Attack Player.
+- Press Boat, then click a target on the bot map. It calls `__fx.botMap.launchShipAt`, which uses the game's own `MouseActions.runMouseAction(1)` (`a1C(1)`) path for "Launch Ship Towards Mouse Pointer".
+- Default is 4%; the attack percentage is temporarily set and restored. One-shot, no loop, automation unchanged.
+- The built-in ship logic validates the target and path.
+- Pending: real-match test of valid water targets and whether 4% is applied exactly.
