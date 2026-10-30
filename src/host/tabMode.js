@@ -224,18 +224,31 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     const commander = fx && fx.botCommander ? fx.botCommander : null;
     if (!commander) return;
     const state = commander.getState();
-    if (state.selecting) commander.cancelSelection();
-    else if (state.enabled) commander.stopHoard();
-    else commander.startSelection();
+    if (state.selectionMode === "hoard") commander.cancelSelection();
+    else if (state.mode === "hoard") commander.stopMode();
+    else commander.startSelection("hoard");
     renderStatus();
   });
-  hoardRow.append(hoardButton);
+  const attackButton = makeControlButton(t("Attack Player"), () => {
+    const fx = getBotFx();
+    const commander = fx && fx.botCommander ? fx.botCommander : null;
+    if (!commander) return;
+    const state = commander.getState();
+    if (state.selectionMode === "attack") commander.cancelSelection();
+    else if (state.mode === "attack") commander.stopMode();
+    else commander.startSelection("attack");
+    renderStatus();
+  });
+  hoardRow.append(hoardButton, attackButton);
 
   const hoardStatus = document.createElement("div");
   hoardStatus.id = "fxTabModeHoardStatus";
   hoardStatus.textContent = t("Hoard Off");
+  const attackStatus = document.createElement("div");
+  attackStatus.id = "fxTabModeAttackStatus";
+  attackStatus.textContent = t("Attack Off");
 
-  controls.append(autoRow, spendRow, rateRow, hoardRow, hoardStatus);
+  controls.append(autoRow, spendRow, rateRow, hoardRow, hoardStatus, attackStatus);
 
   const resizeHandle = document.createElement("div");
   resizeHandle.id = "fxTabModeResize";
@@ -354,17 +367,18 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
     const fx = getBotFx();
     const automation = fx && fx.openingAutomation ? fx.openingAutomation : null;
     if (!automation) {
-      for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton]) button.disabled = true;
+      for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton]) button.disabled = true;
       modeSelect.disabled = true;
       spendSlider.disabled = true;
       rateSlider.disabled = true;
       hoardStatus.textContent = t("Bot not loaded");
+      attackStatus.textContent = t("Bot not loaded");
       return;
     }
 
     const settings = fx.settings || {};
     const mode = automation.getAutoAttackMode();
-    for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton]) button.disabled = false;
+    for (const button of [allOnButton, allOffButton, openingButton, infiniteButton, hoardButton, attackButton]) button.disabled = false;
     modeSelect.disabled = false;
     spendSlider.disabled = false;
     rateSlider.disabled = false;
@@ -383,22 +397,37 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
 
     const commander = fx.botCommander || null;
     hoardButton.disabled = !commander;
+    attackButton.disabled = !commander;
     if (!commander) {
       hoardStatus.textContent = t("Bot not loaded");
+      attackStatus.textContent = t("Bot not loaded");
       return;
     }
 
     const state = commander.getState();
-    hoardButton.textContent = state.selecting ? t("Cancel") : state.enabled ? t("Stop hoard") : t("Hoard");
-    hoardButton.classList.toggle("active", Boolean(state.selecting || state.enabled));
-    if (state.selecting) {
+    hoardButton.textContent = state.selectionMode === "hoard" ? t("Cancel")
+      : state.mode === "hoard" ? t("Stop hoard") : t("Hoard");
+    hoardButton.classList.toggle("active", Boolean(state.selectionMode === "hoard" || state.mode === "hoard"));
+    attackButton.textContent = state.selectionMode === "attack" ? t("Cancel")
+      : state.mode === "attack" ? t("Stop attack") : t("Attack Player");
+    attackButton.classList.toggle("active", Boolean(state.selectionMode === "attack" || state.mode === "attack"));
+    if (state.selectionMode === "hoard") {
       hoardStatus.textContent = t("Click a teammate on the map");
     } else {
       hoardStatus.textContent =
-        `${t("Hoard")} ${state.enabled ? t("On") : t("Off")} · ` +
+        `${t("Hoard")} ${state.mode === "hoard" ? t("On") : t("Off")} · ` +
         `${t("Density")} ${Number(state.density || 0).toFixed(1)} · ` +
         `${state.mainPlayerName || t("No main player")}` +
-        `${state.looping ? " · " + t("Loop") : ""}`;
+        `${state.mode === "hoard" && state.looping ? " · " + t("Loop") : ""}`;
+    }
+    if (state.selectionMode === "attack") {
+      attackStatus.textContent = t("Click an enemy on the map");
+    } else {
+      attackStatus.textContent =
+        `${t("Attack Player")} ${state.mode === "attack" ? t("On") : t("Off")} · ` +
+        `${t("Density")} ${Number(state.density || 0).toFixed(1)} · ` +
+        `${state.attackTargetName || t("No target")}` +
+        `${state.mode === "attack" && state.looping ? " · " + t("Loop") : ""}`;
     }
   }
 

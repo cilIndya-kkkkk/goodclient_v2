@@ -1515,3 +1515,8 @@ body.fx-clean .window {
 	background: rgba(110, 210, 160, 0.08);
 	color: #bfe7cf;
 }
+
+#fxBotDonateTarget.attack {
+	background: #b3261e;
+	border-color: #ffb4a8;
+}

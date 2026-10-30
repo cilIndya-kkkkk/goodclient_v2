@@ -2,9 +2,11 @@ import { getVar } from "./gameInterface.js";
 import { t } from "./i18n.js";
 
 const MAIN_PLAYER_KEY = "fx_hoard_main_player_name";
-const DENSITY_THRESHOLD = 130;
+const HOARD_DENSITY = 130;
+const ATTACK_DENSITY = 100;
 const SUPPORT_PERCENT = 0.1;
-const SUPPORT_INTERVAL_MS = 6000;
+const ATTACK_PERCENT = 0.09;
+const COMMAND_INTERVAL_MS = 6000;
 const TICK_INTERVAL_MS = 1000;
 
 function asNumber(value) {
@@ -13,19 +15,21 @@ function asNumber(value) {
 }
 
 export default function initBotCommander() {
-  let selecting = false;
-  let enabled = false;
+  let selectionMode = null;
+  let activeMode = null;
   let looping = false;
   let timer = null;
   let saved = null;
-  let lastSupportAt = 0;
-  let lastSupportOk = null;
+  let lastCommandAt = 0;
+  let lastCommandOk = null;
   let lastSelectAt = 0;
   let mainPlayerName = localStorage.getItem(MAIN_PLAYER_KEY) || "";
   let mainPlayerId = -1;
+  let attackTargetId = -1;
+  let attackTargetName = "";
   let pendingTargetId = -1;
   let pendingTargetName = "";
-  let donateButton = null;
+  let commandButton = null;
   let hint = null;
 
   function gameReady() {
@@ -150,26 +154,45 @@ export default function initBotCommander() {
     return Math.max(0, Math.min(1, asNumber(api.getMaxSupportPercent(target))));
   }
 
+  function canAttackTarget(target) {
+    const api = automation();
+    return Boolean(api && typeof api.canAttackTarget === "function" && api.canAttackTarget(target));
+  }
+
   function donateOnce(target) {
     const api = automation();
     if (!api || typeof api.sendSupport !== "function") return false;
-    lastSupportAt = Date.now();
-    lastSupportOk = null;
+    lastCommandAt = Date.now();
+    lastCommandOk = null;
     const maxPercent = maxSupportPercent(target);
     if (maxPercent <= 0) return false;
     const percent = Math.min(SUPPORT_PERCENT, maxPercent);
-    lastSupportOk = Boolean(api.sendSupport(target, percent));
-    return lastSupportOk;
+    lastCommandOk = Boolean(api.sendSupport(target, percent));
+    return lastCommandOk;
+  }
+
+  function attackOnce(target) {
+    const api = automation();
+    if (!api || typeof api.attackPlayerTarget !== "function" || !canAttackTarget(target)) return false;
+    lastCommandAt = Date.now();
+    lastCommandOk = Boolean(api.attackPlayerTarget(target, ATTACK_PERCENT));
+    return lastCommandOk;
   }
 
   function tick() {
-    if (!enabled || !looping || !gameReady()) return;
-    if (Date.now() - lastSupportAt < SUPPORT_INTERVAL_MS) return;
+    if (!activeMode || !looping || !gameReady()) return;
+    if (Date.now() - lastCommandAt < COMMAND_INTERVAL_MS) return;
     const stats = currentStats();
-    if (stats.density < DENSITY_THRESHOLD) return;
-    const target = resolveMainPlayer();
-    if (target < 0) return;
-    donateOnce(target);
+    if (activeMode === "hoard") {
+      if (stats.density < HOARD_DENSITY) return;
+      const target = resolveMainPlayer();
+      if (target < 0) return;
+      donateOnce(target);
+    } else if (activeMode === "attack") {
+      if (stats.density < ATTACK_DENSITY) return;
+      if (attackTargetId < 0 || !canAttackTarget(attackTargetId)) return;
+      attackOnce(attackTargetId);
+    }
   }
 
   function startLoop() {
@@ -184,51 +207,88 @@ export default function initBotCommander() {
     }
   }
 
+  function beginMode(mode) {
+    const api = automation();
+    if (!api) return false;
+    if (activeMode) endMode();
+    const settings = window.__fx.settings || {};
+    saved = {
+      opening: Boolean(settings.openingAutomationEnabled),
+      infinite: Boolean(settings.infiniteExpansionEnabled),
+      mode: api.getAutoAttackMode(),
+    };
+    api.setAllAutomationEnabled(false);
+    activeMode = mode;
+    looping = false;
+    lastCommandAt = 0;
+    lastCommandOk = null;
+    return true;
+  }
+
+  function endMode() {
+    if (!activeMode) return false;
+    const previous = activeMode;
+    const api = automation();
+    if (previous === "attack" && attackTargetId >= 0 && api && typeof api.cancelPlayerAttack === "function") {
+      api.cancelPlayerAttack(attackTargetId);
+    }
+    activeMode = null;
+    looping = false;
+    stopLoop();
+    if (saved && api) {
+      api.setOpeningAutomationEnabled(saved.opening);
+      api.setInfiniteExpansionEnabled(saved.infinite);
+      api.setAutoAttackMode(saved.mode);
+      saved = null;
+    }
+    if (previous === "attack") {
+      attackTargetId = -1;
+      attackTargetName = "";
+    }
+    return true;
+  }
+
   function uiHost() {
     return document.getElementById("windowContainer") || document.body;
   }
 
   function ensureUi() {
-    if (!donateButton) {
-      donateButton = document.createElement("button");
-      donateButton.type = "button";
-      donateButton.id = "fxBotDonateTarget";
-      donateButton.textContent = t("Donate");
-      donateButton.addEventListener("click", (event) => {
+    if (!commandButton) {
+      commandButton = document.createElement("button");
+      commandButton.type = "button";
+      commandButton.id = "fxBotDonateTarget";
+      commandButton.addEventListener("click", (event) => {
         event.stopPropagation();
         confirmSelection();
       });
-      uiHost().appendChild(donateButton);
+      uiHost().appendChild(commandButton);
     }
     if (!hint) {
       hint = document.createElement("div");
       hint.id = "fxBotHoardHint";
-      hint.textContent = t("Click a teammate on the map");
       uiHost().appendChild(hint);
     }
   }
 
-  function positionDonateButton(x, y) {
+  function showCommandButton(x, y, mode) {
     ensureUi();
-    donateButton.style.left = `${Math.round(x)}px`;
-    donateButton.style.top = `${Math.round(Math.max(8, y - 42))}px`;
-  }
-
-  function showDonateButton(x, y) {
-    ensureUi();
-    positionDonateButton(x, y);
-    donateButton.style.display = "block";
+    commandButton.textContent = mode === "attack" ? t("Attack") : t("Donate");
+    commandButton.classList.toggle("attack", mode === "attack");
+    commandButton.style.left = `${Math.round(x)}px`;
+    commandButton.style.top = `${Math.round(Math.max(8, y - 42))}px`;
+    commandButton.style.display = "block";
     hint.style.display = "none";
   }
 
-  function hideDonateButton() {
-    if (donateButton) donateButton.style.display = "none";
+  function hideCommandButton() {
+    if (commandButton) commandButton.style.display = "none";
   }
 
-  function showHint() {
+  function showHint(mode) {
     ensureUi();
+    hint.textContent = mode === "attack" ? t("Click an enemy on the map") : t("Click a teammate on the map");
     hint.style.display = "block";
-    hideDonateButton();
+    hideCommandButton();
   }
 
   function hideHint() {
@@ -236,107 +296,98 @@ export default function initBotCommander() {
   }
 
   function selectAt(clientX, clientY) {
-    if (!selecting) return;
+    if (!selectionMode) return;
     const now = Date.now();
     if (now - lastSelectAt < 300) return;
     lastSelectAt = now;
     const playerAt = window.__fx && window.__fx.botMap && window.__fx.botMap.playerAt;
     if (typeof playerAt !== "function") return;
     const target = Number(playerAt(clientX, clientY));
-    if (!Number.isFinite(target) || target < 0 || target === ownPlayerId() || !canSupport(target)) {
+    const valid = Number.isFinite(target) && target >= 0 && target !== ownPlayerId()
+      && (selectionMode === "attack" ? canAttackTarget(target) : canSupport(target));
+    if (!valid) {
       pendingTargetId = -1;
       pendingTargetName = "";
-      hideDonateButton();
+      hideCommandButton();
       return;
     }
     const player = getPlayerList().find((item) => item.id === target);
     pendingTargetId = target;
     pendingTargetName = player ? player.name : String(playerNames()[target] || "");
-    showDonateButton(clientX, clientY);
+    showCommandButton(clientX, clientY, selectionMode);
   }
 
   function pointerSelect(event) {
-    if (!selecting) return;
+    if (!selectionMode) return;
     if (event.button !== undefined && event.button !== 0) return;
     selectAt(event.clientX, event.clientY);
   }
 
   function touchSelect(event) {
-    if (!selecting) return;
+    if (!selectionMode) return;
     const touch = event.changedTouches && event.changedTouches[0];
     if (touch) selectAt(touch.clientX, touch.clientY);
   }
 
-  function startSelection() {
-    if (enabled || selecting) return false;
+  function startSelection(mode = "hoard") {
     if (!gameReady()) return false;
-    selecting = true;
+    if (activeMode) endMode();
+    cancelSelection();
+    selectionMode = mode === "attack" ? "attack" : "hoard";
     pendingTargetId = -1;
     pendingTargetName = "";
-    showHint();
+    showHint(selectionMode);
     return true;
   }
 
   function cancelSelection() {
-    selecting = false;
+    selectionMode = null;
     pendingTargetId = -1;
     pendingTargetName = "";
-    hideDonateButton();
+    hideCommandButton();
     hideHint();
   }
 
   function confirmSelection() {
-    if (!selecting || pendingTargetId < 0) return false;
+    if (!selectionMode || pendingTargetId < 0) return false;
+    const mode = selectionMode;
     const target = pendingTargetId;
     const targetName = pendingTargetName;
     const stats = currentStats();
-    selecting = false;
-    hideDonateButton();
-    hideHint();
-    setMainPlayer({ id: target, name: targetName });
+    cancelSelection();
 
-    const api = automation();
-    if (!api) return false;
-    if (!enabled) {
-      const settings = window.__fx.settings || {};
-      saved = {
-        opening: Boolean(settings.openingAutomationEnabled),
-        infinite: Boolean(settings.infiniteExpansionEnabled),
-        mode: api.getAutoAttackMode(),
-      };
-      api.setAllAutomationEnabled(false);
-      enabled = true;
+    if (mode === "hoard") {
+      setMainPlayer({ id: target, name: targetName });
+      if (!beginMode("hoard")) return false;
+      const donated = donateOnce(target);
+      if (stats.density >= HOARD_DENSITY) {
+        looping = true;
+        startLoop();
+      } else {
+        looping = false;
+        stopLoop();
+      }
+      return donated;
     }
 
-    lastSupportAt = 0;
-    lastSupportOk = null;
-    const donated = donateOnce(target);
-    if (stats.density >= DENSITY_THRESHOLD) {
+    attackTargetId = target;
+    attackTargetName = targetName;
+    if (!beginMode("attack")) return false;
+    const attacked = attackOnce(target);
+    if (stats.density >= ATTACK_DENSITY) {
       looping = true;
       startLoop();
     } else {
       looping = false;
       stopLoop();
     }
-    return donated;
+    return attacked;
   }
 
-  function stopHoard() {
-    if (!enabled && !selecting) return false;
-    const wasEnabled = enabled;
-    enabled = false;
-    looping = false;
-    stopLoop();
+  function stopMode() {
+    if (!activeMode && !selectionMode) return false;
+    endMode();
     cancelSelection();
-    if (wasEnabled && saved) {
-      const api = automation();
-      if (api) {
-        api.setOpeningAutomationEnabled(saved.opening);
-        api.setInfiniteExpansionEnabled(saved.infinite);
-        api.setAutoAttackMode(saved.mode);
-      }
-      saved = null;
-    }
     return true;
   }
 
@@ -344,19 +395,26 @@ export default function initBotCommander() {
     const stats = currentStats();
     const target = resolveMainPlayer();
     return {
-      selecting,
-      enabled,
+      selecting: Boolean(selectionMode),
+      selectionMode,
+      mode: activeMode,
+      enabled: activeMode === "hoard",
+      attackEnabled: activeMode === "attack",
       looping,
       density: stats.density,
       troops: stats.troops,
       land: stats.land,
       mainPlayerId: target,
       mainPlayerName: mainPlayerName || "",
+      attackTargetId,
+      attackTargetName,
       pendingTargetName,
-      threshold: DENSITY_THRESHOLD,
+      hoardThreshold: HOARD_DENSITY,
+      attackThreshold: ATTACK_DENSITY,
       supportPercent: SUPPORT_PERCENT,
-      lastSupportAt,
-      lastSupportOk,
+      attackPercent: ATTACK_PERCENT,
+      lastCommandAt,
+      lastCommandOk,
     };
   }
 
@@ -371,7 +429,8 @@ export default function initBotCommander() {
     startSelection,
     cancelSelection,
     confirmSelection,
-    stopHoard,
+    stopMode,
+    stopHoard: stopMode,
     setMainPlayer,
     getMainPlayer: () => ({ id: resolveMainPlayer(), name: mainPlayerName || "" }),
     getPlayerList,

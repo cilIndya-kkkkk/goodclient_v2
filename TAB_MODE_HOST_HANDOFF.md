@@ -268,3 +268,13 @@ Manual test checklist: use `TAB_MODE_HOST_PROMPT.md` §6. Pay special attention 
 - Main player is stored by raw name and re-resolved each game; support is same-team only. The green Donate button appears only for a same-team target with a valid transferable amount.
 - 2026-10-29: user confirmed the map-based hoard selection flow works. Actual donation amount/cadence still needs gameplay validation.
 - Pending user confirmation: 130 absolute vs percentage, 6s cadence. The hoard controls now live in the Tab Mode window as requested.
+
+
+### Attack Player first pass (2026-10-30)
+
+- Host window now has `Attack Player` beside `Hoard`.
+- Press it, click an enemy on the bot map, then press the red `Attack` button.
+- Uses `canAttackTarget` / `attackPlayerTarget` in `patches/gc_openingAutomation.js`, which call the game's own `GameCommandSender.sendAttack`.
+- Default attack percentage is 9%. Density `<100` = one attack; `>=100` = initial attack plus a 6s retry while density stays `>=100`.
+- Attack and hoard are mutually exclusive; starting one ends the other. Stopping restores automation and cancels the current attack target.
+- Pending confirmation: density/cadence rule and stop-cancel behavior.

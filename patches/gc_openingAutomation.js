@@ -341,6 +341,27 @@ function applyOpeningAutomation(modUtils) {
                 }
                 return false;
             };
+            __fx.openingAutomation.canAttackTarget=(target)=> {
+                if (${dict.game}.${dict.gIsReplay}) return false;
+                target = Number(target);
+                var player = ${dict.game}.${dict.playerId};
+                var maxPlayers = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                if (!isFinite(target) || target < 0 || target >= maxPlayers || target === player) return false;
+                if ((${dict.playerData}.${dict.playerTerritories}[target] || 0) <= 0) return false;
+                return __fxCanAttack(player, target);
+            };
+            __fx.openingAutomation.attackPlayerTarget=(target, percent)=> {
+                if (!__fx.openingAutomation.canAttackTarget(target)) return false;
+                percent = Number(percent);
+                if (!isFinite(percent)) percent = 0.09;
+                percent = Math.max(0, Math.min(1, percent));
+                var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
+                if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack} === "function") {
+                    ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack}(sliderValue, Number(target));
+                    return true;
+                }
+                return false;
+            };
             __fx.botMap = __fx.botMap || {};
             __fx.botMap.playerAt = function(clientX, clientY) {
                 try {
