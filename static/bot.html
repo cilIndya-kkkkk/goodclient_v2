@@ -32,6 +32,58 @@
     }
   </style>
   <script>
+    // Give the bot its own account/settings storage. The game stores account
+    // credentials in localStorage (keys like v121/d121); without a namespace the
+    // main client and the bot would keep overwriting each other's account.
+    // This runs before any game/FX script, so every localStorage access in the
+    // iframe goes through the prefixed view. Log in once in the bot and it
+    // survives reloads independently from the main account.
+    (function () {
+      try {
+        var real = window.localStorage;
+        var prefix = "fxbot::";
+        function namespacedKeys() {
+          var result = [];
+          for (var index = 0; index < real.length; index++) {
+            var key = real.key(index);
+            if (key && key.indexOf(prefix) === 0) result.push(key);
+          }
+          return result;
+        }
+        var storage = {
+          get length() {
+            return namespacedKeys().length;
+          },
+          key: function (index) {
+            var keys = namespacedKeys();
+            if (index < 0 || index >= keys.length) return null;
+            return keys[index].slice(prefix.length);
+          },
+          getItem: function (key) {
+            return real.getItem(prefix + String(key));
+          },
+          setItem: function (key, value) {
+            real.setItem(prefix + String(key), String(value));
+          },
+          removeItem: function (key) {
+            real.removeItem(prefix + String(key));
+          },
+          clear: function () {
+            namespacedKeys().forEach(function (key) {
+              real.removeItem(key);
+            });
+          }
+        };
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          get: function () {
+            return storage;
+          }
+        });
+      } catch (_error) {}
+    })();
+  </script>
+  <script>
     // Guarantee the bot flag even if the page is opened/reloaded without it,
     // so the bundle never boots as a full client here.
     (function () {
