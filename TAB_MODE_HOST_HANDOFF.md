@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-29 (commit `ccaec57`)
 
-This document is for a different model/engineer continuing Tab Mode. Read `HANDOFF.md`, `TAB_MODE_SPEC.md` (section 11) and this file first. The user is Chinese-speaking; UI strings are English by default with a ZH dictionary.
+This document is for a different model/engineer continuing Tab Mode. Read `HANDOFF.md`, `TAB_MODE_SPEC.md` (section 11) and this file first. The user is Chinese-speaking; UI strings are English-only now (the ZH dictionary and language setting were removed).
 
 ## 0. Short version
 
@@ -201,7 +201,7 @@ Needed:
 
 - `npm run build-only` / pinned `game/latest.js`
 - music player, ID3, bundled tracks
-- i18n default English + ZH dictionary
+- English-only UI (identity `t()`)
 - opening presets, update checker
 - ship routes, team tags, spawn labels
 - lobby team split

@@ -1,4 +1,4 @@
-import { isZh, t } from "./i18n.js";
+import { t } from "./i18n.js";
 import { CHANGELOG, GUIDE } from "./helpContent.js";
 
 const POSITION_KEY = "fx_help_panel_position";
@@ -8,15 +8,6 @@ let body = null;
 let currentTab = "changelog";
 let positioned = false;
 let tabButtons = {};
-
-function lang() {
-  return isZh() ? "zh" : "en";
-}
-
-function dateLabel(value) {
-  if (value === "Earlier") return isZh() ? "更早" : "Earlier";
-  return value;
-}
 
 function host() {
   return document.getElementById("windowContainer") || document.body;
@@ -144,7 +135,6 @@ function createPanel() {
 }
 
 function renderChangelog() {
-  const language = lang();
   const wrapper = document.createElement("div");
   wrapper.className = "fx-help-changelog";
   for (const entry of CHANGELOG) {
@@ -153,14 +143,14 @@ function renderChangelog() {
 
     const date = document.createElement("div");
     date.className = "fx-help-changelog-date";
-    date.textContent = dateLabel(entry.date);
+    date.textContent = entry.date;
 
     const entryTitle = document.createElement("div");
     entryTitle.className = "fx-help-changelog-title";
-    entryTitle.textContent = entry.title[language] || entry.title.en;
+    entryTitle.textContent = entry.title;
 
     const list = document.createElement("ul");
-    const items = entry.items[language] || entry.items.en;
+    const items = entry.items;
     for (const item of items) {
       const li = document.createElement("li");
       li.textContent = item;
@@ -179,7 +169,6 @@ function openGuideSection(section) {
 }
 
 function renderGuide() {
-  const language = lang();
   const wrapper = document.createElement("div");
   wrapper.className = "fx-help-guide";
 
@@ -190,7 +179,7 @@ function renderGuide() {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "fx-help-guide-chip";
-    chip.textContent = item.title[language] || item.title.en;
+    chip.textContent = item.title;
     chip.addEventListener("click", () => {
       if (sections[item.id]) openGuideSection(sections[item.id]);
     });
@@ -203,10 +192,10 @@ function renderGuide() {
     section.className = "fx-help-guide-section";
     section.open = index === 0;
     const summary = document.createElement("summary");
-    summary.textContent = item.title[language] || item.title.en;
+    summary.textContent = item.title;
     const content = document.createElement("div");
     content.className = "fx-help-guide-body";
-    content.innerHTML = item.html[language] || item.html.en;
+    content.innerHTML = item.html;
     section.append(summary, content);
     sections[item.id] = section;
     wrapper.appendChild(section);

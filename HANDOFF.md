@@ -16,7 +16,7 @@ Server is running from Termux home on port 8001:
 - Spawn point names, name-size slider, team tags (map troop labels + player list + spawn labels).
 - Team-mode automation targeting was patched (team-aware canAttack + target range includes enemy players); needs real team-mode testing.
 - Theme: cream/pale green; DOM UI themed; whole-screen tint. Menu background is a plain cream gradient (line dog removed).
-- Chinese UI: `src/i18n.js` auto-detects Chinese and translates FX windows (settings, toolbox, automation, custom lobby, player list). Switch with Settings -> Interface language or `?lang=zh`. The game's own UI language is set in the game's Options -> Language (choose Chinese).
+- UI language: **English-only**. The Chinese dictionary/DOM translator and the Interface language setting were removed. `src/i18n.js` now exposes an identity `t()` for compatibility. The game's own UI language is still set in the game's Options -> Language.
 - Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
 - Ship routes: implemented locally. Tools -> Display -> Ship routes (default on).
@@ -50,7 +50,7 @@ Server is running from Termux home on port 8001:
   - `src/cleanView.js`: forces the game UI hidden via `window.c.gG` + `window.nr.nE(true)` polling, **except during spawn selection (`c.ao === true`), where the game UI is shown so spawn buttons remain usable**. Adds `body.fx-clean` to hide FX UI, and installs a dynamic `devicePixelRatio` getter (1 while clean+lowDpr, real otherwise) followed by a `resize` event.
   - `src/instance.js`: central `isBotInstance()` / `getHost()` / `isEmbedded()`. Settings isolation: bot uses `fx_settings_bot` (first run copies `fx_settings`); hostfix key and toolbox positions are per-instance (`_bot`); `fx_ui_language` stays shared.
   - Tools variants: main embedded = full Tools + Bot settings + width/height sliders; bot = Automation-only Tools (no settings/opening presets/display/theme/status/music/FX Settings); direct `client.html` = full Tools without Bot settings. Music only runs in the host; embedded main and bot skip it, and host forwards iframe gestures to the music autoplay handler.
-  - Tools help (2026-10-30): full Tools starts with `Changelog` / `Usage Guide` buttons (hidden in the bot variant). `src/helpPanels.js` renders a draggable panel inside `#windowContainer`; `src/helpContent.js` holds bilingual content selected with `isZh()`. Changelog is newest-first; the guide has TOC chips and collapsible sections. i18n keys: `Changelog`, `Usage Guide`, `GoodClient Help`; CSS is under the `Tools top actions and help panel` block in `static/main.css`.
+  - Tools help (2026-10-30): full Tools starts with `Changelog` / `Usage Guide` buttons (hidden in the bot variant). `src/helpPanels.js` renders a draggable panel inside `#windowContainer`; `src/helpContent.js` holds English-only content. Changelog is newest-first; the guide has TOC chips and collapsible sections. i18n keys: `Changelog`, `Usage Guide`, `GoodClient Help`; CSS is under the `Tools top actions and help panel` block in `static/main.css`.
   - Embedded fixes: update-checker `forceReload` and fullscreen go through `__fxHost`; custom-lobby "Copy link" uses `__fxHost.getTopUrl()`; Tools music button opens host music.
   - Build: webpack entries `fxClient -> fx.bundle.js` and `host -> host.bundle.js`; dynamic chunks use content hashes; `index.html`/`client.html`/`bot.html` are stamped with `buildTimestamp`; `build-only` passes.
   - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
@@ -93,7 +93,7 @@ Server is running from Termux home on port 8001:
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.
 - `src/shipRoutes.js` - route drawing, colors, troop badges, route status.
 - `src/theme.js` - theme/tint.
-- `src/i18n.js` - Chinese/English UI dictionary and DOM translation.
+- `src/i18n.js` - English-only identity `t()` / `initI18n()` compatibility wrapper.
 - `src/musicPlayer.js` - floating music player (bundled tracks, local files, cloud URLs).
 - `assets/music/` - bundled MP3s copied into the build.
 - `patches/gc_openingAutomation.js` - Omen automation + team-mode targeting.

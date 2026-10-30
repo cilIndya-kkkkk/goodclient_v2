@@ -67,7 +67,6 @@ async function checkForUpdates(statusElement) {
 }
 
 var settings = {
-  uiLanguage: "en",
   //"showBotDonations": false,
   displayWinCounter: true,
   displayTickNumber: true,
@@ -120,7 +119,7 @@ var settings = {
   botSpendPercent: "100"
 };
 __fx.settings = settings;
-const discontinuedSettings = ["hideAllLinks", "fontName"];
+const discontinuedSettings = ["hideAllLinks", "fontName", "uiLanguage"];
 __fx.makeMainMenuTransparent = false;
 
 // https://stackoverflow.com/a/34156339
@@ -498,17 +497,6 @@ function ReplayHistoryList(container) {
 const settingsManager = new (function () {
   const settingsStructure = [
     {
-      for: "uiLanguage",
-      type: "selectMenu",
-      label: "Interface language",
-      note: "Auto follows the browser language. Reloads the page after saving.",
-      options: [
-        { value: "auto", label: "Auto" },
-        { value: "zh", label: "简体中文" },
-        { value: "en", label: "English" },
-      ],
-    },
-    {
       for: "displayWinCounter",
       type: "checkbox",
       label: "Display win counter",
@@ -785,8 +773,6 @@ const settingsManager = new (function () {
     WindowManager.closeWindow("settings");
     discontinuedSettings.forEach((settingName) => delete settings[settingName]);
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
-    else localStorage.setItem("fx_ui_language", settings.uiLanguage);
     window.location.reload();
   };
 
@@ -813,8 +799,6 @@ const settingsManager = new (function () {
           )
         )
           __fx.settings = settings = result;
-        if (settings.uiLanguage === "auto") localStorage.removeItem("fx_ui_language");
-        else if (settings.uiLanguage) localStorage.setItem("fx_ui_language", settings.uiLanguage);
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         window.location.reload();
       } catch (error) {
@@ -852,7 +836,6 @@ const settingsManager = new (function () {
     )
       return;
     localStorage.removeItem(SETTINGS_KEY);
-    localStorage.removeItem("fx_ui_language");
     window.location.reload();
   };
   this.applySettings = function () {

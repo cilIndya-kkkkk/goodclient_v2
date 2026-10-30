@@ -168,9 +168,8 @@ The user explicitly wants the swap last. Suggested order:
 
 ## 5. UI/i18n requirements
 
-- Default UI language is **English** now (for foreign users).
-- `Settings → Interface language` still allows `简体中文` / `Auto`.
-- All new Tab Mode strings should use `t()` from `src/i18n.js` and be added to the ZH dictionary.
+- UI language is **English-only now**; the Chinese dictionary and `Settings → Interface language` were removed.
+- New strings still go through `t()` from `src/i18n.js`, which is an identity function kept for compatibility.
 - Do not translate user-generated content (player names, song titles, preset names).
 - Existing music player:
   - `src/musicPlayer.js`
@@ -211,7 +210,7 @@ Why:
 GoodClient:
 
 - `src/main.js` — init order: i18n, settings, toolbox, music player.
-- `src/i18n.js` — ZH dictionary + DOM translator + `t()`.
+- `src/i18n.js` — English-only identity `t()` / `initI18n()` compatibility wrapper.
 - `src/settings.js` — settings structure, UI language, update checker, presets? (presets are in toolbox).
 - `src/toolbox.js` — Tools panel, opening presets, automation controls.
 - `src/openingAutomation.js` — opening state machine, attack APIs.
@@ -260,7 +259,7 @@ TulipBot:
 - Do not overwrite the pinned `game/latest.js` unless intentionally updating game compatibility.
 - Do not break:
   - music player / bundled MP3s / ID3 metadata
-  - Chinese/English i18n and default English
+  - English-only UI
   - opening presets
   - update checker / `build-info.json`
   - ship routes / team tags / spawn labels
