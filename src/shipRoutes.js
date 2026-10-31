@@ -60,6 +60,7 @@ export default function initShipRoutes() {
       console.log("[shipRoutes] sample", window.__fx.shipRouteDebug);
     }
     ctx.save();
+    try {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
@@ -150,7 +151,9 @@ export default function initShipRoutes() {
       }
     }
 
-    ctx.restore();
+    } finally {
+      ctx.restore();
+    }
     window.__fx.shipRouteStatus = { ships: state.jO, paths: foundPaths, routes: drawnRoutes, points: drawnPoints };
   }
 

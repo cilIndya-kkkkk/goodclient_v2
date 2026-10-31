@@ -352,8 +352,12 @@ export default function initHostTabMode({ mainFrame, frameUrl, attachGestureForw
       view = frame.contentWindow && frame.contentWindow.__fx ? frame.contentWindow.__fx.cleanView : null;
     } catch (_error) {}
     if (view) {
-      view.setEnabled(enabled, { hideFx: true, lowDpr: true });
-      return;
+      try {
+        view.setEnabled(enabled, { hideFx: true, lowDpr: true });
+        return;
+      } catch (error) {
+        console.warn("Tab Mode clean state failed", error);
+      }
     }
     if (attempts < 20) {
       setTimeout(() => applyCleanState(frame, enabled, attempts + 1), 250);

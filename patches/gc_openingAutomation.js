@@ -92,12 +92,29 @@ function applyOpeningAutomation(modUtils) {
             // onTick/onTickAutoAttack, so a bad read must degrade to a safe default (false/0/null/
             // no-op) rather than throw a ReferenceError and take the render loop down with it.
             __fx.gameUi = __fx.gameUi || {
-                isHidden: function() { return ${dict.game}.${dict.uiHidden} === true; },
-                setHidden: function(value) {
-                    var controller = typeof ${g.uiController} !== "undefined" ? ${g.uiController} : null;
-                    if (controller && typeof controller.${g.setUiHidden} === "function") controller.${g.setUiHidden}(Boolean(value));
+                isHidden: function() {
+                    var game = typeof ${dict.game} !== "undefined" ? ${dict.game} : null;
+                    return Boolean(game && game.${dict.uiHidden} === true);
                 },
-                isSpawnSelection: function() { return ${dict.game}.${dict.gSelectableSpawn} === true; }
+                setHidden: function(value) {
+                    var hidden = Boolean(value);
+                    var controller = typeof ${g.uiController} !== "undefined" ? ${g.uiController} : null;
+                    try {
+                        if (controller && typeof controller.${g.setUiHidden} === "function") controller.${g.setUiHidden}(hidden);
+                    } catch (_error) {}
+                    var game = typeof ${dict.game} !== "undefined" ? ${dict.game} : null;
+                    if (game && game.${dict.uiHidden} !== hidden) {
+                        game.${dict.uiHidden} = hidden;
+                        try {
+                            if (typeof hE !== "undefined" && hE && typeof hE.resize === "function") hE.resize();
+                        } catch (_error) {}
+                        try { window.dispatchEvent(new Event("resize")); } catch (_error) {}
+                    }
+                },
+                isSpawnSelection: function() {
+                    var game = typeof ${dict.game} !== "undefined" ? ${dict.game} : null;
+                    return Boolean(game && game.${dict.gSelectableSpawn} === true);
+                }
             };
             var __fxAd = typeof ${g.mapData} !== "undefined" ? ${g.mapData} : undefined;
             var __fxTargetStart = (humans) => ${dict.game}.${dict.gIsTeamGame} ? 0 : humans;
@@ -1228,7 +1245,7 @@ function applyOpeningAutomation(modUtils) {
 
   replaceOne(
     /(this\.\w+=function\(\)\{this\.(\w+)\.(\w+)\+\+)(\})/g,
-    "$1,__fx.openingAutomation.onTick(this.$2.$3),__fx.openingAutomation.onTickAutoAttack(this.$2.$3)$4"
+    "$1;try{__fx.openingAutomation.onTick(this.$2.$3);__fx.openingAutomation.onTickAutoAttack(this.$2.$3);}catch(__fxTickError){if(!window.__fxTickError){window.__fxTickError=__fxTickError;console.error('[gc] automation tick error',__fxTickError);}}$4"
   );
 
   console.log("Opening automation hooks injected (g table: " + Object.keys(g).length + " names)");

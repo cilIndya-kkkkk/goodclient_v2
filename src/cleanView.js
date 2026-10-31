@@ -36,30 +36,57 @@ export default function initCleanView() {
 
   function isHidden() {
     const api = gameUi();
-    if (api && typeof api.isHidden === "function") return api.isHidden();
+    if (api && typeof api.isHidden === "function") {
+      try {
+        return Boolean(api.isHidden());
+      } catch (_error) {}
+    }
     const { game } = legacyGlobals();
     return Boolean(game && (game.gG === true || game.ur === true));
   }
 
   function isSpawnSelection() {
     const api = gameUi();
-    if (api && typeof api.isSpawnSelection === "function") return api.isSpawnSelection();
+    if (api && typeof api.isSpawnSelection === "function") {
+      try {
+        return Boolean(api.isSpawnSelection());
+      } catch (_error) {}
+    }
     const { game } = legacyGlobals();
     return Boolean(game && (game.ao === true || game.dO === true));
+  }
+
+  function forceGameUi(value) {
+    const game = legacyGlobals().game;
+    if (!game || typeof game !== "object") return false;
+    if ("ur" in game) game.ur = Boolean(value);
+    else if ("gG" in game) game.gG = Boolean(value);
+    else return false;
+    try {
+      if (window.hE && typeof window.hE.resize === "function") window.hE.resize();
+    } catch (_error) {}
+    try {
+      window.dispatchEvent(new Event("resize"));
+    } catch (_error) {}
+    return true;
   }
 
   function setHidden(value) {
     const api = gameUi();
     if (api && typeof api.setHidden === "function") {
-      api.setHidden(value);
-      return true;
+      try {
+        api.setHidden(value);
+      } catch (_error) {}
+      if (isHidden() === Boolean(value)) return true;
     }
     const { game, ui } = legacyGlobals();
     if (game && ui && typeof ui.nE === "function") {
-      ui.nE(value);
-      return true;
+      try {
+        ui.nE(value);
+      } catch (_error) {}
+      if (isHidden() === Boolean(value)) return true;
     }
-    return false;
+    return forceGameUi(value);
   }
 
   function syncGameUi() {
@@ -86,11 +113,15 @@ export default function initCleanView() {
       return;
     }
     if (isHidden()) setHidden(false);
-    if (isHidden() && attempts < 20) {
-      restoreTimer = setTimeout(() => {
-        restoreTimer = null;
-        showGameUi(attempts + 1);
-      }, 250);
+    if (isHidden()) {
+      if (attempts < 20) {
+        restoreTimer = setTimeout(() => {
+          restoreTimer = null;
+          showGameUi(attempts + 1);
+        }, 250);
+      } else {
+        forceGameUi(false);
+      }
     }
   }
 
