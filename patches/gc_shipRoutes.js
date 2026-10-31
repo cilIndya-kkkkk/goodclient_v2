@@ -30,7 +30,9 @@ export default definePatch((modUtils) => {
                 y: yA * (sy - e6) / (e9 - e6) + aId
               };
             },
-            zt: dr.iL,
+            zt: function(value) {
+              return dr.iL(value);
+            },
             player: ct.eG,
             humans: ct.dP,
             colors: ey.rD,
