@@ -32,6 +32,13 @@ export default function initShipRoutes() {
     const width = Number(state.screenWidth) || 0;
     const height = Number(state.screenHeight) || 0;
     const zt = typeof state.zt === "function" ? state.zt : (value) => value;
+    const project = typeof state.project === "function"
+      ? state.project
+      : (value) => {
+          const worldX = (value % stride) / 16;
+          const worldY = Math.floor(value / stride) / 16;
+          return { x: scale * worldX - camX, y: scale * worldY - camY };
+        };
 
     let drawnRoutes = 0;
     let drawnPoints = 0;
@@ -73,10 +80,10 @@ export default function initShipRoutes() {
       for (let pointIndex = start; pointIndex < route.length; pointIndex++) {
         const scaled = zt(route[pointIndex]);
         if (!Number.isFinite(scaled)) continue;
-        const worldX = (scaled % stride) / 16;
-        const worldY = Math.floor(scaled / stride) / 16;
-        const screenX = scale * worldX - camX;
-        const screenY = scale * worldY - camY;
+        const point = project(scaled);
+        const screenX = Number(point && point.x);
+        const screenY = Number(point && point.y);
+        if (!Number.isFinite(screenX) || !Number.isFinite(screenY)) continue;
         if (screenX < -80 || screenY < -80 || screenX > width + 80 || screenY > height + 80) {
           drawing = false;
           continue;
@@ -106,11 +113,10 @@ export default function initShipRoutes() {
       let labelY = null;
       const current = state.iz?.[index];
       if (Number.isFinite(current)) {
-        const worldX = (current % stride) / 16;
-        const worldY = Math.floor(current / stride) / 16;
-        const screenX = scale * worldX - camX;
-        const screenY = scale * worldY - camY;
-        if (screenX > -20 && screenY > -20 && screenX < width + 20 && screenY < height + 20) {
+        const point = project(current);
+        const screenX = Number(point && point.x);
+        const screenY = Number(point && point.y);
+        if (Number.isFinite(screenX) && Number.isFinite(screenY) && screenX > -20 && screenY > -20 && screenX < width + 20 && screenY < height + 20) {
           ctx.fillStyle = color;
           ctx.beginPath();
           ctx.arc(screenX, screenY, 3, 0, Math.PI * 2);

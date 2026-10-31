@@ -1,6 +1,15 @@
 export const CHANGELOG = [
   {
     "date": "2026-10-30",
+    "title": "Territorial.io 2.16.66 compatibility",
+    "items": [
+      "Updated the pinned game script to the October 30 build.",
+      "Re-derived the automation hooks, lobby labels and ship-route hook.",
+      "Build passes; live-game smoke test still pending for automation, lobby split, ship routes, custom lobby and map commands."
+    ]
+  },
+  {
+    "date": "2026-10-30",
     "title": "Attack Player and Boat",
     "items": [
       "Attack Player: press it, click an enemy on the bot map, then press the red Attack button. Default is 9%; below 100 density it attacks once, at 100 or above it retries every 6 seconds.",

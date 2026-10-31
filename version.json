@@ -1,8 +1,10 @@
 {
-    "version": "0.6.30",
-    "lastUpdated": "October 12",
+    "version": "0.6.34",
+    "lastUpdated": "October 30",
     "changes": [
-        "Custom lobbies have been updated to work in the latest version"
+        "Updated for Territorial.io 2.16.66 (October 30).",
+        "Re-derived the automation hooks, lobby labels and ship-route hook for the new game build.",
+        "English-only UI; map-selected Attack Player and Boat commands."
     ],
     "isSignificant": true
 }

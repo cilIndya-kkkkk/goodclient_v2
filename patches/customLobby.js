@@ -37,7 +37,7 @@ export default (/** @type {ModUtils} */ { modifyCode, insertCode, replaceCode, r
 		d[a].send(b);
 	}; /* here */`, "__fx.customLobby.setSendFunction(this.send)")
     // when a socket error occurs on the custom lobby socket
-    insertCode(`this.b = function(id, t) { /* here */ this.a.push(t); if (t === 4321) {/*...*/}};`, `id===1 && __fx.customLobby.isActive() && MenuManager.getState() !== 6 && __fx.customLobby.setActive(false);`, { dictionary: {MenuManager: dict.MenuManager, getState: dict.getState} })
+    insertCode(`this.m5 = function(bb, b7) { /* here */ console.log("socket close index " + bb + " error " + b7); this.m4.push(b7); if (b7 === 4321) {/*...*/}};`, `bb===1 && __fx.customLobby.isActive() && MenuManager.getState() !== 6 && __fx.customLobby.setActive(false);`, { dictionary: {MenuManager: dict.MenuManager, getState: dict.getState} })
     // when leaving a game
     modifyCode(`${insert(`if (__fx.customLobby.isActive() === false)`)} a.b.c();
 		d.e();

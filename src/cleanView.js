@@ -23,21 +23,50 @@ export default function initCleanView() {
   let pollTimer = null;
   let restoreTimer = null;
 
-  function gameGlobals() {
+  function legacyGlobals() {
     return {
-      game: window.c,
-      ui: window.nr,
+      game: window.ct || window.c,
+      ui: window.hM || window.nr,
     };
   }
 
+  function gameUi() {
+    return window.__fx && window.__fx.gameUi ? window.__fx.gameUi : null;
+  }
+
+  function isHidden() {
+    const api = gameUi();
+    if (api && typeof api.isHidden === "function") return api.isHidden();
+    const { game } = legacyGlobals();
+    return Boolean(game && (game.gG === true || game.ur === true));
+  }
+
+  function isSpawnSelection() {
+    const api = gameUi();
+    if (api && typeof api.isSpawnSelection === "function") return api.isSpawnSelection();
+    const { game } = legacyGlobals();
+    return Boolean(game && (game.ao === true || game.dO === true));
+  }
+
+  function setHidden(value) {
+    const api = gameUi();
+    if (api && typeof api.setHidden === "function") {
+      api.setHidden(value);
+      return true;
+    }
+    const { game, ui } = legacyGlobals();
+    if (game && ui && typeof ui.nE === "function") {
+      ui.nE(value);
+      return true;
+    }
+    return false;
+  }
+
   function syncGameUi() {
-    const { game, ui } = gameGlobals();
-    if (!game || !ui || typeof ui.nE !== "function") return;
-    const spawnSelection = game.ao === true;
-    if (spawnSelection) {
-      if (game.gG === true) ui.nE(false);
-    } else if (game.gG !== true) {
-      ui.nE(true);
+    if (isSpawnSelection()) {
+      if (isHidden()) setHidden(false);
+    } else if (!isHidden()) {
+      setHidden(true);
     }
   }
 
@@ -46,8 +75,8 @@ export default function initCleanView() {
       clearTimeout(restoreTimer);
       restoreTimer = null;
     }
-    const { game, ui } = gameGlobals();
-    if (!game || !ui || typeof ui.nE !== "function") {
+    const available = gameUi() || legacyGlobals().ui;
+    if (!available) {
       if (attempts < 20) {
         restoreTimer = setTimeout(() => {
           restoreTimer = null;
@@ -56,8 +85,8 @@ export default function initCleanView() {
       }
       return;
     }
-    if (game.gG === true) ui.nE(false);
-    if (game.gG === true && attempts < 20) {
+    if (isHidden()) setHidden(false);
+    if (isHidden() && attempts < 20) {
       restoreTimer = setTimeout(() => {
         restoreTimer = null;
         showGameUi(attempts + 1);

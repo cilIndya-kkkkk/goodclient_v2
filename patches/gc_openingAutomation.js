@@ -7,39 +7,41 @@ import { definePatch } from "../modUtils.js";
 // every game release, so they must be re-derived (see README_DEV.md) whenever
 // the raw-name check below throws.
 const g = {
-  mapData: "j1",
-  attackManager: "a0n",
-  protocolHandler: "ss",
-  teamUtils: "a0f",
-  playerTiles: "xT",
-  neighborOffsets: "a1g",
-  isNeutralTile: "zb",
-  isOwnedTile: "zY",
-  getTileOwner: "zZ",
-  getAvailableAttackCount: "q7",
-  getAttackTarget: "q8",
-  getAttackValue: "q9",
-  gameCommandSender: "a1M",
-  sendAttack: "xn",
-  sendSupport: "a5f",
-  cancelAttack: "xr",
-  canAttack: "a1W",
-  mapIsRendered: "u4",
-  mapRenderer: "ix",
-  screenToX: "zR",
-  screenToY: "zT",
-  screenToTileX: "oR",
-  screenToTile: "j3",
-  screenInBounds: "zV",
-  supportUtils: "aa",
-  supportMath: "bY",
-  supportAmount: "a3b",
-  supportCalc: "aLr",
-  mouseActions: "a8P",
-  setMouse: "a1B",
-  runMouseAction: "a1C",
-  viewport: "aW",
-  pixelScale: "eB",
+  mapData: "d5",
+  attackManager: "lA",
+  protocolHandler: "gD",
+  teamUtils: "kl",
+  playerTiles: "aGp",
+  neighborOffsets: "aCW",
+  isNeutralTile: "ho",
+  isOwnedTile: "l3",
+  getTileOwner: "hp",
+  getAvailableAttackCount: "a9G",
+  getAttackTarget: "a9N",
+  getAttackValue: "a9O",
+  gameCommandSender: "n1",
+  sendAttack: "oY",
+  sendSupport: "ol",
+  cancelAttack: "p3",
+  canAttack: "km",
+  mapIsRendered: "uA",
+  mapRenderer: "dr",
+  screenToX: "ds",
+  screenToY: "du",
+  screenToTileX: "iE",
+  screenToTile: "iI",
+  screenInBounds: "iC",
+  supportUtils: "aR",
+  supportMath: "f",
+  supportAmount: "i8",
+  supportCalc: "k0",
+  mouseActions: "aIC",
+  setMouse: "aID",
+  runMouseAction: "aIJ",
+  viewport: "d9",
+  pixelScale: "o5",
+  uiController: "hM",
+  setUiHidden: "zn",
 };
 
 export default definePatch((modUtils) => {
@@ -75,6 +77,7 @@ function applyOpeningAutomation(modUtils) {
     [`${g.mouseActions}.${g.setMouse}(`, "MouseActions.setMouse"],
     [`${g.mouseActions}.${g.runMouseAction}(`, "MouseActions.runMouseAction"],
     [`${g.viewport}.${g.pixelScale}`, "Viewport.pixelScale"],
+    [`${g.uiController}.${g.setUiHidden}(`, "UI controller.setHidden"],
   ].forEach(([access, readableName]) => {
     if (!script.includes(access))
       missingRawNames.push(`"${access}" (${readableName})`);
@@ -88,6 +91,14 @@ function applyOpeningAutomation(modUtils) {
             // through typeof and used with ?. everywhere below: this block runs every tick via
             // onTick/onTickAutoAttack, so a bad read must degrade to a safe default (false/0/null/
             // no-op) rather than throw a ReferenceError and take the render loop down with it.
+            __fx.gameUi = __fx.gameUi || {
+                isHidden: function() { return ${dict.game}.${dict.uiHidden} === true; },
+                setHidden: function(value) {
+                    var controller = typeof ${g.uiController} !== "undefined" ? ${g.uiController} : null;
+                    if (controller && typeof controller.${g.setUiHidden} === "function") controller.${g.setUiHidden}(Boolean(value));
+                },
+                isSpawnSelection: function() { return ${dict.game}.${dict.gSelectableSpawn} === true; }
+            };
             var __fxAd = typeof ${g.mapData} !== "undefined" ? ${g.mapData} : undefined;
             var __fxTargetStart = (humans) => ${dict.game}.${dict.gIsTeamGame} ? 0 : humans;
             // Attacks are not sent through the click-to-attack UI dispatcher at all: attackFreeLand

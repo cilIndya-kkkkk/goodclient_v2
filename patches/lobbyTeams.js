@@ -4,22 +4,22 @@ export default definePatch(({ modifyCode }) => {
   modifyCode(`jt = new dK(dL, dM, k3, dO, k6, hq.k7.k8);
 ${insert(`window.__fx.lobbyTeamsHost = {
   getState: function () {
-    if (!hq || !hq.fH || !hq.fH.i1) return null;
-    var roomIndex = hq.fH.kD[0];
-    var room = hq.fH.i1[roomIndex];
+    if (!hq || !hq.b1 || !hq.b1.jH) return null;
+    var roomIndex = hq.b1.a30[0];
+    var room = hq.b1.jH[roomIndex];
     if (!room) return null;
-    var all = hq.hr.hp[roomIndex] || [];
-    var ready = hq.hr.km[roomIndex] || 0;
+    var all = hq.aU.aV[roomIndex] || [];
+    var ready = hq.aU.jQ[roomIndex] || 0;
     var players = [];
     for (var i = 0; i < ready && i < all.length; i++) {
       var player = all[i];
-      players.push({ id: player.hT, name: player.aXi || player.username, color: player.color });
+      players.push({ id: player.ah, name: player.aXn || player.username, color: player.color });
     }
-    return { mode: room.kc, ready: ready, players: players };
+    return { mode: room.jK, ready: ready, players: players };
   }
 };
 (function () {
-  var button = dM.kA[0].button;
+  var button = dM.nw[0].button;
   var attempts = 0;
   function api() {
     return window.__fx && window.__fx.lobbyTeams;

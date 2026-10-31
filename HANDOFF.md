@@ -1,17 +1,26 @@
 # GoodClient / TulipBot Handoff
 
-Last updated: 2026-10-29
+Last updated: 2026-10-31
 
 ## Local preview
 
-Server is running from Termux home on port 8001:
+Server is running from Termux home on port 8002:
 
-- Client: http://localhost:8001/goodclient_v2/build/
-- TulipBot: http://localhost:8001/tulipbot/
+- Client: http://localhost:8002/goodclient_v2/build/
+- TulipBot: http://localhost:8002/tulipbot/
+
+## Game update 2026-10-30 (Territorial.io 2.16.66)
+
+- `game/latest.js` was replaced with the 2026-10-30 script; a local backup of the 2026-10-28 script is at `game/latest_prev.js` (not committed).
+- Automation `g` table re-derived for the new build (35 names). `__fx.gameUi` is exposed for cleanView (hide/show + spawn-selection detection) so the client no longer depends on the old `c`/`nr` globals. Hostname spoof now replaces every `this.hostname.indexOf(...)` assignment, so it is version-independent.
+- `patches/customLobby.js` socket-close hook updated to the new `m5(bb,b7)` function.
+- `patches/lobbyTeams.js` lobby field names updated: `aI.b1.a30`, `aI.b1.jH`, `aI.aU.aV`, `aI.aU.jQ`, player `ah`/`aXn`, mode `jK`, info row `aBk.nw`/`nx`.
+- `patches/gc_shipRoutes.js` re-derived for the new ship draw function and projects route points through the game's new camera formula.
+- `npm run build-only` passes. A live-game smoke test is still required, especially for automation, lobby team split, ship routes, custom lobby and map commands.
 
 ## Current state
 
-- GoodClient base: FX Client 0.6.30 + Omen automation + hostname spoof.
+- GoodClient base: FX Client 0.6.34 + Omen automation + hostname spoof; pinned game is Territorial.io 2.16.66 (2026-10-30).
 - Automation defaults on; multiplayer works.
 - Spawn point names, name-size slider, team tags (map troop labels + player list + spawn labels).
 - Team-mode automation targeting was patched (team-aware canAttack + target range includes enemy players); needs real team-mode testing.
@@ -56,14 +65,14 @@ Server is running from Termux home on port 8001:
   - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
   - Pushed through `87faf9b` (hoard selection docs); manual test checklist is in `TAB_MODE_HOST_PROMPT.md` §6 / the final report.
   - 2026-10-29 bot account isolation: `static/bot.html` installs a `fxbot::`-prefixed `localStorage` view before any game/FX script. The bot keeps its own account (the game stores credentials as `v…`/`d…` localStorage keys) and its own FX settings, independent of the main client, in the same origin. Log in once inside the bot (the main menu is still visible; clean view only applies in-game) and it persists across reloads. This also makes hoard’s name-based main-player matching unambiguous. Caveat: if a browser refuses the `localStorage` override, isolation silently falls back to shared storage; the fallback is a separate origin.
-- Hoard (2026-10-29, first pass): `patches/gc_openingAutomation.js` now exposes `__fx.openingAutomation.sendSupport(target, percent)` using the game's own `GameCommandSender.sendSupport` (g table now 28 names; same-team enforced via `TeamUtils.canAttack`, no forged packets). `src/botCommander.js` adds `__fx.botCommander`: `startSelection` / `cancelSelection` / `confirmSelection` / `stopHoard` / `getState`, plus `__fx.botMap.playerAt(clientX, clientY)`. Hoard is now map-selected: press `Hoard` in the Tab Mode window, click a teammate on the bot map, then click the green `Donate` button that appears. The main player is stored by raw name. Hoard disables opening/infinite/bot-attack and restores the previous flags/mode when stopped. If density is below 130 on confirm it performs one donation only (10% or the maximum transferable); if density is >=130 it performs the initial donation and then retries every 6s while density is >=130. The host Tab Mode window has All On/Off, Opening, Infinite, bot mode, `Bot send`/`Bot rate` sliders, `Hoard`, and a density/target status; Tools keeps only the automation/size controls.
+- Hoard (2026-10-29, first pass): `patches/gc_openingAutomation.js` now exposes `__fx.openingAutomation.sendSupport(target, percent)` using the game's own `GameCommandSender.sendSupport` (g table now 35 names; same-team enforced via `TeamUtils.canAttack`, no forged packets). `src/botCommander.js` adds `__fx.botCommander`: `startSelection` / `cancelSelection` / `confirmSelection` / `stopHoard` / `getState`, plus `__fx.botMap.playerAt(clientX, clientY)`. Hoard is now map-selected: press `Hoard` in the Tab Mode window, click a teammate on the bot map, then click the green `Donate` button that appears. The main player is stored by raw name. Hoard disables opening/infinite/bot-attack and restores the previous flags/mode when stopped. If density is below 130 on confirm it performs one donation only (10% or the maximum transferable); if density is >=130 it performs the initial donation and then retries every 6s while density is >=130. The host Tab Mode window has All On/Off, Opening, Infinite, bot mode, `Bot send`/`Bot rate` sliders, `Hoard`, and a density/target status; Tools keeps only the automation/size controls.
   - Main-player choice is stored by raw player name (`fx_hoard_main_player_name`) and resolved again each tick, so it survives a new game. Support requires main and bot on the same team. The map click uses `__fx.botMap.playerAt` and `canSupport`/`getMaxSupportPercent`; the green button only appears for a valid teammate.
   - 2026-10-29: user confirmed the map-based hoard selection flow works. Still to confirm in a real donation: 130 absolute vs percentage, and whether the 6s retry should continue only while density stays >=130 (current implementation). The green donate button is map-based; there is no main-player dropdown anymore.
 - Attack Player (2026-10-30, first pass): the host Tab Mode window has `Attack Player`. Press it, click an enemy on the bot map, then press the red `Attack` button. `__fx.openingAutomation.canAttackTarget` / `attackPlayerTarget` use the game's own `GameCommandSender.sendAttack` (no forged packets). Default is 9% (`0.09`). If density at confirmation is `<100`, it attacks once; if `>=100`, it attacks immediately and then retries every 6s while density stays `>=100`. It disables automation and restores the saved state when stopped; stopping also cancels the current attack target.
   - Same map-selection UI as hoard: selecting one command cancels the other selection; active hoard/attack modes are mutually exclusive.
   - Still to confirm: whether the `<100 single / >=100 loop` rule and 6s cadence are what the user wants for attack, and whether stopping should cancel the outgoing attack (current behavior).
 - Boat command (2026-10-30, first pass): the host Tab Mode window has `Boat`. Press it, then click a target on the bot map; it calls the game's own ship-launch action (`MouseActions.runMouseAction(1)` / `a1C(1)`) through `__fx.botMap.launchShipAt`, not a forged packet. Default is 4%; the helper temporarily sets the attack slider to 4% and restores the previous value. It is one-shot (no 6s loop) and does not disable automation. The built-in ship logic validates the water target/path.
-- Remote GitHub `goodclient_v2` was last pushed before the host refactor; the local branch is ahead. HTTPS push is unreliable on this network (SSL EOF / connect failures). When the user asks to deploy, use the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
+- Remote GitHub `goodclient_v2` was last pushed at `11bb45c` (before the 2026-10-30 game update); the local branch is ahead. HTTPS push is unreliable on this network (SSL EOF / connect failures). When the user asks to deploy, use the SSH remote: `git push git@github.com:cilIndya-kkkkk/goodclient_v2.git goodclient_v2` (`gh` is authenticated as `cilIndya-kkkkk`, git protocol is SSH). The older workaround was a forced-IP Node HTTPS request (no account password).
 
 ## Known issues / next steps
 
