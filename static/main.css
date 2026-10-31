@@ -1520,3 +1520,212 @@ body.fx-clean .window {
 	background: #b3261e;
 	border-color: #ffb4a8;
 }
+
+/* Account vault */
+.hidden {
+	display: none !important;
+}
+
+#fxAccountVault {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 2147483647;
+	display: none;
+	flex-direction: column;
+	width: min(560px, 94vw);
+	height: min(72vh, 620px);
+	background: rgba(9, 13, 18, 0.98);
+	border: 1px solid rgba(110, 210, 160, 0.55);
+	box-shadow: 0 0 34px rgba(0, 0, 0, 0.85);
+	color: #dbe7f0;
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	overflow: hidden;
+}
+
+#fxAccountVault.open {
+	display: flex;
+}
+
+#fxAccountVaultHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 12px;
+	background: rgba(20, 34, 28, 0.96);
+	border-bottom: 1px solid rgba(110, 210, 160, 0.35);
+	color: #a8f0c8;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.fx-vault-close,
+.fx-vault-button,
+.fx-vault-input {
+	font: inherit;
+	font-size: 12px;
+	color: #dbe7f0;
+	border: 1px solid rgba(140, 190, 170, 0.5);
+	background: rgba(0, 0, 0, 0.5);
+}
+
+.fx-vault-close {
+	padding: 3px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+#fxAccountVaultBody {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 10px 12px 14px;
+}
+
+.fx-vault-note {
+	margin: 0 0 9px;
+	color: #8aa5a0;
+	font-size: 11px;
+	line-height: 1.45;
+}
+
+.fx-vault-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 8px 0;
+}
+
+.fx-vault-button {
+	min-height: 28px;
+	padding: 4px 9px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.fx-vault-button:hover {
+	border-color: #8fe3b0;
+}
+
+.fx-vault-button.fx-vault-primary {
+	border-color: rgba(110, 210, 160, 0.7);
+	background: rgba(30, 130, 25, 0.7);
+}
+
+.fx-vault-button.fx-vault-danger {
+	border-color: rgba(255, 120, 120, 0.6);
+	color: #ffb0b0;
+}
+
+.fx-vault-button.fx-vault-small {
+	min-height: 22px;
+	padding: 2px 7px;
+	font-size: 10px;
+}
+
+.fx-vault-status {
+	min-height: 16px;
+	color: #9fd8ba;
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.fx-vault-status.bad {
+	color: #ff8c8c;
+}
+
+.fx-vault-code {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 8px 0;
+	padding: 7px 9px;
+	border-left: 3px solid #8fe3b0;
+	background: rgba(110, 210, 160, 0.08);
+	color: #bfe7cf;
+	font-size: 12px;
+}
+
+.fx-vault-code strong {
+	color: #eafff2;
+	letter-spacing: 0.08em;
+	word-break: break-all;
+}
+
+.fx-vault-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.fx-vault-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 9px;
+	border: 1px solid rgba(110, 210, 160, 0.2);
+	background: rgba(255, 255, 255, 0.035);
+}
+
+.fx-vault-row-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.fx-vault-name {
+	color: #e8fff1;
+	font-size: 13px;
+	font-weight: 700;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fx-vault-account {
+	color: #9fd8ba;
+	font-size: 11px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fx-vault-note {
+	color: #8aa5a0;
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.fx-vault-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	justify-content: flex-end;
+}
+
+.fx-vault-empty {
+	padding: 14px 0;
+	color: #8aa5a0;
+	font-size: 12px;
+	text-align: center;
+}
+
+.fx-vault-editor {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 10px;
+	padding: 9px;
+	border: 1px solid rgba(110, 210, 160, 0.28);
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.fx-vault-input {
+	min-height: 28px;
+	padding: 4px 7px;
+	box-sizing: border-box;
+}

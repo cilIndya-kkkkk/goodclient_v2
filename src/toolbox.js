@@ -7,6 +7,7 @@ import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 import { t } from "./i18n.js";
 import { isBotInstance, isEmbedded, getHost } from "./instance.js";
 import { openHelpPanel } from "./helpPanels.js";
+import { openAccountVault } from "./accountVault.js";
 
 const POSITION_SUFFIX = isBotInstance() ? "_bot" : "";
 const POSITION_STORAGE_KEY = "fx_toolbox_position" + POSITION_SUFFIX;
@@ -79,6 +80,11 @@ export default function initToolbox(options = {}) {
   infoRow.append(
     makeButton(t("Changelog"), () => openHelpPanel("changelog")),
     makeButton(t("Usage Guide"), () => openHelpPanel("guide"))
+  );
+
+  const accountsSection = makeSection(t("Accounts"));
+  accountsSection.append(
+    makeRow(makeButton(t("Account Vault"), () => openAccountVault()))
   );
 
   const automationSection = makeSection("Automation");
@@ -510,7 +516,7 @@ export default function initToolbox(options = {}) {
   const musicButton = makeButton(t("Music player"), () => getHost()?.music?.open?.() || window.__fx.musicPlayer?.open?.());
   statusSection.append(statusLine, makeRow(resetToggleButton, musicButton));
 
-  if (variant === "full") body.append(infoRow);
+  if (variant === "full") body.append(infoRow, accountsSection);
   body.append(automationSection);
   if (variant === "full") {
     if (embedded) body.append(botSection);

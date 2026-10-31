@@ -28,6 +28,7 @@ Server is running from Termux home on port 8002:
 - Theme: cream/pale green; DOM UI themed; whole-screen tint. Menu background is a plain cream gradient (line dog removed).
 - UI language: **English-only**. The Chinese dictionary/DOM translator and the Interface language setting were removed. `src/i18n.js` now exposes an identity `t()` for compatibility. The game's own UI language is still set in the game's Options -> Language.
 - Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
+- Account Vault (2026-10-31): `Tools → Accounts → Account Vault` (`src/accountVault.js`) is a local-only password book. Entries are encrypted at rest with an AES-256-GCM device key stored as a CryptoKey in IndexedDB (`fx_account_vault`); no master password is needed for daily use. Copy user / Copy pass is the only game-login integration (copy/paste; the game flow is untouched). Export downloads an encrypted JSON backup and shows a one-time recovery code; the raw vault key is wrapped with PBKDF2-SHA-256 (310k) + AES-GCM, and import requires that code. No server upload and no Pages sync. Security caveat: same-origin game/script code can read entries while the vault is open; this protects the at-rest copy, not a compromised page. Export files must not be committed to the public repo.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
 - Ship routes: implemented locally. Tools -> Display -> Ship routes (default on).
   - Status shows `ships N · paths M · routes K`.
@@ -61,6 +62,7 @@ Server is running from Termux home on port 8002:
   - `src/instance.js`: central `isBotInstance()` / `getHost()` / `isEmbedded()`. Settings isolation: bot uses `fx_settings_bot` (first run copies `fx_settings`); hostfix key and toolbox positions are per-instance (`_bot`); `fx_ui_language` stays shared.
   - Tools variants: main embedded = full Tools + Bot settings + width/height sliders; bot = Automation-only Tools (no settings/opening presets/display/theme/status/music/FX Settings); direct `client.html` = full Tools without Bot settings. Music only runs in the host; embedded main and bot skip it, and host forwards iframe gestures to the music autoplay handler.
   - Tools help (2026-10-30): full Tools starts with `Changelog` / `Usage Guide` buttons (hidden in the bot variant). `src/helpPanels.js` renders a draggable panel inside `#windowContainer`; `src/helpContent.js` holds English-only content. Changelog is newest-first; the guide has TOC chips and collapsible sections. i18n keys: `Changelog`, `Usage Guide`, `GoodClient Help`; CSS is under the `Tools top actions and help panel` block in `static/main.css`.
+  - Account Vault (2026-10-31): `src/accountVault.js`, `Tools → Accounts`. Uses `crypto.subtle` (HTTPS/localhost required), IndexedDB, AES-256-GCM, PBKDF2 310k for the backup recovery code. Verify in a real browser: add/copy/edit/delete, export → import on a fresh profile, wrong recovery code rejection, and the empty-vault first run. The vault panel mounts in `#windowContainer` and locks (clears in-memory entries) on close.
   - Embedded fixes: update-checker `forceReload` and fullscreen go through `__fxHost`; custom-lobby "Copy link" uses `__fxHost.getTopUrl()`; Tools music button opens host music.
   - Build: webpack entries `fxClient -> fx.bundle.js` and `host -> host.bundle.js`; dynamic chunks use content hashes; `index.html`/`client.html`/`bot.html` are stamped with `buildTimestamp`; `build-only` passes.
   - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
@@ -103,6 +105,8 @@ Server is running from Termux home on port 8002:
 - `static/client.html` - standalone-capable main client.
 - `static/bot.html` - minimal bot page (no SW/update prompt).
 - `src/toolbox.js` - Tools full/bot variants; Bot settings + window size sliders.
+- `src/accountVault.js` - local encrypted account vault (device key, export/import recovery code).
+- `src/helpPanels.js` + `src/helpContent.js` - Tools changelog/usage guide UI and English content.
 - `~/tulipbot/bot.js` - mass-botting controller; currently shelved for Tab Mode work.
 - `TAB_MODE_SPEC.md` + `TAB_MODE_HOST_PROMPT.md` - Tab Mode plans; the host prompt is authoritative for the refactor.
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.

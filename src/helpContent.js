@@ -1,5 +1,22 @@
 export const CHANGELOG = [
   {
+    "date": "2026-10-31",
+    "title": "Account Vault",
+    "items": [
+      "Tools → Accounts → Account Vault adds a local password book. Entries are encrypted at rest with a device key and open without a master password.",
+      "Use Copy user / Copy pass and paste into the game login. This is copy/paste only; it does not touch the game's login flow.",
+      "Export encrypted backup downloads a JSON file. Restoring it needs the one-time recovery code shown after export. No server upload; GitHub Pages cannot sync it for you."
+    ]
+  },
+  {
+    "date": "2026-10-31",
+    "title": "In-match UI loss fixed",
+    "items": [
+      "The ship-route hook called the map renderer method without binding this, so it threw every frame and left the canvas transform broken. The UI text disappeared and swap looked broken.",
+      "The renderer method is now bound, ship-route and automation tick errors are isolated, and clean view can force-restore the game UI."
+    ]
+  },
+  {
     "date": "2026-10-30",
     "title": "Territorial.io 2.16.66 compatibility",
     "items": [
@@ -112,6 +129,11 @@ export const GUIDE = [
     "id": "music",
     "title": "Music",
     "html": "\n        <p>The music button sits below the Bot button. The panel supports play/pause, previous/next, repeat, shuffle, volume and seek.</p>\n        <ul>\n          <li>Two bundled tracks cannot be removed.</li>\n          <li>Add local files with the file picker; they persist in IndexedDB.</li>\n          <li>Add cloud URLs; the playlist is saved in localStorage.</li>\n        </ul>\n        <p class=\"fx-help-tip\">Tip: browsers may require one tap before audio can start; the host forwards interactions from the game iframes.</p>\n      "
+  },
+  {
+    "id": "vault",
+    "title": "Account Vault",
+    "html": "\n        <p>Tools → Accounts → Account Vault opens a local password book. Entries are encrypted with a device key stored in this browser, so daily use needs no master password.</p>\n        <ul>\n          <li><strong>Add account</strong>: label, account name, password, optional note.</li>\n          <li><strong>Copy user / Copy pass</strong>: paste into the game's normal login screen. The vault does not touch the login flow.</li>\n          <li><strong>Export encrypted backup</strong>: downloads a JSON file and shows a one-time recovery code. Keep both; restoring on another device needs that code.</li>\n          <li><strong>Import backup</strong>: choose the JSON file, then enter its recovery code.</li>\n        </ul>\n        <p class=\"fx-help-tip\">Security: no server upload. The encrypted backup file is only as safe as the recovery code, and a public GitHub Pages upload is not a private backup. Any script running on this page can read entries while the vault is open, so do not store high-value accounts you would not keep in a browser.</p>\n      "
   },
   {
     "id": "troubleshooting",
