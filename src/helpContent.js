@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    "date": "2026-11-02",
+    "title": "Lobby chat Unicode button",
+    "items": [
+      "A Unicode button now appears next to Send in the lobby chat.",
+      "It converts ASCII letters, digits and punctuation in the message box to fullwidth Unicode characters before you send."
+    ]
+  },
+  {
     "date": "2026-10-31",
     "title": "Shipping tools and Tools menu",
     "items": [
@@ -131,6 +139,11 @@ export const GUIDE = [
     "id": "music",
     "title": "Music",
     "html": "\n        <p>The music button sits below the Bot button. The panel supports play/pause, previous/next, repeat, shuffle, volume and seek.</p>\n        <ul>\n          <li>Two bundled tracks cannot be removed.</li>\n          <li>Add local files with the file picker; they persist in IndexedDB.</li>\n          <li>Add cloud URLs; the playlist is saved in localStorage.</li>\n        </ul>\n        <p class=\"fx-help-tip\">Tip: browsers may require one tap before audio can start; the host forwards interactions from the game iframes.</p>\n      "
+  },
+  {
+    "id": "chat",
+    "title": "Lobby chat",
+    "html": "\n        <p>The lobby chat input has a <strong>Unicode</strong> button next to Send. It converts the English letters, digits and punctuation in the box to fullwidth Unicode characters, then you press Send as usual.</p>\n        <p class=\"fx-help-tip\">The conversion is local; it only changes the text in the chat input. Emoji and non-ASCII text are left unchanged.</p>\n      "
   },
   {
     "id": "shipping",

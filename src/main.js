@@ -12,6 +12,7 @@ import { reportError } from './debugging.js';
 import { initI18n } from './i18n.js';
 import { isBotInstance, isEmbedded } from './instance.js';
 import initCleanView from './cleanView.js';
+import initChatUnicode from './chatUnicode.js';
 
 window.__fx = window.__fx || {};
 window.__fx.reportError = reportError;
@@ -92,6 +93,7 @@ __fx.shipAuto = isTabBot ? null : initShipAuto();
 __fx.cleanView = initCleanView();
 if (isTabBot) __fx.cleanView.setEnabled(true, { hideFx: true, lowDpr: true });
 __fx.toolbox = initToolbox({ variant: isTabBot ? "bot" : "full" });
+__fx.chatUnicode = initChatUnicode();
 if (isTabBot || embedded) {
   __fx.musicPlayer = null;
 } else {

@@ -34,6 +34,7 @@ The Shipping panel + Tools UI redesign round is implemented (2026-10-31); see `S
 - Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
 - Account Vault (2026-10-31): `Tools → Accounts → Account Vault` (`src/accountVault.js`) is a local-only password book. Entries are encrypted at rest with an AES-256-GCM device key stored as a CryptoKey in IndexedDB (`fx_account_vault`); no master password is needed for daily use. Copy user / Copy pass is the only game-login integration (copy/paste; the game flow is untouched). Export downloads an encrypted JSON backup and shows a one-time recovery code; the raw vault key is wrapped with PBKDF2-SHA-256 (310k) + AES-GCM, and import requires that code. No server upload and no Pages sync. Security caveat: same-origin game/script code can read entries while the vault is open; this protects the at-rest copy, not a compromised page. Export files must not be committed to the public repo.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
+- Lobby chat Unicode button (2026-11-02): `src/chatUnicode.js` observes the DOM for the chat input (`Type your message here...` / a sibling Send button), injects an absolute `Unicode` button to the left of Send, and converts ASCII letters/digits/punctuation to fullwidth Unicode in the input (dispatching an `input` event so the game picks it up). It is initialized in `src/main.js`; no game patch.
 - Shipping tools (2026-10-31, implemented; live test pending):
   - Lobby team split was deleted: `src/lobbyTeams.js`, `patches/lobbyTeams.js`, its init/import, CSS and Help entry are gone.
   - Tools is now a card menu (Automation, Opening, Shipping, Display, Bot when embedded, Accounts, Help) with detail pages, a Back button and the existing Close button. The bot variant still opens Automation directly and has no menu/Back.
@@ -122,6 +123,7 @@ The Shipping panel + Tools UI redesign round is implemented (2026-10-31); see `S
 - `static/bot.html` - minimal bot page (no SW/update prompt).
 - `src/toolbox.js` - Tools full/bot variants; Bot settings + window size sliders.
 - `src/accountVault.js` - local encrypted account vault (device key, export/import recovery code).
+- `src/chatUnicode.js` - lobby chat Unicode converter button.
 - `src/helpPanels.js` + `src/helpContent.js` - Tools changelog/usage guide UI and English content.
 - `~/tulipbot/bot.js` - mass-botting controller; currently shelved for Tab Mode work.
 - `TAB_MODE_SPEC.md` + `TAB_MODE_HOST_PROMPT.md` - Tab Mode plans; the host prompt is authoritative for the refactor.
