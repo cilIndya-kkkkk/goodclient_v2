@@ -81,12 +81,48 @@ async function uploadEntries(entries) {
   return { hash, bytes: body.byteLength, count: entries.length };
 }
 
-async function downloadEntries() {
+async function downloadBlob() {
   const hash = getHash();
   const response = await fetch(`${getEndpoint()}/${hash}.bin`, { cache: "no-store" });
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Vault download failed (${response.status})`);
-  return decryptEntries(await response.arrayBuffer());
+  return response.arrayBuffer();
+}
+
+async function downloadEntries() {
+  const blob = await downloadBlob();
+  return blob ? decryptEntries(blob) : null;
+}
+
+async function info() {
+  const local = await getVaultEntries();
+  let remote = null;
+  let remoteError = null;
+  try {
+    remote = await downloadEntries();
+  } catch (error) {
+    remoteError = error && error.message ? error.message : String(error);
+  }
+  return {
+    hash: getHash(),
+    filename: `${getHash()}.bin`,
+    endpoint: getEndpoint(),
+    localCount: local.length,
+    remoteCount: remote ? remote.length : null,
+    remoteError,
+  };
+}
+
+async function dump() {
+  const local = await getVaultEntries();
+  let remote = null;
+  let remoteError = null;
+  try {
+    remote = await downloadEntries();
+  } catch (error) {
+    remoteError = error && error.message ? error.message : String(error);
+  }
+  return { hash: getHash(), endpoint: getEndpoint(), local, remote, remoteError };
 }
 
 async function syncNow() {
@@ -150,6 +186,11 @@ export default function initVaultSync() {
     getHash,
     getEndpoint,
     setEndpoint,
+    getEntries: getVaultEntries,
+    getRemoteEntries: downloadEntries,
+    downloadBlob,
+    info,
+    dump,
     syncNow,
     pullAndMerge,
     detectLoginAndSync,
