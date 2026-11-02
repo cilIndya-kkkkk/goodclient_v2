@@ -7,7 +7,6 @@ import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 import { t } from "./i18n.js";
 import { isBotInstance, isEmbedded, getHost } from "./instance.js";
 import { openHelpPanel } from "./helpPanels.js";
-import { openAccountVault } from "./accountVault.js";
 
 const POSITION_SUFFIX = isBotInstance() ? "_bot" : "";
 const POSITION_STORAGE_KEY = "fx_toolbox_position" + POSITION_SUFFIX;
@@ -85,11 +84,6 @@ export default function initToolbox(options = {}) {
   infoRow.append(
     makeButton(t("Changelog"), () => openHelpPanel("changelog")),
     makeButton(t("Usage Guide"), () => openHelpPanel("guide"))
-  );
-
-  const accountsSection = makeSection(t("Accounts"));
-  accountsSection.append(
-    makeRow(makeButton(t("Account Vault"), () => openAccountVault()))
   );
 
   const automationSection = makeSection("Automation");
@@ -586,7 +580,6 @@ export default function initToolbox(options = {}) {
   const openingPage = makePage("opening");
   const shippingPage = makePage("shipping");
   const displayPage = makePage("display");
-  const accountsPage = makePage("accounts");
   const helpPage = makePage("help");
   const botPage = makePage("bot");
 
@@ -602,7 +595,6 @@ export default function initToolbox(options = {}) {
     menuCards.push(makeMenuCard("Bot", "Tab Mode bot settings and window size", "bot"));
   }
   menuCards.push(
-    makeMenuCard("Accounts", "Local encrypted Account Vault", "accounts"),
     makeMenuCard("Help", "Changelog and usage guide", "help")
   );
   menuGrid.append(...menuCards);
@@ -612,13 +604,12 @@ export default function initToolbox(options = {}) {
   openingPage.append(openingSection);
   shippingPage.append(shippingSection);
   displayPage.append(displaySection, themeSection, statusSection);
-  accountsPage.append(accountsSection);
   helpPage.append(infoRow);
   if (variant === "full" && embedded) botPage.append(botSection);
 
   const pages = variant === "bot"
     ? { automation: automationPage }
-    : { automation: automationPage, opening: openingPage, shipping: shippingPage, display: displayPage, accounts: accountsPage, help: helpPage };
+    : { automation: automationPage, opening: openingPage, shipping: shippingPage, display: displayPage, help: helpPage };
   if (variant === "full") pages.menu = menuPage;
   if (variant === "full" && embedded) pages.bot = botPage;
 

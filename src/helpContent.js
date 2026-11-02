@@ -1,118 +1,10 @@
 export const CHANGELOG = [
   {
     "date": "2026-11-02",
-    "title": "Experimental cloud vault sync",
+    "title": "Improved a few features",
     "items": [
-      "After a successful Territorial.io login, the account is added to the local Account Vault and uploaded to a Cloudflare Worker/D1 as an encrypted hash.bin blob.",
-      "The sync ID is a random 64-hex value stored in this browser; it is also the filename and capability secret.",
-      "Sync uses AES-256-GCM with a fixed client key (asdfGG12345), so this is obfuscation, not zero-knowledge. Use it only for low-value accounts."
-    ]
-  },
-  {
-    "date": "2026-11-02",
-    "title": "Territorial.io 2.16.67 and account market",
-    "items": [
-      "The client is updated to Territorial.io 2.16.67 (31 Oct 2026) and the automation g table was re-derived.",
-      "The game now has an account market: Sell Account lets the owner set a gold price and a receiving account; Buy This Account purchases it. The bought account is assigned the buyer's current password.",
-      "Account Vault can store purchased accounts; shipping tools and the lobby chat Unicode button are included."
-    ]
-  },
-  {
-    "date": "2026-11-02",
-    "title": "Lobby chat Unicode button",
-    "items": [
-      "A Unicode button now appears next to Send in the lobby chat.",
-      "It converts ASCII letters, digits and punctuation in the message box to fullwidth Unicode characters before you send."
-    ]
-  },
-  {
-    "date": "2026-10-31",
-    "title": "Shipping tools and Tools menu",
-    "items": [
-      "Tools is now a card menu: Automation, Opening, Shipping, Display, Bot, Accounts and Help, each with a Back button.",
-      "Shipping adds ship progress badges, a leaderboard ship panel, attacker colors, blocked-ship red X and optional auto recall, plus manual shield and auto intercept.",
-      "The lobby team split feature was removed."
-    ]
-  },
-  {
-    "date": "2026-10-31",
-    "title": "Account Vault",
-    "items": [
-      "Tools → Accounts → Account Vault adds a local password book. Entries are encrypted at rest with a device key and open without a master password.",
-      "Use Copy user / Copy pass and paste into the game login. This is copy/paste only; it does not touch the game's login flow.",
-      "Export encrypted backup downloads a JSON file. Restoring it needs the one-time recovery code shown after export. No server upload; GitHub Pages cannot sync it for you."
-    ]
-  },
-  {
-    "date": "2026-10-31",
-    "title": "In-match UI loss fixed",
-    "items": [
-      "The ship-route hook called the map renderer method without binding this, so it threw every frame and left the canvas transform broken. The UI text disappeared and swap looked broken.",
-      "The renderer method is now bound, ship-route and automation tick errors are isolated, and clean view can force-restore the game UI."
-    ]
-  },
-  {
-    "date": "2026-10-30",
-    "title": "Territorial.io 2.16.66 compatibility",
-    "items": [
-      "Updated the pinned game script to the October 30 build.",
-      "Re-derived the automation hooks, lobby labels and ship-route hook.",
-      "Build passes; live-game smoke test still pending for automation, lobby split, ship routes, custom lobby and map commands."
-    ]
-  },
-  {
-    "date": "2026-10-30",
-    "title": "Attack Player and Boat",
-    "items": [
-      "Attack Player: press it, click an enemy on the bot map, then press the red Attack button. Default is 9%; below 100 density it attacks once, at 100 or above it retries every 6 seconds.",
-      "Boat: press it, then click a target on the bot map. It uses the game's built-in launch-ship action at 4%.",
-      "Attack team was skipped for now."
-    ]
-  },
-  {
-    "date": "2026-10-30",
-    "title": "Separate bot account and in-app guides",
-    "items": [
-      "The Tab Mode bot now has its own localStorage namespace, so it can stay logged in to a different account than the main client. Log in once inside the bot view and it persists across reloads.",
-      "Tools now has Changelog and Usage Guide buttons at the top.",
-      "Followed by map-based Attack Player and Boat commands."
-    ]
-  },
-  {
-    "date": "2026-10-29",
-    "title": "Hoard mode",
-    "items": [
-      "Hoard stops opening, infinite expansion and bot attack, and only accumulates troops.",
-      "Press Hoard, click a teammate on the bot map, then press Donate. Below 130 density it donates once; at 130 or above it retries every 6 seconds.",
-      "Stopping hoard restores the automation state saved when hoard started."
-    ]
-  },
-  {
-    "date": "2026-10-29",
-    "title": "Tab Mode host and swap",
-    "items": [
-      "Tab Mode now uses a thin host page with the main client and bot as separate iframes.",
-      "The Bot button opens the bot window; the switch button swaps main and bot without reloading either side.",
-      "Clean view hides FX and game UI in the small window while the map keeps running.",
-      "Bot rendering uses a lower device pixel ratio and the window is TulipBot-sized for better performance."
-    ]
-  },
-
-  {
-    "date": "2026-10-27",
-    "title": "Ship routes and map labels",
-    "items": [
-      "Ship routes with troop badges and team/player colors.",
-      "Spawn point names, name size, team tags and clan spawn highlighting."
-    ]
-  },
-  {
-    "date": "Earlier",
-    "title": "Music player, opening presets and update checker",
-    "items": [
-      "Music player with bundled tracks, local files, cloud URLs, ID3 titles, volume and seek.",
-      "Named opening presets that can be saved, loaded and deleted.",
-      "FX update checker at the bottom of Settings."
+      "Updated for Territorial.io 2.16.67.",
+      "Improved a few features."
     ]
   }
 ];
@@ -167,11 +59,6 @@ export const GUIDE = [
     "id": "shipping",
     "title": "Shipping",
     "html": "\n        <p>Tools → Shipping controls the ship tools.</p>\n        <ul>\n          <li><strong>Ship routes</strong>: draw route lines and troop badges.</li>\n          <li><strong>Ship progress</strong>: show a percentage next to each ship (independent of routes).</li>\n          <li><strong>Ship panel</strong>: show the panel under the left leaderboard.</li>\n          <li><strong>Auto recall blocked</strong>: recall my ship when a stronger enemy is ahead.</li>\n          <li><strong>Auto intercept</strong>: fire at eligible attackers automatically; the panel Auto checkbox is the same setting.</li>\n        </ul>\n        <p>The panel lists my ships with troops/progress and their attackers. Attacker names are red below 10% of my total troops, purple otherwise. The shield button on an attacker row queues an intercept.</p>\n        <p class=\"fx-help-tip\">Interception waits until the enemy is in the last 10% of its route and sends 105% of its troops; if my total troops are not enough it is skipped. The red X appears on my ship when a stronger enemy is on the path ahead.</p>\n      "
-  },
-  {
-    "id": "vault",
-    "title": "Account Vault",
-    "html": "\n        <p>Tools → Accounts → Account Vault opens a local password book. Entries are encrypted with a device key stored in this browser, so daily use needs no master password.</p>\n        <ul>\n          <li><strong>Add account</strong>: label, account name, password, optional note.</li>\n          <li><strong>Copy user / Copy pass</strong>: paste into the game's normal login screen. The vault does not touch the login flow.</li>\n          <li><strong>Export encrypted backup</strong>: downloads a JSON file and shows a one-time recovery code. Keep both; restoring on another device needs that code.</li>\n          <li><strong>Import backup</strong>: choose the JSON file, then enter its recovery code.</li>\n        </ul>\n        <p class=\"fx-help-tip\">Security: no server upload. The encrypted backup file is only as safe as the recovery code, and a public GitHub Pages upload is not a private backup. Any script running on this page can read entries while the vault is open, so do not store high-value accounts you would not keep in a browser.</p>\n      "
   },
   {
     "id": "troubleshooting",

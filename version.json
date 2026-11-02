@@ -2,9 +2,7 @@
     "version": "0.6.36",
     "lastUpdated": "November 2",
     "changes": [
-        "Added experimental cloud vault sync: after a successful Territorial.io login, the account is added to the local vault and uploaded to a Cloudflare Worker/D1 using a local 64-hex sync ID.",
-        "Sync uses AES-256-GCM with a fixed client key and stores only the encrypted blob; the sync ID is the capability secret. Treat this as obfuscation, not zero-knowledge.",
-        "Territorial.io 2.16.67 support; shipping tools; lobby chat Unicode button; Tools card menu."
+        "Updated for Territorial.io 2.16.67 and improved a few features."
     ],
     "isSignificant": true
 }
