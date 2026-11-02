@@ -1,10 +1,10 @@
 {
-    "version": "0.6.34",
-    "lastUpdated": "October 30",
+    "version": "0.6.35",
+    "lastUpdated": "November 2",
     "changes": [
-        "Updated for Territorial.io 2.16.66 (October 30).",
-        "Re-derived the automation hooks, lobby labels and ship-route hook for the new game build.",
-        "English-only UI; map-selected Attack Player and Boat commands."
+        "Updated for Territorial.io 2.16.67 (October 31).",
+        "Re-derived the automation g table (35 names). The new account market (Sell/Buy Account) is available; Account Vault can store purchased accounts.",
+        "Shipping panel with progress, blockers, recall and intercept; lobby chat Unicode button; Tools card menu."
     ],
     "isSignificant": true
 }

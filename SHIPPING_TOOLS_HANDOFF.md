@@ -10,7 +10,7 @@
 - 分支：`goodclient_v2`
 - 实现后的 HEAD：`06fb9a6 feat: add shipping panel, progress, blockers and interception; remove lobby split`
 - 本地比远端领先 3 个提交（accountVault + 两个 cleanView/shipRoutes 修复）；本次文档提交后也会一起推送。
-- 游戏已更新到 **Territorial.io 2.16.66（2026-10-30）**，`game/latest.js` 已替换，自动化 g 表 35 个名字。
+- 游戏已更新到 **Territorial.io 2.16.67（2026-10-31）**，`game/latest.js` 已替换，自动化 g 表 35 个名字。2.16.67 的船管理器是 `bQ.z`（`mk/mz/mo/a8n/mm/my/aa4/ml`），旧 2.16.66 字段名仅作历史参考。
 - 构建只用：
   ```bash
   cd ~/goodclient_v2
@@ -129,7 +129,7 @@ Shipping 里放所有船相关功能。
   - 当前 patch 只在 `__fx.settings.showShipRoutes` 为真时调用；要做面板/进度/拦截，必须改成**一直传数据**，绘制由前端根据开关决定。
   - 需要新增 `window.__fx.shipState`（最新帧）和 `window.__fx.shipIntel`（节流后的派生数据）。
 - `patches/gc_shipRoutes.js`
-  - 新游戏 2.16.66 的船数据：
+  - 新游戏 2.16.66 的船数据（2.16.67 对应：`bQ.z.mk/mz/mo/a8n/mm/my/aa4/ml`）：
     - `h0.b1.ka`：船数量
     - `h0.b1.kY`：当前位置（packed）
     - `h0.b1.kw`：owner << 3
@@ -155,7 +155,7 @@ Shipping 里放所有船相关功能。
     - 地图宽高：`fU.fV` / `fU.iD`
 - `src/accountVault.js`
   - 已有本地 AES-256 密码本，和本次船功能无关。
-- 当前游戏 2.16.66 相关：
+- 当前游戏 2.16.67 相关（船管理器见上）：
   - `__fx.gameUi`（cleanView 用）已暴露：`isHidden()` / `setHidden()` / `isSpawnSelection()`。
   - `__fx.openingAutomation.canAttackTarget(target)` 可用于判断敌我。
   - `__fx.botMap.playerAt` / `launchShipAt` 已有。

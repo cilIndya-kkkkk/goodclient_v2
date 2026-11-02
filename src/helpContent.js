@@ -1,6 +1,15 @@
 export const CHANGELOG = [
   {
     "date": "2026-11-02",
+    "title": "Territorial.io 2.16.67 and account market",
+    "items": [
+      "The client is updated to Territorial.io 2.16.67 (31 Oct 2026) and the automation g table was re-derived.",
+      "The game now has an account market: Sell Account lets the owner set a gold price and a receiving account; Buy This Account purchases it. The bought account is assigned the buyer's current password.",
+      "Account Vault can store purchased accounts; shipping tools and the lobby chat Unicode button are included."
+    ]
+  },
+  {
+    "date": "2026-11-02",
     "title": "Lobby chat Unicode button",
     "items": [
       "A Unicode button now appears next to Send in the lobby chat.",

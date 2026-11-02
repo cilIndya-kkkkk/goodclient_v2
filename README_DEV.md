@@ -45,39 +45,60 @@
 2.  **`g` 表**：AI 代码高频读取游戏内部对象，所以直接写死混淆名。**每次游戏更新，混淆名都会重排，必须重新推导。**
 3.  **ESM 循环依赖**：`settings.js` 与 `openingAutomation.js` 不要静态互相 `import`；`settings.js` 已在函数内动态读取 `window.__fx.OpeningAutomationInput`。
 
-### 当前 `g` 表（Omen 2.16.51 → 本构建）
+### 当前 `g` 表（Omen 2.16.51 / Territorial.io 2.16.67）
 
-| 可读名 | Omen 旧名 | 当前名 |
+2.16.67 重新混淆了全部核心名，但核心名恰好与 Omen 2.16.51 一致；船/支援/鼠标/视口/UI 的新名是这次额外推导的。
+
+| 可读名 | Omen 旧名 | 2.16.67 当前名 |
 | --- | --- | --- |
-| mapData | `ad` | `j1` |
-| attackManager | `ae` | `a0n` |
-| protocolHandler | `bB` | `ss` |
-| teamUtils | `bv` | `a0f` |
-| playerTiles | `hF` | `xT` |
-| neighborOffsets | `fb` | `a1g` |
-| isNeutralTile | `fQ` | `zb` |
-| isOwnedTile | `h9` | `zY` |
-| getTileOwner | `fR` | `zZ` |
-| getAvailableAttackCount | `gg` | `q7` |
-| getAttackTarget | `gl` | `q8` |
-| getAttackValue | `gm` | `q9` |
-| gameCommandSender | `hz` | `a1M` |
-| sendAttack | `i6` | `xn` |
-| cancelAttack | `r0` | `xr` |
-| canAttack | `fS` | `a1W` |
-| mapIsRendered | `yl` | `u4` |
+| mapData | `ad` | `ad` |
+| attackManager | `ae` | `ae` |
+| protocolHandler | `bB` | `bB` |
+| teamUtils | `bv` | `bv` |
+| playerTiles | `hF` | `hF` |
+| neighborOffsets | `fb` | `fb` |
+| isNeutralTile | `fQ` | `fQ` |
+| isOwnedTile | `h9` | `h9` |
+| getTileOwner | `fR` | `fR` |
+| getAvailableAttackCount | `gg` | `gg` |
+| getAttackTarget | `gl` | `gl` |
+| getAttackValue | `gm` | `gm` |
+| gameCommandSender | `hz` | `hz` |
+| sendAttack | `i6` | `i6` |
+| sendSupport | - | `qr` |
+| cancelAttack | `r0` | `r0` |
+| canAttack | `fS` | `fS` |
+| mapIsRendered | `yl` | `yl` |
+| mapRenderer | - | `bP` |
+| screenToX | - | `hp` |
+| screenToY | - | `hr` |
+| screenToTileX | - | `fw` |
+| screenToTile | - | `fP` |
+| screenInBounds | - | `hs` |
+| supportUtils | - | `bD` |
+| supportMath | - | `gv` |
+| supportAmount | - | `jB` |
+| supportCalc | - | `rB` |
+| mouseActions | - | `bW` |
+| setMouse | - | `hg` |
+| runMouseAction | - | `hh` |
+| viewport | - | `i` |
+| pixelScale | - | `l` |
+| uiController | - | `bF` |
+| setUiHidden | - | `a4M` |
 
 推导方法（无 `../deobfuscate` 时也可用）：
 
-1.  以 `~/omenclient/game/latest.js` 为参照（其 `g` 表已知）。
+1.  以 `~/omenclient/game/latest.js` 或上一版 `game/latest_2.16.66.js` 为参照（其 `g` 表已知）。
 2.  用 UglifyJS 按本项目相同参数压缩当前 `game/latest.js`：`compress:{arrows:false}, mangle:false`。
 3.  对参照脚本中每个 `ad.fb`、`ad.fQ(` 等锚点取上下文 token 窗口，把标识符统一替换成占位符后，在当前脚本中做精确子序列匹配。
 4.  匹配成功后，同一位置的标识符就是新混淆名。
-5.  必须确认 12 种访问形态在压缩后的脚本中各存在（`patches/gc_openingAutomation.js` 会在构建时自动检查）。
+5.  必须确认所有访问形态在压缩后的脚本中各存在（`patches/gc_openingAutomation.js` 会在构建时自动检查）。
+6.  2.16.67 的对照脚本在本地 `game/latest_2.16.66.js`；`game/latest.js` 是 2.16.67。
 
 ## 四、 当前进度与测试步骤
 
-钩子已成功注入，`npm run build` 输出包含：
+钩子已成功注入，`npm run build-only` 输出包含：
 
 ```
 Opening automation hooks injected (g table: 17 names)

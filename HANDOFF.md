@@ -1,6 +1,6 @@
 # GoodClient / TulipBot Handoff
 
-Last updated: 2026-10-31
+Last updated: 2026-11-02
 
 ## Local preview
 
@@ -19,13 +19,22 @@ Server is running from Termux home on port 8002:
 - `npm run build-only` passes. A live-game smoke test is still required, especially for automation, lobby team split, ship routes, custom lobby and map commands.
 - 2026-10-31 in-match UI-loss bug (fixed): the re-derived ship-route hook passed `zt: dr.iL`, an unbound method. `shipRoutes.js` is an ES module, so `this` was undefined inside `dr.iL` and it threw `this.iK is not a function` every frame. The throw happened after `ctx.save()`/`setTransform`, before `ctx.restore()`, so the rest of the canvas UI (text) was drawn with the wrong transform and the loop looked like “map only”; swap then appeared broken. Fix: `zt: function (value) { return dr.iL(value); }`. Extra hardening: ship-route draw and automation tick hooks are wrapped in try/catch with one-time logs (`__fxShipError`, `__fxTickError`), ship-route canvas state is restored in `finally`, `cleanView` guards missing game globals and can force `ct.ur` + `hE.resize()`, and the host retries clean-state calls on error.
 
+## Game update 2026-10-31 (Territorial.io 2.16.67)
+
+- `game/latest.js` is now the 2026-10-31 script (version `🎃 31 Oct 2026 [2.16.67]`). The previous 2.16.66 script is backed up locally at `game/latest_2.16.66.js` (not committed).
+- The game re-obfuscated all core names. The old g table no longer exists. The new `g` table (35 names) was derived by token-aligning the 2.16.66 script (known g table) against the 2.16.67 script with identifier wildcards. The new core names match the Omen-era names (`ad`, `ae`, `bB`, `bv`, `bP`, `bV`, ...); support/mouse/viewport/UI names are `bD/gv/jB/rB`, `bW/hg/hh`, `i/l`, `bF/a4M`.
+- `patches/gc_shipRoutes.js` was re-derived for 2.16.67: ship manager is `bQ.z` (`mk/mz/mo/a8n/mm/my/aa4/ml`), map renderer `bP` (`jJ` tile→packed, `fP` tile→byte offset), colors `bj.aSu/bj.aCs`, canvas `ws`, recall `bQ.mt.aa2`, intercept `bW.hg` + `bW.hh(2)`. The hook now injects at `this.wr=function(){var oF=im;` (outside the `oF>=5` guard) so it keeps running when zoomed in.
+- New game feature: account market (Sell Account / Buy This Account). Sellers set an asking price in gold and a receiving account; buyers confirm with gold; the purchased account is assigned the buyer's current password. The client UI is the game's own account profile; no FX patch is needed. Account Vault can store purchased accounts.
+- `npm run build-only` passes with the new script and all current patches. A live-game smoke test is still required, especially for automation, ship tools, leaderboard, name rendering, custom lobby, and map commands.
+- Version bumped to FX Client 0.6.35.
+
 ## Next task handoff (not implemented)
 
 The Shipping panel + Tools UI redesign round is implemented (2026-10-31); see `SHIPPING_TOOLS_HANDOFF.md` for the confirmed rules and the manual test checklist below.
 
 ## Current state
 
-- GoodClient base: FX Client 0.6.34 + Omen automation + hostname spoof; pinned game is Territorial.io 2.16.66 (2026-10-30).
+- GoodClient base: FX Client 0.6.35 + Omen automation + hostname spoof; pinned game is Territorial.io 2.16.67 (2026-10-31).
 - Automation defaults on; multiplayer works.
 - Spawn point names, name-size slider, team tags (map troop labels + player list + spawn labels).
 - Team-mode automation targeting was patched (team-aware canAttack + target range includes enemy players); needs real team-mode testing.
