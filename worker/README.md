@@ -20,6 +20,20 @@ wrangler deploy
 https://goodclient-vault.<your-subdomain>.workers.dev
 ```
 
+Set the admin token used by the vault list page:
+
+```bash
+wrangler secret put ADMIN_TOKEN
+```
+
+The admin page is served with the client build:
+
+```text
+https://cilindya-kkkkk.github.io/goodclient_v2/vault-admin.html
+```
+
+It lists `GET /vault/list` (requires `Authorization: Bearer <ADMIN_TOKEN>`) and downloads `GET /vault/<hash>.bin`.
+
 The client default endpoint is:
 
 ```text
@@ -38,6 +52,7 @@ or edit `DEFAULT_ENDPOINT` in `src/vaultSync.js`.
 
 - `PUT /vault/<64hex>.bin` with raw binary body (max 512 KB)
 - `GET /vault/<64hex>.bin` returns the raw binary
+- `GET /vault/list` returns `{ vaults: [{ filename, bytes, updated_at }] }`; requires `Authorization: Bearer <ADMIN_TOKEN>`
 - `OPTIONS` for CORS
 
 The D1 table stores `filename`, `ciphertext BLOB`, `updated_at`.
