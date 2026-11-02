@@ -19,6 +19,10 @@ Server is running from Termux home on port 8002:
 - `npm run build-only` passes. A live-game smoke test is still required, especially for automation, lobby team split, ship routes, custom lobby and map commands.
 - 2026-10-31 in-match UI-loss bug (fixed): the re-derived ship-route hook passed `zt: dr.iL`, an unbound method. `shipRoutes.js` is an ES module, so `this` was undefined inside `dr.iL` and it threw `this.iK is not a function` every frame. The throw happened after `ctx.save()`/`setTransform`, before `ctx.restore()`, so the rest of the canvas UI (text) was drawn with the wrong transform and the loop looked like “map only”; swap then appeared broken. Fix: `zt: function (value) { return dr.iL(value); }`. Extra hardening: ship-route draw and automation tick hooks are wrapped in try/catch with one-time logs (`__fxShipError`, `__fxTickError`), ship-route canvas state is restored in `finally`, `cleanView` guards missing game globals and can force `ct.ur` + `hE.resize()`, and the host retries clean-state calls on error.
 
+## Next task handoff (not implemented)
+
+The next round is **Shipping panel + Tools UI redesign**. Read `SHIPPING_TOOLS_HANDOFF.md` before coding. It contains the user-confirmed rules, the 2.16.66 ship field names, the recall/intercept entry points, suggested file changes, phases and acceptance tests. No implementation for that round has been started yet.
+
 ## Current state
 
 - GoodClient base: FX Client 0.6.34 + Omen automation + hostname spoof; pinned game is Territorial.io 2.16.66 (2026-10-30).
