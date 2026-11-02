@@ -26,13 +26,20 @@ Set the admin token used by the vault list page:
 wrangler secret put ADMIN_TOKEN
 ```
 
-The admin page is served with the client build:
+The standalone admin page is:
 
 ```text
-https://cilindya-kkkkk.github.io/goodclient_v2/vault-admin.html
+worker/vault-admin.html
 ```
 
-It lists `GET /vault/list` (requires `Authorization: Bearer <ADMIN_TOKEN>`) and downloads `GET /vault/<hash>.bin`.
+Open it directly, or serve the worker folder:
+
+```bash
+python3 -m http.server 8003 --directory ~/goodclient_v2/worker
+# http://localhost:8003/vault-admin.html
+```
+
+It lists `GET /vault/list` (requires `Authorization: Bearer <ADMIN_TOKEN>`) and downloads `GET /vault/<hash>.bin`. It is not part of the GoodClient build or GitHub Pages.
 
 The client default endpoint is:
 
