@@ -1,6 +1,15 @@
 export const CHANGELOG = [
   {
     "date": "2026-10-31",
+    "title": "Shipping tools and Tools menu",
+    "items": [
+      "Tools is now a card menu: Automation, Opening, Shipping, Display, Bot, Accounts and Help, each with a Back button.",
+      "Shipping adds ship progress badges, a leaderboard ship panel, attacker colors, blocked-ship red X and optional auto recall, plus manual shield and auto intercept.",
+      "The lobby team split feature was removed."
+    ]
+  },
+  {
+    "date": "2026-10-31",
     "title": "Account Vault",
     "items": [
       "Tools → Accounts → Account Vault adds a local password book. Entries are encrypted at rest with a device key and open without a master password.",
@@ -62,14 +71,7 @@ export const CHANGELOG = [
       "Bot rendering uses a lower device pixel ratio and the window is TulipBot-sized for better performance."
     ]
   },
-  {
-    "date": "2026-10-29",
-    "title": "Lobby team split",
-    "items": [
-      "In a standard team lobby, tap the current-game info area to open the team split window.",
-      "Every team is listed with its ready players, and the panel refreshes automatically."
-    ]
-  },
+
   {
     "date": "2026-10-27",
     "title": "Ship routes and map labels",
@@ -129,6 +131,11 @@ export const GUIDE = [
     "id": "music",
     "title": "Music",
     "html": "\n        <p>The music button sits below the Bot button. The panel supports play/pause, previous/next, repeat, shuffle, volume and seek.</p>\n        <ul>\n          <li>Two bundled tracks cannot be removed.</li>\n          <li>Add local files with the file picker; they persist in IndexedDB.</li>\n          <li>Add cloud URLs; the playlist is saved in localStorage.</li>\n        </ul>\n        <p class=\"fx-help-tip\">Tip: browsers may require one tap before audio can start; the host forwards interactions from the game iframes.</p>\n      "
+  },
+  {
+    "id": "shipping",
+    "title": "Shipping",
+    "html": "\n        <p>Tools → Shipping controls the ship tools.</p>\n        <ul>\n          <li><strong>Ship routes</strong>: draw route lines and troop badges.</li>\n          <li><strong>Ship progress</strong>: show a percentage next to each ship (independent of routes).</li>\n          <li><strong>Ship panel</strong>: show the panel under the left leaderboard.</li>\n          <li><strong>Auto recall blocked</strong>: recall my ship when a stronger enemy is ahead.</li>\n          <li><strong>Auto intercept</strong>: fire at eligible attackers automatically; the panel Auto checkbox is the same setting.</li>\n        </ul>\n        <p>The panel lists my ships with troops/progress and their attackers. Attacker names are red below 10% of my total troops, purple otherwise. The shield button on an attacker row queues an intercept.</p>\n        <p class=\"fx-help-tip\">Interception waits until the enemy is in the last 10% of its route and sends 105% of its troops; if my total troops are not enough it is skipped. The red X appears on my ship when a stronger enemy is on the path ahead.</p>\n      "
   },
   {
     "id": "vault",

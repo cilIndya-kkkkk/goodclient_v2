@@ -953,113 +953,6 @@ label.checkbox .checkmark:after {
 	line-height: 1.4;
 	word-break: break-word;
 }
-#fxLobbyTeams {
-	position: fixed;
-	z-index: 2147483646;
-	display: none;
-	width: min(420px, 92vw);
-	max-height: 45vh;
-	background: rgba(9, 13, 18, 0.97);
-	border: 1px solid rgba(110, 210, 160, 0.55);
-	box-shadow: 0 0 24px rgba(0, 0, 0, 0.75);
-	color: #dbe7f0;
-	font-family: 'Trebuchet MS', Arial, sans-serif;
-	font-size: 13px;
-}
-
-#fxLobbyTeams.open {
-	display: flex;
-	flex-direction: column;
-}
-
-#fxLobbyTeamsHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding: 6px 9px;
-	background: rgba(20, 34, 28, 0.95);
-	border-bottom: 1px solid rgba(110, 210, 160, 0.35);
-	color: #a8f0c8;
-	font-size: 12px;
-	font-weight: 700;
-}
-
-#fxLobbyTeamsClose {
-	flex: 0 0 auto;
-	width: 22px;
-	height: 22px;
-	padding: 0;
-	border: 1px solid rgba(255, 255, 255, 0.25);
-	background: rgba(0, 0, 0, 0.35);
-	color: #dbe7f0;
-	font: inherit;
-	font-size: 16px;
-	line-height: 1;
-	cursor: pointer;
-}
-
-#fxLobbyTeamsBody {
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
-	padding: 7px 10px 9px;
-}
-
-.fx-lobby-team-row {
-	display: flex;
-	align-items: flex-start;
-	gap: 5px;
-	padding: 2px 0;
-	line-height: 1.45;
-}
-
-.fx-lobby-team-dot {
-	flex: 0 0 auto;
-	width: 10px;
-	height: 10px;
-	margin-top: 3px;
-	border: 1px solid rgba(255, 255, 255, 0.55);
-	border-radius: 50%;
-}
-
-.fx-lobby-team-name {
-	flex: 0 0 auto;
-	font-weight: 700;
-}
-
-.fx-lobby-team-colon {
-	flex: 0 0 auto;
-}
-
-.fx-lobby-team-players {
-	min-width: 0;
-	color: #b9c8d3;
-	word-break: break-word;
-}
-
-.fx-lobby-teams-empty {
-	color: #8aa5a0;
-	font-size: 12px;
-}
-
-.fx-lobby-teams-ready,
-.fx-lobby-teams-missing {
-	cursor: pointer;
-}
-
-.fx-lobby-teams-ready::after {
-	content: " ▾";
-	font-size: 0.8em;
-	opacity: 0.8;
-}
-
-.fx-lobby-teams-missing::after {
-	content: " !";
-	color: #ff8a8a;
-	font-size: 0.9em;
-}
-
 /* Tab Mode host */
 body.fx-host #fxMusicToggle,
 body.fx-host #fxMusic {
@@ -1728,4 +1621,219 @@ body.fx-clean .window {
 	min-height: 28px;
 	padding: 4px 7px;
 	box-sizing: border-box;
+}
+
+/* Tools menu and detail pages */
+.fx-toolbox-header-left {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.fx-toolbox-header-left > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fx-toolbox-back {
+	min-height: 24px;
+	padding: 2px 9px;
+	font-size: 11px;
+}
+
+.fx-toolbox-pages {
+	display: block;
+}
+
+.fx-toolbox-page {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.fx-toolbox-menu {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+	gap: 8px;
+	margin-top: 6px;
+}
+
+.fx-toolbox-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-height: 62px;
+	padding: 10px 12px;
+	border: 1px solid rgba(110, 210, 160, 0.3);
+	background: rgba(255, 255, 255, 0.035);
+	color: #dbe7f0;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s;
+}
+
+.fx-toolbox-card:hover,
+.fx-toolbox-card:focus-visible {
+	border-color: rgba(110, 210, 160, 0.7);
+	background: rgba(110, 210, 160, 0.09);
+}
+
+.fx-toolbox-card-title {
+	color: #a8f0c8;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.fx-toolbox-card-desc {
+	color: #8aa5a0;
+	font-size: 11px;
+	line-height: 1.35;
+}
+
+/* Shipping panel */
+#fxShipPanel {
+	position: fixed;
+	left: 8px;
+	z-index: 2147483000;
+	display: flex;
+	flex-direction: column;
+	min-height: 80px;
+	box-sizing: border-box;
+	background: rgba(9, 13, 18, 0.92);
+	border: 1px solid rgba(110, 210, 160, 0.45);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+	color: #dbe7f0;
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 12px;
+	overflow: hidden;
+}
+
+#fxShipPanelHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+	padding: 5px 7px;
+	background: rgba(20, 34, 28, 0.94);
+	border-bottom: 1px solid rgba(110, 210, 160, 0.3);
+	color: #a8f0c8;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.fx-ship-auto {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	color: #9fd8ba;
+	font-size: 11px;
+	font-weight: 400;
+	cursor: pointer;
+}
+
+#fxShipPanelBody {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 5px 7px 7px;
+}
+
+#fxShipPanelResize {
+	flex: 0 0 auto;
+	height: 9px;
+	cursor: ns-resize;
+	touch-action: none;
+	background: linear-gradient(to bottom, rgba(110, 210, 160, 0.16), rgba(110, 210, 160, 0.04));
+	border-top: 1px solid rgba(110, 210, 160, 0.18);
+}
+
+.fx-ship-status {
+	margin-bottom: 4px;
+	color: #8aa5a0;
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.fx-ship-row {
+	margin: 4px 0;
+	padding: 5px 6px;
+	border: 1px solid rgba(110, 210, 160, 0.16);
+	background: rgba(255, 255, 255, 0.025);
+}
+
+.fx-ship-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 6px;
+	color: #e8fff1;
+	font-weight: 700;
+}
+
+.fx-ship-name {
+	color: #a8f0c8;
+}
+
+.fx-ship-stats {
+	color: #9fd8ba;
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.fx-ship-attacker {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 4px;
+	padding-left: 5px;
+	font-size: 11px;
+}
+
+.fx-ship-attacker-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fx-ship-attacker-troops {
+	flex: 0 0 auto;
+	font-variant-numeric: tabular-nums;
+}
+
+.fx-ship-attacker-red .fx-ship-attacker-name,
+.fx-ship-attacker-red .fx-ship-attacker-troops {
+	color: #ff8c8c;
+}
+
+.fx-ship-attacker-purple .fx-ship-attacker-name,
+.fx-ship-attacker-purple .fx-ship-attacker-troops {
+	color: #c9a7ff;
+}
+
+.fx-ship-safe {
+	margin-top: 3px;
+	color: #8aa5a0;
+	font-size: 10px;
+}
+
+.fx-ship-button {
+	min-height: 20px;
+	padding: 1px 7px;
+	border: 1px solid rgba(140, 190, 170, 0.45);
+	background: rgba(0, 0, 0, 0.45);
+	color: #dbe7f0;
+	font: inherit;
+	font-size: 10px;
+	cursor: pointer;
+}
+
+.fx-ship-button:disabled {
+	opacity: 0.45;
+	cursor: default;
 }

@@ -21,7 +21,7 @@ Server is running from Termux home on port 8002:
 
 ## Next task handoff (not implemented)
 
-The next round is **Shipping panel + Tools UI redesign**. Read `SHIPPING_TOOLS_HANDOFF.md` before coding. It contains the user-confirmed rules, the 2.16.66 ship field names, the recall/intercept entry points, suggested file changes, phases and acceptance tests. No implementation for that round has been started yet.
+The Shipping panel + Tools UI redesign round is implemented (2026-10-31); see `SHIPPING_TOOLS_HANDOFF.md` for the confirmed rules and the manual test checklist below.
 
 ## Current state
 
@@ -34,6 +34,16 @@ The next round is **Shipping panel + Tools UI redesign**. Read `SHIPPING_TOOLS_H
 - Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
 - Account Vault (2026-10-31): `Tools → Accounts → Account Vault` (`src/accountVault.js`) is a local-only password book. Entries are encrypted at rest with an AES-256-GCM device key stored as a CryptoKey in IndexedDB (`fx_account_vault`); no master password is needed for daily use. Copy user / Copy pass is the only game-login integration (copy/paste; the game flow is untouched). Export downloads an encrypted JSON backup and shows a one-time recovery code; the raw vault key is wrapped with PBKDF2-SHA-256 (310k) + AES-GCM, and import requires that code. No server upload and no Pages sync. Security caveat: same-origin game/script code can read entries while the vault is open; this protects the at-rest copy, not a compromised page. Export files must not be committed to the public repo.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
+- Shipping tools (2026-10-31, implemented; live test pending):
+  - Lobby team split was deleted: `src/lobbyTeams.js`, `patches/lobbyTeams.js`, its init/import, CSS and Help entry are gone.
+  - Tools is now a card menu (Automation, Opening, Shipping, Display, Bot when embedded, Accounts, Help) with detail pages, a Back button and the existing Close button. The bot variant still opens Automation directly and has no menu/Back.
+  - Settings defaults: `showShipProgress`, `showShipPanel` (both true), `autoRecallBlockedShips`, `autoInterceptShips` (both false). Panel height is `fx_ship_panel_height`.
+  - `patches/gc_shipRoutes.js` always passes ship state now, including `segmentProgress` (`kZ`), `shipStatus` (`kX`), owners, troops, positions, routes and the route index. It exposes `__fx.shipControl.recallShip(index)` (`h0.kc.pt`) and `interceptShip(index, percent)` (set attack %, `aIC.aID` + `aIC.aIJ(2)`).
+  - `src/shipRoutes.js` stores `__fx.shipState`, computes progress (`kv + kZ/65535` over route length), draws routes (toggle), troop/progress badges (independent toggles), and a red X on my blocked ships.
+  - `src/shipIntel.js` produces `__fx.shipIntel`: my ships, attackers (enemy ships near my ship/path, ~8 tiles), blockers (stronger enemy within ~2.2 tiles of my route ahead, 18 points), colors, and `__fx.shipAuto` for recall/shield/auto intercept. Auto recall is deferred outside the draw loop.
+  - `src/shipPanel.js` is a fixed left panel below the leaderboard (`__fx.leaderboardRect` from `patches/leaderboard.js`), height-draggable and persisted, with an Auto checkbox. Rows show my ship troops/progress and attackers; attacker names are red below 10% of my total troops, purple otherwise; attacker rows have a Shield button.
+  - Intercept timing: enemy progress >= 0.9; sends `enemyTroops * 1.05 / myTotalTroops`; skips if my total troops are insufficient. Manual Shield and Auto share the same pending queue.
+  - Known risks: `leaderboardRect` units, attacker/blocker radii, `interceptShip` action semantics, and red X/panel overlap need a real match to tune.
 - Ship routes: implemented locally. Tools -> Display -> Ship routes (default on).
   - Status shows `ships N · paths M · routes K`.
   - Route colors use team/player color; fixed-size troop badges added on the route/ship.
@@ -94,6 +104,7 @@ The next round is **Shipping panel + Tools UI redesign**. Read `SHIPPING_TOOLS_H
 8. Test the Tab Mode host refactor in a real browser (2026-10-29: user confirmed the host page + Tab Mode basic open works on port 8002; full checklist still pending): host page loads main full UI + music; Bot opens a lazy bot window; close/reopen does not reload bot; bot tick continues while closed; swap changes layout + clean state without reload; Tools size sliders resize the window; position/size survive reload; only `index.html` has SW/update prompt; `client.html` and `bot.html` have neither.
 9. Verify bot automation actually keeps ticking while the Tab Mode window is closed. The implementation uses `opacity:0` + `pointer-events:none` + `inert` and keeps the iframe at its last slot size to avoid throttling; if ticks stop, investigate browser throttling.
 10. Verify cleanView/DPR behavior on swap: main in the small window should hide FX+game UI and render at DPR 1; bot fullscreen should restore UI at real DPR without reload. Also test a new game starting while clean is enabled.
+12. Shipping tools manual test: remove lobby split (no info-area window); Tools card menu/back; Shipping toggles; progress badges independent of routes; panel below leaderboard with height persistence; my ship troops/progress; attacker colors (<10% red, otherwise purple); red X on blocked my ship; auto recall when enabled; Shield manual intercept and Auto intercept at the last 10% with 105% troops; insufficient troops skipped. Also confirm `interceptShip` actually launches/works on 2.16.66.
 11. In-match UI-loss bug (2026-10-31, fixed): unbound `dr.iL` in the ship-route hook threw `this.iK is not a function` every frame after `ctx.save()`, leaving the canvas transform wrong so the UI text disappeared; swap looked broken. Fixed by wrapping `dr.iL` in a function. Defensive guards remain (`__fxShipError`, `__fxTickError`, cleanView force fallback). If it recurs, check those console entries.
 
 ## Key files
@@ -114,7 +125,9 @@ The next round is **Shipping panel + Tools UI redesign**. Read `SHIPPING_TOOLS_H
 - `~/tulipbot/bot.js` - mass-botting controller; currently shelved for Tab Mode work.
 - `TAB_MODE_SPEC.md` + `TAB_MODE_HOST_PROMPT.md` - Tab Mode plans; the host prompt is authoritative for the refactor.
 - `patches/gc_shipRoutes.js` - hooks ship draw and passes ship/path data.
-- `src/shipRoutes.js` - route drawing, colors, troop badges, route status.
+- `src/shipRoutes.js` - route drawing, progress badges, red X, ship state.
+- `src/shipIntel.js` - my ships/attackers/blockers and auto recall/intercept.
+- `src/shipPanel.js` - leaderboard shipping panel (height drag, Auto, attacker colors/shields).
 - `src/theme.js` - theme/tint.
 - `src/i18n.js` - English-only identity `t()` / `initI18n()` compatibility wrapper.
 - `src/musicPlayer.js` - floating music player (bundled tracks, local files, cloud URLs).

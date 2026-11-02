@@ -65,12 +65,17 @@ export default function initToolbox(options = {}) {
 
   const header = document.createElement("div");
   header.id = "fxToolboxHeader";
+  const headerLeft = document.createElement("div");
+  headerLeft.className = "fx-toolbox-header-left";
+  const backButton = makeButton("Back", () => showPage("menu"), "fx-toolbox-back");
+  backButton.hidden = true;
   const headerTitle = document.createElement("span");
   headerTitle.textContent = "GoodClient Toolbox";
+  headerLeft.append(backButton, headerTitle);
   const closeButton = makeButton("Close", () => {
     panel.classList.remove("open");
   }, "fx-toolbox-close");
-  header.append(headerTitle, closeButton);
+  header.append(headerLeft, closeButton);
 
   const body = document.createElement("div");
   body.id = "fxToolboxBody";
@@ -389,7 +394,7 @@ export default function initToolbox(options = {}) {
     nameSizeValue.textContent = `${size}px`;
   });
   displaySection.append(
-    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, teamTagButton, shipRoutesButton, clearSpawnButton),
+    makeRow(spawnAllButton, spawnClanButton, spawnNamesButton, teamTagButton, clearSpawnButton),
     makeRow(nameSizeLabel, nameSizeSlider, nameSizeValue),
     makeRow(Object.assign(document.createElement("span"), {
       className: "fx-toolbox-note",
@@ -516,13 +521,125 @@ export default function initToolbox(options = {}) {
   const musicButton = makeButton(t("Music player"), () => getHost()?.music?.open?.() || window.__fx.musicPlayer?.open?.());
   statusSection.append(statusLine, makeRow(resetToggleButton, musicButton));
 
-  if (variant === "full") body.append(infoRow, accountsSection);
-  body.append(automationSection);
-  if (variant === "full") {
-    if (embedded) body.append(botSection);
-    body.append(openingSection, displaySection, themeSection, statusSection);
+  const shippingSection = makeSection("Shipping");
+  const shipProgressButton = makeButton("Ship progress", () => {
+    const settings = getSettings();
+    settings.showShipProgress = !settings.showShipProgress;
+    persistSettings();
+    render();
+  });
+  const shipPanelButton = makeButton("Ship panel", () => {
+    const settings = getSettings();
+    settings.showShipPanel = !settings.showShipPanel;
+    persistSettings();
+    render();
+  });
+  const autoRecallButton = makeButton("Auto recall blocked", () => {
+    const settings = getSettings();
+    settings.autoRecallBlockedShips = !settings.autoRecallBlockedShips;
+    persistSettings();
+    render();
+  });
+  const autoInterceptButton = makeButton("Auto intercept", () => {
+    const settings = getSettings();
+    settings.autoInterceptShips = !settings.autoInterceptShips;
+    persistSettings();
+    render();
+  });
+  const resetShipPanelButton = makeButton("Reset panel height", () => {
+    localStorage.removeItem("fx_ship_panel_height");
+    window.__fx.shipPanel?.resetHeight?.();
+  });
+  shippingSection.append(
+    makeRow(shipRoutesButton, shipProgressButton, shipPanelButton),
+    makeRow(autoRecallButton, autoInterceptButton, resetShipPanelButton),
+    makeRow(Object.assign(document.createElement("span"), {
+      className: "fx-toolbox-note",
+      textContent: "Routes, progress badges, the leaderboard ship panel and automatic interception."
+    }))
+  );
+
+  function makePage(name) {
+    const page = document.createElement("div");
+    page.className = "fx-toolbox-page hidden";
+    page.dataset.page = name;
+    return page;
   }
+
+  function makeMenuCard(title, description, targetPage) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "fx-toolbox-card";
+    const cardTitle = document.createElement("span");
+    cardTitle.className = "fx-toolbox-card-title";
+    cardTitle.textContent = t(title);
+    const cardDescription = document.createElement("span");
+    cardDescription.className = "fx-toolbox-card-desc";
+    cardDescription.textContent = t(description);
+    card.append(cardTitle, cardDescription);
+    card.addEventListener("click", () => showPage(targetPage));
+    return card;
+  }
+
+  const menuPage = makePage("menu");
+  const automationPage = makePage("automation");
+  const openingPage = makePage("opening");
+  const shippingPage = makePage("shipping");
+  const displayPage = makePage("display");
+  const accountsPage = makePage("accounts");
+  const helpPage = makePage("help");
+  const botPage = makePage("bot");
+
+  const menuGrid = document.createElement("div");
+  menuGrid.className = "fx-toolbox-menu";
+  const menuCards = [
+    makeMenuCard("Automation", "Opening, infinite expansion and bot attack", "automation"),
+    makeMenuCard("Opening", "Strategy JSON, tick offset and named presets", "opening"),
+    makeMenuCard("Shipping", "Routes, progress, panel and intercept", "shipping"),
+    makeMenuCard("Display", "Spawn labels, map display, theme and status", "display")
+  ];
+  if (variant === "full" && embedded) {
+    menuCards.push(makeMenuCard("Bot", "Tab Mode bot settings and window size", "bot"));
+  }
+  menuCards.push(
+    makeMenuCard("Accounts", "Local encrypted Account Vault", "accounts"),
+    makeMenuCard("Help", "Changelog and usage guide", "help")
+  );
+  menuGrid.append(...menuCards);
+  menuPage.append(menuGrid);
+
+  automationPage.append(automationSection);
+  openingPage.append(openingSection);
+  shippingPage.append(shippingSection);
+  displayPage.append(displaySection, themeSection, statusSection);
+  accountsPage.append(accountsSection);
+  helpPage.append(infoRow);
+  if (variant === "full" && embedded) botPage.append(botSection);
+
+  const pages = variant === "bot"
+    ? { automation: automationPage }
+    : { automation: automationPage, opening: openingPage, shipping: shippingPage, display: displayPage, accounts: accountsPage, help: helpPage };
+  if (variant === "full") pages.menu = menuPage;
+  if (variant === "full" && embedded) pages.bot = botPage;
+
+  const pageHost = document.createElement("div");
+  pageHost.className = "fx-toolbox-pages";
+  for (const page of Object.values(pages)) pageHost.append(page);
+  body.append(pageHost);
   panel.append(header, body);
+
+  let currentPage = variant === "bot" ? "automation" : "menu";
+
+  function showPage(name) {
+    if (variant === "bot") name = "automation";
+    if (!pages[name]) name = variant === "bot" ? "automation" : "menu";
+    currentPage = name;
+    for (const [key, page] of Object.entries(pages)) {
+      page.classList.toggle("hidden", key !== name);
+    }
+    backButton.hidden = variant === "bot" || name === "menu";
+    body.scrollTop = 0;
+  }
 
   function isInGame() {
     try {
@@ -666,7 +783,7 @@ export default function initToolbox(options = {}) {
 
   let dragState = null;
   header.addEventListener("pointerdown", (event) => {
-    if (event.target === closeButton) return;
+    if (event.target.closest("button")) return;
     const rect = panel.getBoundingClientRect();
     dragState = {
       pointerId: event.pointerId,
@@ -690,6 +807,7 @@ export default function initToolbox(options = {}) {
   function openPanel() {
     if (!document.body.contains(panel)) document.body.append(panel);
     panel.classList.add("open");
+    showPage(variant === "bot" ? "automation" : "menu");
     if (!panel.style.left) applyInitialPosition();
     const settings = getSettings();
     offsetInput.value = settings.openingAutomationTickOffset || "-9.5";
@@ -732,6 +850,10 @@ export default function initToolbox(options = {}) {
     spawnNamesButton.classList.toggle("active", Boolean(settings.showSpawnPointNames));
     teamTagButton.classList.toggle("active", Boolean(settings.showTeamTags));
     shipRoutesButton.classList.toggle("active", Boolean(settings.showShipRoutes));
+    shipProgressButton.classList.toggle("active", Boolean(settings.showShipProgress));
+    shipPanelButton.classList.toggle("active", Boolean(settings.showShipPanel));
+    autoRecallButton.classList.toggle("active", Boolean(settings.autoRecallBlockedShips));
+    autoInterceptButton.classList.toggle("active", Boolean(settings.autoInterceptShips));
     const nameSize = Number(settings.spawnPointNameSize) || 12;
     nameSizeSlider.value = String(nameSize);
     nameSizeValue.textContent = `${nameSize}px`;

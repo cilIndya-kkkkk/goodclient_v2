@@ -132,6 +132,7 @@ export default definePatch(({ safeDictionary: dict, modifyCode, waitForMinificat
 			this.playerPos = __fx.leaderboardFilter.filteredLeaderboard.indexOf(leaderboardPositionsById[game.playerId]);
 		}
 		function drawFunction() {
+		__fx.leaderboardRect = { width: a04, height: y9 };
 		a0A.clearRect(0, 0, a04, y9),
 		a0A.fillStyle = aYq ? aZ.a4s : aZ.a4o,
 		a0A.fillRect(0, 0, a04, a0F),
