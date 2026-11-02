@@ -1,4 +1,4 @@
-const playerDataProperties = ["playerTerritories", "playerBalances", "rawPlayerNames"];
+const playerDataProperties = ["playerTerritories", "playerBalances", "rawPlayerNames", "playerNames"];
 const gameObjectProperties = ["playerId", "gIsTeamGame", "gHumans", "gLobbyMaxJoin", "gameState", "gIsSingleplayer",
     "gIsReplay", "gSelectableSpawn", "uiHidden"];
 const replayRecorderProperties = ["tickFlags", "tickCounts"];

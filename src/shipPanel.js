@@ -149,7 +149,7 @@ function renderAttackerRow(attacker, myTotalTroops) {
   row.className = "fx-ship-attacker";
   const name = document.createElement("span");
   name.className = "fx-ship-attacker-name";
-  name.textContent = attacker.name || `Player ${attacker.player}`;
+  name.textContent = `${attacker.name || `Player ${attacker.player}`} → ${attacker.targetName || "unoccupied"}`;
   const troops = document.createElement("span");
   troops.className = "fx-ship-attacker-troops";
   troops.textContent = formatTroops(attacker.troops);
@@ -175,7 +175,9 @@ function renderList() {
     bodyEl.append(statusEl);
     return;
   }
-  statusEl.textContent = `${intel.myShips.length} ship${intel.myShips.length === 1 ? "" : "s"}`;
+  const attackerCount = intel.myShips.reduce((total, ship) => total + (ship.attackers ? ship.attackers.length : 0), 0);
+  const blockedCount = intel.myShips.reduce((total, ship) => total + (ship.blockers && ship.blockers.length ? 1 : 0), 0);
+  statusEl.textContent = `${intel.myShips.length} ship${intel.myShips.length === 1 ? "" : "s"} · ${attackerCount} attackers${blockedCount ? ` · ${blockedCount} blocked` : ""}`;
   bodyEl.append(statusEl);
   for (const ship of intel.myShips) {
     const row = document.createElement("div");
@@ -184,7 +186,7 @@ function renderList() {
     head.className = "fx-ship-head";
     const label = document.createElement("span");
     label.className = "fx-ship-name";
-    label.textContent = `Ship ${ship.index + 1}`;
+    label.textContent = `${intel.myGameName || "You"} → ${ship.targetName || "unoccupied"}`;
     const stats = document.createElement("span");
     stats.className = "fx-ship-stats";
     stats.textContent = `${formatTroops(ship.troops)} · ${Math.round(ship.progress * 100)}%`;

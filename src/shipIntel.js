@@ -2,9 +2,10 @@ import { getVar } from "./gameInterface.js";
 import { getSettings } from "./settings.js";
 
 const INTEL_INTERVAL_MS = 250;
-const LOOKAHEAD_POINTS = 18;
-const BLOCK_RADIUS_TILES = 2.2;
-const ATTACKER_RADIUS_TILES = 8;
+const LOOKAHEAD_POINTS = 32;
+const ENEMY_LOOKAHEAD_POINTS = 24;
+const BLOCK_RADIUS_TILES = 3.5;
+const ATTACKER_RADIUS_TILES = 12;
 const INTERCEPT_PROGRESS = 0.9;
 const INTERCEPT_MARGIN = 1.05;
 
@@ -25,8 +26,20 @@ function totalTroops() {
 }
 
 function playerName(player) {
-  const names = getVar("rawPlayerNames") || [];
+  const names = getVar("playerNames") || getVar("rawPlayerNames") || [];
   return String(names[player] || `Player ${player}`);
+}
+
+function targetOwner(state, index) {
+  const targets = state.targets;
+  if (!targets) return -1;
+  const owner = Number(targets[index]);
+  return Number.isFinite(owner) ? owner : -1;
+}
+
+function targetName(state, index) {
+  const owner = targetOwner(state, index);
+  return owner < 0 ? "unoccupied" : playerName(owner);
 }
 
 function ownerOf(state, index) {
@@ -117,8 +130,6 @@ function updateShipIntel(state) {
   const myTroops = totalTroops();
   const shipCount = Math.max(0, Math.floor(Number(state.jO) || 0));
   const myShips = [];
-  const attackersByShip = new Map();
-  const activeRecalled = new Set();
   const activeAttackers = new Set();
 
   for (let index = 0; index < shipCount; index++) {
@@ -129,6 +140,8 @@ function updateShipIntel(state) {
       troops: troopsOf(state, index),
       progress,
       returning: isReturning(state, index),
+      target: targetOwner(state, index),
+      targetName: targetName(state, index),
       attackers: [],
       blockers: [],
     });
@@ -145,7 +158,10 @@ function updateShipIntel(state) {
       troops: troopsOf(state, index),
       progress: shipProgress(state, index),
       point: threatRadius(state, index),
+      ahead: routeAhead(state, index, ENEMY_LOOKAHEAD_POINTS),
       route: state.routes?.[index],
+      target: targetOwner(state, index),
+      targetName: targetName(state, index),
     });
   }
 
@@ -170,6 +186,21 @@ function updateShipIntel(state) {
         const end = routePoint(state, enemy.route[enemy.route.length - 1]);
         if (minePoint && distance(minePoint, end) <= ATTACKER_RADIUS_TILES) attacking = true;
       }
+      if (!attacking && enemy.ahead && enemy.ahead.length) {
+        for (let enemyPointIndex = 0; enemyPointIndex < enemy.ahead.length && !attacking; enemyPointIndex += 2) {
+          const enemyPoint = enemy.ahead[enemyPointIndex];
+          if (minePoint && distance(minePoint, enemyPoint) <= ATTACKER_RADIUS_TILES) {
+            attacking = true;
+            break;
+          }
+          for (let ownPointIndex = 0; ownPointIndex < ahead.length; ownPointIndex += 2) {
+            if (distance(ahead[ownPointIndex], enemyPoint) <= ATTACKER_RADIUS_TILES) {
+              attacking = true;
+              break;
+            }
+          }
+        }
+      }
       if (!attacking) continue;
       activeAttackers.add(key);
       mine.attackers.push({
@@ -178,6 +209,8 @@ function updateShipIntel(state) {
         name: playerName(enemy.owner),
         troops: enemy.troops,
         progress: enemy.progress,
+        target: enemy.target,
+        targetName: enemy.targetName,
         insufficient: myTroops * INTERCEPT_MARGIN < enemy.troops,
       });
     }
@@ -204,6 +237,7 @@ function updateShipIntel(state) {
   const intel = {
     updatedAt: now,
     myPlayer: me,
+    myGameName: playerName(me),
     myTotalTroops: myTroops,
     myShips,
     shipCount,
