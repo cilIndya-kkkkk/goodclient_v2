@@ -287,7 +287,7 @@ function updateAutoIntercept() {
     for (const ship of intel.myShips) {
       for (const attacker of ship.attackers) {
         const key = `${attacker.index}:${attacker.player}`;
-        if (!attacker.insufficient) pendingKeys.add(key);
+        if (!attacker.insufficient && !interceptedKeys.has(key)) pendingKeys.add(key);
       }
     }
   }
@@ -309,7 +309,7 @@ export function initShipAuto() {
     shield(attacker) {
       if (!attacker) return;
       const key = `${attacker.index}:${attacker.player}`;
-      pendingKeys.add(key);
+      if (!interceptedKeys.has(key)) pendingKeys.add(key);
       updateAutoIntercept();
     },
   };

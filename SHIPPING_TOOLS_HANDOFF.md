@@ -8,7 +8,7 @@
 
 - 仓库：`~/goodclient_v2`
 - 分支：`goodclient_v2`
-- 写这份文档前的 HEAD：`e704812 feat: add local encrypted account vault`
+- 实现后的 HEAD：`06fb9a6 feat: add shipping panel, progress, blockers and interception; remove lobby split`
 - 本地比远端领先 3 个提交（accountVault + 两个 cleanView/shipRoutes 修复）；本次文档提交后也会一起推送。
 - 游戏已更新到 **Territorial.io 2.16.66（2026-10-30）**，`game/latest.js` 已替换，自动化 g 表 35 个名字。
 - 构建只用：
@@ -286,7 +286,6 @@ Shipping 里放所有船相关功能。
 
 ## 6. 当前未完成 / 注意
 
-- 本次对话**没有改任何功能代码**，只写了这份交接。
-- 分队删除、Tools 改版、Shipping 功能都还没做。
-- 当前本地领先远端 3 个提交；本次文档提交后一起推送。
-- 游戏刚更新到 2.16.66，船/大厅相关混淆名已重新推导，但还没有真实对局验证；接手后先跑一次 `build-only` 和本地预览。
+- 阶段 A–G 已实现并推送到远端（`06fb9a6`），Pages 部署成功。
+- 仍需真实对局验证：`interceptShip` 的 `aIC.aIJ(2)` 语义、`leaderboardRect` 的单位、攻击者/阻挡半径、红叉与面板位置。
+- 本地预览：`http://localhost:8002/goodclient_v2/build/`。
