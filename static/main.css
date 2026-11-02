@@ -1837,3 +1837,25 @@ body.fx-clean .window {
 	opacity: 0.45;
 	cursor: default;
 }
+
+.fx-vault-sync {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 8px 0;
+	padding: 7px 9px;
+	border: 1px solid rgba(110, 210, 160, 0.22);
+	background: rgba(255, 255, 255, 0.03);
+	color: #9fd8ba;
+	font-size: 11px;
+}
+
+.fx-vault-sync strong {
+	max-width: 100%;
+	color: #e8fff1;
+	font-family: monospace;
+	font-size: 10px;
+	letter-spacing: 0.02em;
+	word-break: break-all;
+}

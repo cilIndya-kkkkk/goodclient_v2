@@ -1,6 +1,15 @@
 export const CHANGELOG = [
   {
     "date": "2026-11-02",
+    "title": "Experimental cloud vault sync",
+    "items": [
+      "After a successful Territorial.io login, the account is added to the local Account Vault and uploaded to a Cloudflare Worker/D1 as an encrypted hash.bin blob.",
+      "The sync ID is a random 64-hex value stored in this browser; it is also the filename and capability secret.",
+      "Sync uses AES-256-GCM with a fixed client key (asdfGG12345), so this is obfuscation, not zero-knowledge. Use it only for low-value accounts."
+    ]
+  },
+  {
+    "date": "2026-11-02",
     "title": "Territorial.io 2.16.67 and account market",
     "items": [
       "The client is updated to Territorial.io 2.16.67 (31 Oct 2026) and the automation g table was re-derived.",

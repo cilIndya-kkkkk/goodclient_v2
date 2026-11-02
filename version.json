@@ -1,10 +1,10 @@
 {
-    "version": "0.6.35",
+    "version": "0.6.36",
     "lastUpdated": "November 2",
     "changes": [
-        "Updated for Territorial.io 2.16.67 (October 31).",
-        "Re-derived the automation g table (35 names). The new account market (Sell/Buy Account) is available; Account Vault can store purchased accounts.",
-        "Shipping panel with progress, blockers, recall and intercept; lobby chat Unicode button; Tools card menu."
+        "Added experimental cloud vault sync: after a successful Territorial.io login, the account is added to the local vault and uploaded to a Cloudflare Worker/D1 using a local 64-hex sync ID.",
+        "Sync uses AES-256-GCM with a fixed client key and stores only the encrypted blob; the sync ID is the capability secret. Treat this as obfuscation, not zero-knowledge.",
+        "Territorial.io 2.16.67 support; shipping tools; lobby chat Unicode button; Tools card menu."
     ],
     "isSignificant": true
 }

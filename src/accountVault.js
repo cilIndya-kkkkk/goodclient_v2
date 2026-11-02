@@ -16,6 +16,7 @@ let body = null;
 let listEl = null;
 let statusEl = null;
 let codeEl = null;
+let syncCodeEl = null;
 let editorEl = null;
 let nameInput = null;
 let accountInput = null;
@@ -151,6 +152,16 @@ async function initVault() {
     initialized = true;
   })();
   return initPromise;
+}
+
+async function ensureVault() {
+  if (initialized) return;
+  try {
+    await initVault();
+  } catch (error) {
+    initPromise = null;
+    throw error;
+  }
 }
 
 function setStatus(message, bad = false) {
@@ -407,7 +418,7 @@ function createPanel() {
 
   const note = document.createElement("p");
   note.className = "fx-vault-note";
-  note.textContent = "Local-only account vault. Entries are encrypted at rest with a device key. Export creates an encrypted backup that needs the one-time recovery code. Any script running on this page can read entries while the vault is open.";
+  note.textContent = "Local account vault. Entries are encrypted at rest with a device key. Optional cloud sync uploads an AES-encrypted copy to the configured Worker/D1 using the Sync ID; the client uses a fixed key, so treat cloud sync as obfuscation, not zero-knowledge. Any script running on this page can read entries while the vault is open.";
 
   const toolbar = document.createElement("div");
   toolbar.className = "fx-vault-toolbar";
@@ -469,7 +480,47 @@ function createPanel() {
   );
   editorEl.append(nameInput, accountInput, passwordInput, noteInput, editorActions);
 
-  body.append(note, toolbar, statusEl, codeEl, listEl, editorEl);
+  const syncBox = document.createElement("div");
+  syncBox.className = "fx-vault-sync";
+  const syncLabel = document.createElement("span");
+  syncLabel.textContent = "Cloud sync ID: ";
+  syncCodeEl = document.createElement("strong");
+  syncCodeEl.textContent = localStorage.getItem("fx_vault_sync_hash") || "not initialized";
+  const copySync = makeButton("Copy sync ID", () => copyText(syncCodeEl.textContent, "Sync ID"), "fx-vault-small");
+  const setSyncIdButton = makeButton("Set Sync ID", async () => {
+    const value = String(prompt("Paste the 64-character Sync ID from another device:") || "").trim().toLowerCase();
+    if (!/^[a-f0-9]{64}$/.test(value)) {
+      setStatus("Invalid Sync ID", true);
+      return;
+    }
+    localStorage.setItem("fx_vault_sync_hash", value);
+    syncCodeEl.textContent = value;
+    const api = window.__fx.vaultSync;
+    if (api && typeof api.pullAndMerge === "function") {
+      try {
+        await api.pullAndMerge();
+        setStatus("Sync ID applied");
+      } catch (error) {
+        setStatus(`Could not load synced vault: ${error && error.message ? error.message : error}`, true);
+      }
+    }
+  }, "fx-vault-small");
+  const syncNowButton = makeButton("Sync now", async () => {
+    const api = window.__fx.vaultSync;
+    if (!api || typeof api.syncNow !== "function") {
+      setStatus("Cloud sync is not available", true);
+      return;
+    }
+    try {
+      await api.syncNow();
+      setStatus("Cloud sync uploaded");
+      syncCodeEl.textContent = api.getHash ? api.getHash() : syncCodeEl.textContent;
+    } catch (error) {
+      setStatus(`Cloud sync failed: ${error && error.message ? error.message : error}`, true);
+    }
+  }, "fx-vault-small");
+  syncBox.append(syncLabel, syncCodeEl, copySync, setSyncIdButton, syncNowButton);
+  body.append(note, syncBox, toolbar, statusEl, codeEl, listEl, editorEl);
   panel.append(header, body);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && panel.classList.contains("open")) closeVault();
@@ -483,6 +534,9 @@ async function openAccountVault() {
     (document.getElementById("windowContainer") || document.body).appendChild(panel);
   }
   panel.classList.add("open");
+  if (syncCodeEl) {
+    syncCodeEl.textContent = window.__fx.vaultSync?.getHash?.() || localStorage.getItem("fx_vault_sync_hash") || "not initialized";
+  }
   if (!initialized) {
     setStatus("Unlocking local vault…");
     try {
@@ -500,3 +554,54 @@ async function openAccountVault() {
 }
 
 export { openAccountVault };
+
+export async function getVaultEntries() {
+  await ensureVault();
+  return entries.map((entry) => ({ ...entry }));
+}
+
+export async function upsertVaultAccount(account, password, name = "") {
+  const accountName = String(account || "").trim();
+  const secret = String(password || "");
+  if (!accountName || !secret) return null;
+  await ensureVault();
+  const now = Date.now();
+  let entry = entries.find((item) => item.account === accountName);
+  if (entry) {
+    entry.password = secret;
+    entry.updatedAt = now;
+    if (name && !entry.name) entry.name = name;
+  } else {
+    entry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `${now}-${Math.random()}`,
+      name: name || accountName,
+      account: accountName,
+      password: secret,
+      note: "Territorial.io login",
+      updatedAt: now,
+    };
+    entries.push(entry);
+  }
+  await saveVault();
+  if (panel) renderList();
+  return { ...entry };
+}
+
+export async function mergeVaultEntries(incoming) {
+  if (!Array.isArray(incoming)) return;
+  await ensureVault();
+  for (const item of incoming) {
+    if (!item || !item.account) continue;
+    const existing = entries.find((entry) => entry.account === item.account || entry.id === item.id);
+    if (!existing) {
+      entries.push({
+        ...item,
+        id: item.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+      });
+    } else if (Number(item.updatedAt || 0) > Number(existing.updatedAt || 0)) {
+      Object.assign(existing, item);
+    }
+  }
+  await saveVault();
+  if (panel) renderList();
+}
