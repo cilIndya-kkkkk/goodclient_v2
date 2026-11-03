@@ -1,9 +1,0 @@
-name = "goodclient-vault"
-main = "src/index.js"
-compatibility_date = "2026-11-02"
-workers_dev = true
-
-[[d1_databases]]
-binding = "DB"
-database_name = "goodclient-vault"
-database_id = "963ac5c6-49eb-492a-903a-936d755e9db1"
