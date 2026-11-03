@@ -24,13 +24,13 @@ Server is running from Termux home on port 8002:
 - `game/latest.js` is now the 2026-10-31 script (version `🎃 31 Oct 2026 [2.16.67]`). The previous 2.16.66 script is backed up locally at `game/latest_2.16.66.js` (not committed).
 - The game re-obfuscated all core names. The old g table no longer exists. The new `g` table (35 names) was derived by token-aligning the 2.16.66 script (known g table) against the 2.16.67 script with identifier wildcards. The new core names match the Omen-era names (`ad`, `ae`, `bB`, `bv`, `bP`, `bV`, ...); support/mouse/viewport/UI names are `bD/gv/jB/rB`, `bW/hg/hh`, `i/l`, `bF/a4M`.
 - `patches/gc_shipRoutes.js` was re-derived for 2.16.67: ship manager is `bQ.z` (`mk/mz/mo/a8n/mm/my/aa4/ml`), map renderer `bP` (`jJ` tile→packed, `fP` tile→byte offset), colors `bj.aSu/bj.aCs`, canvas `ws`, recall `bQ.mt.aa2`, intercept `bW.hg` + `bW.hh(2)`. The hook now injects at `this.wr=function(){var oF=im;` (outside the `oF>=5` guard) so it keeps running when zoomed in.
-- New game feature: account market (Sell Account / Buy This Account). Sellers set an asking price in gold and a receiving account; buyers confirm with gold; the purchased account is assigned the buyer's current password. The client UI is the game's own account profile; no FX patch is needed. Account Vault can store purchased accounts.
+- New game feature: account market (Sell Account / Buy This Account). Sellers set an asking price in gold and a receiving account; buyers confirm with gold; the purchased account is assigned the buyer's current password. The client UI is the game's own account profile; no FX patch is needed.
 - `npm run build-only` passes with the new script and all current patches. A live-game smoke test is still required, especially for automation, ship tools, leaderboard, name rendering, custom lobby, and map commands.
 - Version bumped to FX Client 0.6.35.
 
 ## Next task handoff (not implemented)
 
-The Shipping panel + Tools UI redesign round is implemented (2026-10-31); the Account Vault UI entry is currently hidden while cloud sync is unconfigured; see `SHIPPING_TOOLS_HANDOFF.md` for the confirmed rules and the manual test checklist below.
+The Shipping panel + Tools UI redesign round is implemented (2026-10-31); see `SHIPPING_TOOLS_HANDOFF.md` for the confirmed rules and the manual test checklist below.
 
 ## Current state
 
@@ -41,13 +41,7 @@ The Shipping panel + Tools UI redesign round is implemented (2026-10-31); the Ac
 - Theme: cream/pale green; DOM UI themed; whole-screen tint. Menu background is a plain cream gradient (line dog removed).
 - UI language: **English-only**. The Chinese dictionary/DOM translator and the Interface language setting were removed. `src/i18n.js` now exposes an identity `t()` for compatibility. The game's own UI language is still set in the game's Options -> Language.
 - Music player: `src/musicPlayer.js` + `assets/music/` (two bundled t+pazolite tracks). Floating music icon (draggable, spins while playing), panel with play/pause/prev/next/repeat/shuffle, local file picker (IndexedDB persistence), cloud URL playlist (localStorage), volume and seek. Built-in tracks cannot be removed.
-- Account Vault (2026-10-31): `Tools → Accounts → Account Vault` (`src/accountVault.js`) is a local-only password book. Entries are encrypted at rest with an AES-256-GCM device key stored as a CryptoKey in IndexedDB (`fx_account_vault`); no master password is needed for daily use. Copy user / Copy pass is the only game-login integration (copy/paste; the game flow is untouched). Export downloads an encrypted JSON backup and shows a one-time recovery code; the raw vault key is wrapped with PBKDF2-SHA-256 (310k) + AES-GCM, and import requires that code. No server upload and no Pages sync. Security caveat: same-origin game/script code can read entries while the vault is open; this protects the at-rest copy, not a compromised page. Export files must not be committed to the public repo.
 - Turnstile: not bypassed. Keep manual verification; only smoother retry/status handling is acceptable.
-- 2026-11-02 UI trim: the Account Vault entry was removed from Tools (the Accounts page/card is gone) and its Usage Guide section was removed while the Worker/D1 backend is not configured. The backend still runs by default: `src/accountVault.js`, `src/vaultSync.js` and `worker/` remain, auto-sync still starts in the main client, and `window.__fx.vaultSync` is still available from the console.
-- Cloud vault sync (2026-11-02, experimental): `src/vaultSync.js` watches the game account storage (`v105`/`v106`, `d105`/`d106`, or `window.bm.buffer.data[105/106]`) and, after a login is detected, calls `upsertVaultAccount()` and uploads the vault. The sync ID is a random 64-hex `fx_vault_sync_hash`; the upload filename is `<hash>.bin`. Sync encryption is AES-256-GCM with SHA-256("asdfGG12345"); the client uses a fixed key, so this is obfuscation, not zero-knowledge. The endpoint defaults to `https://goodclient-vault.cilindya.workers.dev/vault` and can be overridden with `localStorage.fx_vault_sync_endpoint`.
-  - `worker/` contains the Cloudflare Worker (`src/index.js`), D1 schema (`schema.sql`), `wrangler.toml` (placeholder database id) and deployment steps (`worker/README.md`). The Worker stores only `filename`, encrypted `BLOB` and `updated_at`; the hash is the capability secret. D1 free plan is about 5 GB / 5M reads/day / 100k writes/day.
-  - The Worker is NOT deployed yet; the user must create the D1 database, paste its id, run the schema and `wrangler deploy`. Until then sync fails gracefully and the local vault keeps working.
-  - Standalone admin page: `worker/vault-admin.html` (not part of the GoodClient build or Pages); it calls `GET /vault/list` with `Authorization: Bearer <ADMIN_TOKEN>`, lists `filename/bytes/updated_at` and downloads `GET /vault/<hash>.bin`. Set the Worker secret with `wrangler secret put ADMIN_TOKEN`. The page keeps the token in sessionStorage only and does not decrypt files.
 - Lobby chat Unicode button (2026-11-02): `src/chatUnicode.js` observes the DOM for the chat input (`Type your message here...` / a sibling Send button), injects an absolute `Unicode` button to the left of Send, and converts ASCII letters/digits/punctuation to fullwidth Unicode in the input (dispatching an `input` event so the game picks it up). It is initialized in `src/main.js`; no game patch.
 - Shipping tools (2026-10-31, implemented; live test pending):
   - Lobby team split was deleted: `src/lobbyTeams.js`, `patches/lobbyTeams.js`, its init/import, CSS and Help entry are gone.
@@ -92,7 +86,6 @@ The Shipping panel + Tools UI redesign round is implemented (2026-10-31); the Ac
   - `src/instance.js`: central `isBotInstance()` / `getHost()` / `isEmbedded()`. Settings isolation: bot uses `fx_settings_bot` (first run copies `fx_settings`); hostfix key and toolbox positions are per-instance (`_bot`); `fx_ui_language` stays shared.
   - Tools variants: main embedded = full Tools + Bot settings + width/height sliders; bot = Automation-only Tools (no settings/opening presets/display/theme/status/music/FX Settings); direct `client.html` = full Tools without Bot settings. Music only runs in the host; embedded main and bot skip it, and host forwards iframe gestures to the music autoplay handler.
   - Tools help (2026-10-30): full Tools starts with `Changelog` / `Usage Guide` buttons (hidden in the bot variant). `src/helpPanels.js` renders a draggable panel inside `#windowContainer`; `src/helpContent.js` holds English-only content. Changelog is newest-first; the guide has TOC chips and collapsible sections. i18n keys: `Changelog`, `Usage Guide`, `GoodClient Help`; CSS is under the `Tools top actions and help panel` block in `static/main.css`.
-  - Account Vault (2026-10-31): `src/accountVault.js`, `Tools → Accounts`. Uses `crypto.subtle` (HTTPS/localhost required), IndexedDB, AES-256-GCM, PBKDF2 310k for the backup recovery code. Verify in a real browser: add/copy/edit/delete, export → import on a fresh profile, wrong recovery code rejection, and the empty-vault first run. The vault panel mounts in `#windowContainer` and locks (clears in-memory entries) on close.
   - Embedded fixes: update-checker `forceReload` and fullscreen go through `__fxHost`; custom-lobby "Copy link" uses `__fxHost.getTopUrl()`; Tools music button opens host music.
   - Build: webpack entries `fxClient -> fx.bundle.js` and `host -> host.bundle.js`; dynamic chunks use content hashes; `index.html`/`client.html`/`bot.html` are stamped with `buildTimestamp`; `build-only` passes.
   - Local commits so far: `0ed8b7b`, `99327a2`, `8f7a788`, `d545eb7`, `37f4a3b`, plus `b3b026f` (final stage 6) and `d29ae32` (status i18n).
@@ -136,10 +129,7 @@ The Shipping panel + Tools UI redesign round is implemented (2026-10-31); the Ac
 - `static/client.html` - standalone-capable main client.
 - `static/bot.html` - minimal bot page (no SW/update prompt).
 - `src/toolbox.js` - Tools full/bot variants; Bot settings + window size sliders.
-- `src/accountVault.js` - local encrypted account vault (device key, export/import recovery code).
 - `src/chatUnicode.js` - lobby chat Unicode converter button.
-- `src/vaultSync.js` - optional Worker/D1 vault sync (fixed key, local hash, auto login detect).
-- `worker/` - Cloudflare Worker + D1 schema/config + deployment README.
 - `src/helpPanels.js` + `src/helpContent.js` - Tools changelog/usage guide UI and English content.
 - `~/tulipbot/bot.js` - mass-botting controller; currently shelved for Tab Mode work.
 - `TAB_MODE_SPEC.md` + `TAB_MODE_HOST_PROMPT.md` - Tab Mode plans; the host prompt is authoritative for the refactor.

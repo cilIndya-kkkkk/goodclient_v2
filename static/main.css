@@ -1414,12 +1414,12 @@ body.fx-clean .window {
 	border-color: #ffb4a8;
 }
 
-/* Account vault */
+/* Profiles */
 .hidden {
 	display: none !important;
 }
 
-#fxAccountVault {
+#fxAccountStore {
 	position: fixed;
 	left: 50%;
 	top: 50%;
@@ -1437,11 +1437,11 @@ body.fx-clean .window {
 	overflow: hidden;
 }
 
-#fxAccountVault.open {
+#fxAccountStore.open {
 	display: flex;
 }
 
-#fxAccountVaultHeader {
+#fxAccountStoreHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -1454,9 +1454,9 @@ body.fx-clean .window {
 	font-weight: 700;
 }
 
-.fx-vault-close,
-.fx-vault-button,
-.fx-vault-input {
+.fx-store-close,
+.fx-store-button,
+.fx-store-input {
 	font: inherit;
 	font-size: 12px;
 	color: #dbe7f0;
@@ -1464,73 +1464,73 @@ body.fx-clean .window {
 	background: rgba(0, 0, 0, 0.5);
 }
 
-.fx-vault-close {
+.fx-store-close {
 	padding: 3px 10px;
 	font-size: 11px;
 	font-weight: 700;
 	cursor: pointer;
 }
 
-#fxAccountVaultBody {
+#fxAccountStoreBody {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
 	padding: 10px 12px 14px;
 }
 
-.fx-vault-note {
+.fx-store-note {
 	margin: 0 0 9px;
 	color: #8aa5a0;
 	font-size: 11px;
 	line-height: 1.45;
 }
 
-.fx-vault-toolbar {
+.fx-store-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin: 8px 0;
 }
 
-.fx-vault-button {
+.fx-store-button {
 	min-height: 28px;
 	padding: 4px 9px;
 	font-weight: 700;
 	cursor: pointer;
 }
 
-.fx-vault-button:hover {
+.fx-store-button:hover {
 	border-color: #8fe3b0;
 }
 
-.fx-vault-button.fx-vault-primary {
+.fx-store-button.fx-store-primary {
 	border-color: rgba(110, 210, 160, 0.7);
 	background: rgba(30, 130, 25, 0.7);
 }
 
-.fx-vault-button.fx-vault-danger {
+.fx-store-button.fx-store-danger {
 	border-color: rgba(255, 120, 120, 0.6);
 	color: #ffb0b0;
 }
 
-.fx-vault-button.fx-vault-small {
+.fx-store-button.fx-store-small {
 	min-height: 22px;
 	padding: 2px 7px;
 	font-size: 10px;
 }
 
-.fx-vault-status {
+.fx-store-status {
 	min-height: 16px;
 	color: #9fd8ba;
 	font-size: 11px;
 	line-height: 1.4;
 }
 
-.fx-vault-status.bad {
+.fx-store-status.bad {
 	color: #ff8c8c;
 }
 
-.fx-vault-code {
+.fx-store-code {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -1543,20 +1543,20 @@ body.fx-clean .window {
 	font-size: 12px;
 }
 
-.fx-vault-code strong {
+.fx-store-code strong {
 	color: #eafff2;
 	letter-spacing: 0.08em;
 	word-break: break-all;
 }
 
-.fx-vault-list {
+.fx-store-list {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 	margin-top: 8px;
 }
 
-.fx-vault-row {
+.fx-store-row {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1565,12 +1565,12 @@ body.fx-clean .window {
 	background: rgba(255, 255, 255, 0.035);
 }
 
-.fx-vault-row-main {
+.fx-store-row-main {
 	flex: 1;
 	min-width: 0;
 }
 
-.fx-vault-name {
+.fx-store-name {
 	color: #e8fff1;
 	font-size: 13px;
 	font-weight: 700;
@@ -1579,7 +1579,7 @@ body.fx-clean .window {
 	white-space: nowrap;
 }
 
-.fx-vault-account {
+.fx-store-account {
 	color: #9fd8ba;
 	font-size: 11px;
 	overflow: hidden;
@@ -1587,27 +1587,27 @@ body.fx-clean .window {
 	white-space: nowrap;
 }
 
-.fx-vault-note {
+.fx-store-note {
 	color: #8aa5a0;
 	font-size: 11px;
 	line-height: 1.4;
 }
 
-.fx-vault-actions {
+.fx-store-actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
 	justify-content: flex-end;
 }
 
-.fx-vault-empty {
+.fx-store-empty {
 	padding: 14px 0;
 	color: #8aa5a0;
 	font-size: 12px;
 	text-align: center;
 }
 
-.fx-vault-editor {
+.fx-store-editor {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
@@ -1617,7 +1617,7 @@ body.fx-clean .window {
 	background: rgba(255, 255, 255, 0.03);
 }
 
-.fx-vault-input {
+.fx-store-input {
 	min-height: 28px;
 	padding: 4px 7px;
 	box-sizing: border-box;
@@ -1838,7 +1838,7 @@ body.fx-clean .window {
 	cursor: default;
 }
 
-.fx-vault-sync {
+.fx-store-sync {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -1851,7 +1851,7 @@ body.fx-clean .window {
 	font-size: 11px;
 }
 
-.fx-vault-sync strong {
+.fx-store-sync strong {
 	max-width: 100%;
 	color: #e8fff1;
 	font-family: monospace;

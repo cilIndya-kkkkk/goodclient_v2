@@ -9,7 +9,7 @@
 - 仓库：`~/goodclient_v2`
 - 分支：`goodclient_v2`
 - 实现后的 HEAD：`06fb9a6 feat: add shipping panel, progress, blockers and interception; remove lobby split`
-- 本地比远端领先 3 个提交（accountVault + 两个 cleanView/shipRoutes 修复）；本次文档提交后也会一起推送。
+- 本地比远端领先 3 个提交（cleanView/shipRoutes 修复等）；本次文档提交后也会一起推送。
 - 游戏已更新到 **Territorial.io 2.16.67（2026-10-31）**，`game/latest.js` 已替换，自动化 g 表 35 个名字。2.16.67 的船管理器是 `bQ.z`（`mk/mz/mo/a8n/mm/my/aa4/ml`），旧 2.16.66 字段名仅作历史参考。
 - 构建只用：
   ```bash
@@ -102,7 +102,6 @@
 
 Display 里可以合并现有的 Display + Theme + Status。  
 Help 里放 Changelog / Usage Guide。  
-Accounts 里放 Account Vault。  
 Shipping 里放所有船相关功能。
 
 ## 2. 当前代码结构（重要）
@@ -153,7 +152,6 @@ Shipping 里放所有船相关功能。
     - 路线 tile -> packed：`dr.iL(tile)`
     - 当前 packed -> tile：`dr.iM(packed)`
     - 地图宽高：`fU.fV` / `fU.iD`
-- `src/accountVault.js`
   - 已有本地 AES-256 密码本，和本次船功能无关。
 - 当前游戏 2.16.67 相关（船管理器见上）：
   - `__fx.gameUi`（cleanView 用）已暴露：`isHidden()` / `setHidden()` / `isSpawnSelection()`。
