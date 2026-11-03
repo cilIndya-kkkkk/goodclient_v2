@@ -20,15 +20,15 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "GET" && (url.pathname === "/vault" || url.pathname === "/vault/list")) {
+    if (url.pathname === "/vault/list") {
+      if (request.method !== "GET") return json({ error: "method not allowed" }, 405);
+      if (!env.ADMIN_TOKEN) return json({ error: "ADMIN_TOKEN not configured" }, 500);
       const auth = request.headers.get("Authorization") || "";
-      const token = auth.replace(/^Bearer\s+/i, "") || url.searchParams.get("token") || "";
-      if (!env.ADMIN_TOKEN) return json({ error: "admin token not configured" }, 503);
-      if (token !== env.ADMIN_TOKEN) return json({ error: "unauthorized" }, 401);
-      const result = await env.DB.prepare(
-        "SELECT filename, length(ciphertext) AS bytes, updated_at FROM vaults ORDER BY updated_at DESC"
+      if (auth.slice(7) !== env.ADMIN_TOKEN) return json({ error: "unauthorized" }, 401);
+      const { results } = await env.DB.prepare(
+        "SELECT filename, length(ciphertext) AS bytes, updated_at FROM vaults ORDER BY updated_at DESC LIMIT 500"
       ).all();
-      return json({ vaults: result.results || [] });
+      return json({ vaults: results || [] });
     }
 
     const match = url.pathname.match(/^\/vault\/([^/]+)$/);
