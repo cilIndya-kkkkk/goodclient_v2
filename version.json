@@ -1,8 +1,8 @@
 {
-    "version": "0.6.37",
+    "version": "0.6.38",
     "lastUpdated": "November 4",
     "changes": [
-        "Updated for Territorial.io 2.16.68."
+        "Fixed a tick handler crash in some match modes."
     ],
     "isSignificant": true
 }
