@@ -1,8 +1,8 @@
 {
-    "version": "0.6.36",
-    "lastUpdated": "November 2",
+    "version": "0.6.37",
+    "lastUpdated": "November 4",
     "changes": [
-        "Updated for Territorial.io 2.16.67 and improved a few features."
+        "Updated for Territorial.io 2.16.68."
     ],
     "isSignificant": true
 }
