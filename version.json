@@ -1,8 +1,8 @@
 {
-    "version": "0.6.38",
+    "version": "0.6.39",
     "lastUpdated": "November 4",
     "changes": [
-        "Fixed a tick handler crash in some match modes."
+        "Fixed loading issues in some game modes."
     ],
     "isSignificant": true
 }
