@@ -1,8 +1,8 @@
 {
-    "version": "0.6.39",
+    "version": "0.6.40",
     "lastUpdated": "November 4",
     "changes": [
-        "Fixed loading issues in some game modes."
+        "Rolled back to Territorial.io 2.16.67 to fix zombie mode loading."
     ],
     "isSignificant": true
 }
