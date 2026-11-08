@@ -1,8 +1,10 @@
 {
-    "version": "0.6.40",
-    "lastUpdated": "November 4",
+    "version": "0.6.41",
+    "lastUpdated": "November 8",
     "changes": [
-        "Rolled back to Territorial.io 2.16.67 to fix zombie mode loading."
+        "Updated for Territorial.io 2.16.71.",
+        "Automation and ship tools ported to the new game build.",
+        "Some lobby features are temporarily disabled."
     ],
     "isSignificant": true
 }

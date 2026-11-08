@@ -3,7 +3,7 @@ import { definePatch } from "../modUtils.js";
 export default definePatch((modUtils) => {
   modUtils.waitForMinification(() => {
     modUtils.replaceOne(
-      /(this\.wr=function\(\)\{var oF=im;)/g,
+      /(this\.xl=function\(\)\{var oF=im;)/g,
       `$1
       var __fxShipY9 = i.j,
           __fxShipYA = i.k,
@@ -36,10 +36,10 @@ export default definePatch((modUtils) => {
             jO: bQ.z.mk,
             iz: bQ.z.mz,
             j6: bQ.z.mo,
-            zg: bQ.z.a8n,
+            zg: bQ.z.a9g,
             routes: bQ.z.mm,
             routeIndex: bQ.z.my,
-            segmentProgress: bQ.z.aa4,
+            segmentProgress: bQ.z.ab0,
             shipStatus: bQ.z.ml,
             targets: __fxShipTargets,
             mapWidth: bV.fk,
@@ -60,8 +60,8 @@ export default definePatch((modUtils) => {
             zt: function(value) {
               return bP.jJ(value);
             },
-            colors: bj.aSu,
-            colorIds: bj.aCs
+            colors: bj.aDm,
+            colorIds: bj.aDn
           });
         } catch (__fxShipError) {
           if (!window.__fxShipError) {
@@ -72,7 +72,7 @@ export default definePatch((modUtils) => {
       }
       __fx.shipControl = __fx.shipControl || {
         recallShip: function(index) {
-          try { return bQ.mt.aa2(Number(index)); } catch (_error) { return false; }
+          try { return bQ.mt.aay(Number(index)); } catch (_error) { return false; }
         },
         interceptShip: function(index, percent) {
           try {
