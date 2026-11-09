@@ -157,6 +157,14 @@ export default function initToolbox(options = {}) {
   offsetInput.type = "number";
   offsetInput.step = "0.1";
   offsetInput.className = "fx-toolbox-input";
+  const stopAtLabel = document.createElement("span");
+  stopAtLabel.textContent = "Stop at";
+  const stopAtInput = document.createElement("input");
+  stopAtInput.type = "number";
+  stopAtInput.min = "0";
+  stopAtInput.max = "100";
+  stopAtInput.step = "0.1";
+  stopAtInput.className = "fx-toolbox-input";
   const strategyInput = document.createElement("textarea");
   strategyInput.rows = 12;
   strategyInput.spellcheck = false;
@@ -164,8 +172,38 @@ export default function initToolbox(options = {}) {
   const openingStatus = document.createElement("div");
   openingStatus.className = "fx-toolbox-status";
 
+  function syncStopAtFromStrategy() {
+    try {
+      const parsed = JSON.parse(strategyInput.value.trim());
+      const value = Number(parsed.stopAt);
+      stopAtInput.value = Number.isFinite(value) ? String(value) : "100";
+    } catch (_error) {
+      stopAtInput.value = "100";
+    }
+  }
+
+  function applyStopAtToStrategy() {
+    const raw = strategyInput.value.trim();
+    if (!raw) return;
+    const value = Number(stopAtInput.value);
+    const stopAt = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100;
+    stopAtInput.value = String(stopAt);
+    try {
+      const parsed = JSON.parse(raw);
+      parsed.stopAt = stopAt;
+      strategyInput.value = JSON.stringify(parsed, null, 2);
+    } catch (_error) {
+      // invalid JSON is reported by Validate
+    }
+  }
+
+  stopAtInput.addEventListener("input", applyStopAtToStrategy);
+  strategyInput.addEventListener("change", syncStopAtFromStrategy);
+  strategyInput.addEventListener("blur", syncStopAtFromStrategy);
+
   function loadDefaultStrategy() {
     strategyInput.value = JSON.stringify(DEFAULT_OPENING_STRATEGY, null, 2);
+    syncStopAtFromStrategy();
     openingStatus.textContent = "Loaded default strategy";
     openingStatus.classList.remove("bad");
   }
@@ -189,6 +227,7 @@ export default function initToolbox(options = {}) {
 
   const validateButton = makeButton("Validate", () => validateOpening());
   function applyCurrentOpening() {
+    applyStopAtToStrategy();
     if (!validateOpening()) return;
     const settings = getSettings();
     settings.openingAutomationTickOffset = offsetInput.value.trim();
@@ -260,6 +299,7 @@ export default function initToolbox(options = {}) {
   }
 
   function savePreset() {
+    applyStopAtToStrategy();
     if (!validateOpening()) return;
     const name = presetNameInput.value.trim() || presetSelect.value.trim();
     if (!name) {
@@ -282,6 +322,7 @@ export default function initToolbox(options = {}) {
     if (!preset) return;
     strategyInput.value = preset.strategy;
     offsetInput.value = preset.offset || "-9.5";
+    syncStopAtFromStrategy();
     presetNameInput.value = preset.name;
     if (!validateOpening()) return;
     applyCurrentOpening();
@@ -329,6 +370,7 @@ export default function initToolbox(options = {}) {
   openingSection.append(
     presetRow,
     makeRow(offsetLabel, offsetInput),
+    makeRow(stopAtLabel, stopAtInput),
     strategyInput,
     makeRow(validateButton, applyButton, defaultButton, settingsButton),
     openingStatus,
@@ -803,6 +845,7 @@ export default function initToolbox(options = {}) {
     const settings = getSettings();
     offsetInput.value = settings.openingAutomationTickOffset || "-9.5";
     strategyInput.value = settings.openingAutomationStrategy || JSON.stringify(DEFAULT_OPENING_STRATEGY, null, 2);
+    syncStopAtFromStrategy();
     openingStatus.textContent = "";
     openingStatus.classList.remove("bad");
     render();
