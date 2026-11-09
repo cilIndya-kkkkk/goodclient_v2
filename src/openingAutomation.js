@@ -142,6 +142,8 @@ const openingAutomation = new (function () {
     this.lastTick = -1;
     this.lastGameState = 0;
     this.attacks = [];
+    this.stopAt = 100;
+    this.stopZoneCycle = -1;
     this.autoAttackCycle = -1;
     this.autoAttackCount = 0;
     this.autoAttackReservedAttackUsed = false;
@@ -203,6 +205,7 @@ const openingAutomation = new (function () {
         this.nextAttack = 0;
         this.lastTick = -1;
         this.attacks = [];
+        this.stopZoneCycle = -1;
         this.autoAttackCycle = -1;
         this.autoAttackCount = 0;
         this.autoAttackReservedAttackUsed = false;
@@ -622,7 +625,11 @@ const openingAutomation = new (function () {
 
     this.start = function () {
         try {
-            this.attacks = normalizeStrategy(readStrategy(), openingTickOffsetToInternalTicks(getSettings().openingAutomationTickOffset));
+            const strategy = readStrategy();
+            this.attacks = normalizeStrategy(strategy, openingTickOffsetToInternalTicks(getSettings().openingAutomationTickOffset));
+            const stopAt = Number(strategy.stopAt);
+            this.stopAt = Number.isFinite(stopAt) ? clamp(stopAt, 0, 100) : 100;
+            this.stopZoneCycle = -1;
             this.enabledForGame = this.attacks.length > 0;
             this.completed = false;
             this.nextAttack = 0;
@@ -687,12 +694,21 @@ const openingAutomation = new (function () {
 
         if (!this.enabledForGame || this.completed) return;
 
+        const cycle = Math.floor(tick / 100);
+        const tickInCycle = tick - cycle * 100;
+        const stopNow = this.stopAt < 100 && tickInCycle >= this.stopAt;
+        if (stopNow && this.stopZoneCycle !== cycle) {
+            this.stopZoneCycle = cycle;
+            try { this.cancelFreeLandAttack(); } catch (_error) {}
+        }
+
         const __rttTicks = getSettings().openingDynamicCompensationEnabled !== false
             ? (window.__fx.rtt?.getTicks?.() || 0)
             : 0;
 
         while (this.nextAttack < this.attacks.length && (this.attacks[this.nextAttack].tick - __rttTicks) <= tick) {
             const attack = this.attacks[this.nextAttack++];
+            if (stopNow) continue;
             window.__fx.keybindFunctions.setAbsolute(attack.percent);
             window.__fx.keybindFunctions.repaintAttackPercentageBar();
             this.attack();

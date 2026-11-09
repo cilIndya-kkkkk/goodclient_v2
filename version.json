@@ -1,9 +1,9 @@
 {
-    "version": "0.6.44",
+    "version": "0.6.45",
     "lastUpdated": "November 9",
     "changes": [
-        "Fixed ship routes on Territorial.io 2.17.1.",
-        "Automation, ship tools and replay history ported to 2.17.1."
+        "Added opening cycle-end stop for better income timing.",
+        "Updated for Territorial.io 2.17.1."
     ],
     "isSignificant": true
 }
