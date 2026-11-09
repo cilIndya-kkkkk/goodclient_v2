@@ -30,11 +30,7 @@ export default definePatch(({ replaceRawCode, matchCode, insertCode, modifyCode 
         return text.substring(index + 1);
       }
       return text;
-    };
-    this.encode = function(text) {
-      return text;
-    };
-    /* here */`,
+    }; /* here */`,
     `__fx.replayHistory.load = (saved) => {
       saved = ${protocol}.${stripPrefix}(saved);
       if (${protocol}.${parser}.${parseReplay}(saved)) ${protocol}.${watchReplay}();

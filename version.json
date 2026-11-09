@@ -1,11 +1,10 @@
 {
-    "version": "0.6.42",
+    "version": "0.6.43",
     "lastUpdated": "November 8",
     "changes": [
-        "Updated for Territorial.io 2.16.71.",
-        "Restored the in-game automation panel and game state integration.",
-        "Automation and ship tools ported to the new game build.",
-        "Some lobby features are temporarily disabled."
+        "Updated for Territorial.io 2.17.1.",
+        "Automation, ship tools and replay history ported to the new build.",
+        "Some lobby features are still disabled."
     ],
     "isSignificant": true
 }
