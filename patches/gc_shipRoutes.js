@@ -37,7 +37,7 @@ export default definePatch((modUtils) => {
             iz: bQ.z.n0,
             j6: bQ.z.mp,
             zg: bQ.z.a9v,
-            routes: bQ.z.mm,
+            routes: bQ.z.mn,
             routeIndex: bQ.z.mz,
             segmentProgress: bQ.z.abP,
             shipStatus: bQ.z.mm,
