@@ -143,6 +143,7 @@ const openingAutomation = new (function () {
     this.lastGameState = 0;
     this.attacks = [];
     this.stopAt = 100;
+    this.stopAtByCycle = [100, 100, 100, 100, 100];
     this.stopZoneCycle = -1;
     this.autoAttackCycle = -1;
     this.autoAttackCount = 0;
@@ -623,12 +624,31 @@ const openingAutomation = new (function () {
         return nextEnabled;
     };
 
+    this.getStopAtForCycle = function (cycle) {
+        const values = this.stopAtByCycle;
+        if (!Array.isArray(values) || !values.length) return 100;
+        const index = Math.max(0, Math.min(Number(cycle) || 0, values.length - 1));
+        const value = Number(values[index]);
+        return Number.isFinite(value) ? clamp(value, 0, 100) : 100;
+    };
+
     this.start = function () {
         try {
             const strategy = readStrategy();
             this.attacks = normalizeStrategy(strategy, openingTickOffsetToInternalTicks(getSettings().openingAutomationTickOffset));
-            const stopAt = Number(strategy.stopAt);
-            this.stopAt = Number.isFinite(stopAt) ? clamp(stopAt, 0, 100) : 100;
+            const rawStopAt = strategy.stopAt;
+            if (Array.isArray(rawStopAt)) {
+                this.stopAtByCycle = rawStopAt.slice(0, 5).map((value) => {
+                    const number = Number(value);
+                    return Number.isFinite(number) ? clamp(number, 0, 100) : 100;
+                });
+                while (this.stopAtByCycle.length < 5) this.stopAtByCycle.push(100);
+            } else {
+                const stopAt = Number(rawStopAt);
+                const value = Number.isFinite(stopAt) ? clamp(stopAt, 0, 100) : 100;
+                this.stopAtByCycle = [value, value, value, value, value];
+            }
+            this.stopAt = 100;
             this.stopZoneCycle = -1;
             this.enabledForGame = this.attacks.length > 0;
             this.completed = false;
@@ -648,7 +668,7 @@ const openingAutomation = new (function () {
             this.infiniteExpansionLastPercent = null;
             this.infiniteExpansionPendingSends = [];
             this.postOpeningPercentageResetDone = false;
-            console.log(`Opening automation loaded ${this.attacks.length} attacks`);
+            console.log(`Opening automation loaded ${this.attacks.length} attacks (stopAt ${JSON.stringify(this.stopAtByCycle)})`);
         } catch (error) {
             this.reset();
             console.error("Opening automation strategy error", error);
@@ -696,8 +716,9 @@ const openingAutomation = new (function () {
 
         const cycle = Math.floor(tick / 100);
         const tickInCycle = tick - cycle * 100;
-        const stopNow = this.stopAt < 100 && tickInCycle >= this.stopAt;
-        if (stopNow && this.stopZoneCycle !== cycle) {
+        const stopAt = this.getStopAtForCycle(cycle);
+        const stopNow = stopAt < 100 && tickInCycle >= stopAt;
+        if (stopNow && tick % 7 === 0 && this.stopZoneCycle !== cycle) {
             this.stopZoneCycle = cycle;
             try { this.cancelFreeLandAttack(); } catch (_error) {}
         }
@@ -810,6 +831,14 @@ const openingAutomation = new (function () {
             this.infiniteExpansionPendingSends = [];
         }
 
+        const stopTickInCycle = tick - cycle * 100;
+        const stopAt = this.getStopAtForCycle(cycle);
+        if (stopAt < 100 && stopTickInCycle >= stopAt) {
+            this.infiniteExpansionActive = false;
+            this.infiniteExpansionPendingSends = [];
+            return;
+        }
+
         if (this.infiniteExpansionComplete) {
             this.infiniteExpansionActive = false;
             return;
@@ -882,6 +911,13 @@ const openingAutomation = new (function () {
             return;
         }
         if (!getVar("gameState")) return;
+
+        const stopCycle = Math.floor(tick / 100);
+        const stopAt = this.getStopAtForCycle(stopCycle);
+        if (stopAt < 100 && tick - stopCycle * 100 >= stopAt) {
+            this.clearAutoAttackTimers();
+            return;
+        }
 
         const settings = getSettings();
         const startCycle = Number(settings.autoAttackLowDensityBotsStartCycle || 8);

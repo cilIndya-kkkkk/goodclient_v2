@@ -158,12 +158,10 @@ export default function initToolbox(options = {}) {
   offsetInput.step = "0.1";
   offsetInput.className = "fx-toolbox-input";
   const stopAtLabel = document.createElement("span");
-  stopAtLabel.textContent = "Stop at";
+  stopAtLabel.textContent = "Stop at (c1..c5)";
   const stopAtInput = document.createElement("input");
-  stopAtInput.type = "number";
-  stopAtInput.min = "0";
-  stopAtInput.max = "100";
-  stopAtInput.step = "0.1";
+  stopAtInput.type = "text";
+  stopAtInput.placeholder = "100 or 100,100,97,100,100";
   stopAtInput.className = "fx-toolbox-input";
   const strategyInput = document.createElement("textarea");
   strategyInput.rows = 12;
@@ -172,22 +170,30 @@ export default function initToolbox(options = {}) {
   const openingStatus = document.createElement("div");
   openingStatus.className = "fx-toolbox-status";
 
-  function syncStopAtFromStrategy() {
+  function syncStopAtFromStrategy(useDefault = true) {
     try {
       const parsed = JSON.parse(strategyInput.value.trim());
-      const value = Number(parsed.stopAt);
-      stopAtInput.value = Number.isFinite(value) ? String(value) : "100";
+      const raw = parsed.stopAt;
+      if (Array.isArray(raw)) stopAtInput.value = raw.join(",");
+      else {
+        const value = Number(raw);
+        stopAtInput.value = Number.isFinite(value) ? String(value) : "100";
+      }
     } catch (_error) {
-      stopAtInput.value = "100";
+      if (useDefault) stopAtInput.value = "100";
     }
   }
 
   function applyStopAtToStrategy() {
     const raw = strategyInput.value.trim();
     if (!raw) return;
-    const value = Number(stopAtInput.value);
-    const stopAt = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100;
-    stopAtInput.value = String(stopAt);
+    const values = stopAtInput.value.trim().split(/[,\s]+/).filter(Boolean)
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value))
+      .map((value) => Math.min(100, Math.max(0, value)));
+    if (!values.length) return;
+    const stopAt = values.length === 1 ? values[0] : [0, 1, 2, 3, 4].map((index) => values[index] === undefined ? 100 : values[index]);
+    stopAtInput.value = Array.isArray(stopAt) ? stopAt.join(",") : String(stopAt);
     try {
       const parsed = JSON.parse(raw);
       parsed.stopAt = stopAt;
@@ -198,6 +204,7 @@ export default function initToolbox(options = {}) {
   }
 
   stopAtInput.addEventListener("input", applyStopAtToStrategy);
+  strategyInput.addEventListener("input", () => syncStopAtFromStrategy(false));
   strategyInput.addEventListener("change", syncStopAtFromStrategy);
   strategyInput.addEventListener("blur", syncStopAtFromStrategy);
 
