@@ -77,11 +77,11 @@ async function patchGameCode() {
 	/** @type {{ code: string, addToDictionary: string[] }[]} */
 	const codeSegments = [{
 		code: `player = aQ.eF(eR);
-			if (game.gIsReplay) { game.playerId = player; }
+			if ((game.gIsReplay || game.gIsReplay2) && player !== game.playerId) { game.playerId = player; MenuManager.refresh(); }
 			str = __L(/* Player: {0} */ [b0.context.truncateAndFillText(playerData.rawPlayerNames[player], b0.qZ.sN(0, 10), 150)]) + "   ";
 			str += __L(/* Strength: {10} */ [b0.rY.formatNumber(playerData.playerBalances[player])]) + "   ";
 			str += __L(/* Territory: {10} */ [b0.rY.formatNumber(playerData.playerTerritories[player])]) + "   ";
-		`, addToDictionary: ["game", "gIsReplay", "playerData", "rawPlayerNames", "playerBalances", "playerTerritories"]
+		`, addToDictionary: ["game", "gIsReplay", "playerId", "playerData", "rawPlayerNames", "playerBalances", "playerTerritories"]
 	}, {
 		code: `this.a = Math.floor(0.066 * b.c);
 			d = b.d - 4 * uiSizes.gap - this.a;`,
