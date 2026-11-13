@@ -1,7 +1,7 @@
 const DEFAULT_OPENING_STRATEGY = {
     name: "Gbv5 opening",
     endTick: 508,
-    stopAt: 100,
+    stopAt: [100, 100, 100, 100, 100],
     attacks: [
         { cycle: 1, keybinds: "", exactTick: 7.0, percent: 20.8008 },
         { cycle: 1, keybinds: "", exactTick: 9.1, percent: 17.8711, targetLand: 144, targetTroops: 799 },

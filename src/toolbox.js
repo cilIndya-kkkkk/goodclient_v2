@@ -192,8 +192,8 @@ export default function initToolbox(options = {}) {
       .filter((value) => Number.isFinite(value))
       .map((value) => Math.min(100, Math.max(0, value)));
     if (!values.length) return;
-    const stopAt = values.length === 1 ? values[0] : [0, 1, 2, 3, 4].map((index) => values[index] === undefined ? 100 : values[index]);
-    stopAtInput.value = Array.isArray(stopAt) ? stopAt.join(",") : String(stopAt);
+    const stopAt = [0, 1, 2, 3, 4].map((index) => values[index] === undefined ? 100 : values[index]);
+    stopAtInput.value = stopAt.join(",");
     try {
       const parsed = JSON.parse(raw);
       parsed.stopAt = stopAt;
