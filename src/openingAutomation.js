@@ -144,6 +144,7 @@ const openingAutomation = new (function () {
     this.attacks = [];
     this.stopAt = 100;
     this.stopAtByCycle = [100, 100, 100, 100, 100];
+    this.tickOffset = 0;
     this.stopZoneCycle = -1;
     this.autoAttackCycle = -1;
     this.autoAttackCount = 0;
@@ -629,13 +630,19 @@ const openingAutomation = new (function () {
         if (!Array.isArray(values) || !values.length) return 100;
         const index = Math.max(0, Math.min(Number(cycle) || 0, values.length - 1));
         const value = Number(values[index]);
-        return Number.isFinite(value) ? clamp(value, 0, 100) : 100;
+        if (!Number.isFinite(value)) return 100;
+        const stopAt = clamp(value, 0, 100);
+        if (stopAt >= 100) return 100;
+        const offset = Number(this.tickOffset);
+        return clamp(stopAt + (Number.isFinite(offset) ? offset : 0), 0, 100);
     };
 
     this.start = function () {
         try {
             const strategy = readStrategy();
-            this.attacks = normalizeStrategy(strategy, openingTickOffsetToInternalTicks(getSettings().openingAutomationTickOffset));
+            const tickOffset = openingTickOffsetToInternalTicks(getSettings().openingAutomationTickOffset);
+            this.tickOffset = tickOffset;
+            this.attacks = normalizeStrategy(strategy, tickOffset);
             const rawStopAt = strategy.stopAt;
             if (Array.isArray(rawStopAt)) {
                 this.stopAtByCycle = rawStopAt.slice(0, 5).map((value) => {
@@ -716,16 +723,16 @@ const openingAutomation = new (function () {
 
         const cycle = Math.floor(tick / 100);
         const tickInCycle = tick - cycle * 100;
-        const stopAt = this.getStopAtForCycle(cycle);
+        const __rttTicks = getSettings().openingDynamicCompensationEnabled !== false
+            ? (window.__fx.rtt?.getTicks?.() || 0)
+            : 0;
+        const rawStopAt = this.getStopAtForCycle(cycle);
+        const stopAt = rawStopAt >= 100 ? 100 : clamp(rawStopAt - __rttTicks, 0, 100);
         const stopNow = stopAt < 100 && tickInCycle >= stopAt;
         if (stopNow && tick % 7 === 0 && this.stopZoneCycle !== cycle) {
             this.stopZoneCycle = cycle;
             try { this.cancelFreeLandAttack(); } catch (_error) {}
         }
-
-        const __rttTicks = getSettings().openingDynamicCompensationEnabled !== false
-            ? (window.__fx.rtt?.getTicks?.() || 0)
-            : 0;
 
         while (this.nextAttack < this.attacks.length && (this.attacks[this.nextAttack].tick - __rttTicks) <= tick) {
             const attack = this.attacks[this.nextAttack++];
