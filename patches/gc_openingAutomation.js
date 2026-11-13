@@ -255,7 +255,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.getDeployedTroops=()=> {
                 var player = ${dict.game}.${dict.playerId};
                 if (typeof ${g.attackManager} !== "undefined" && typeof ${g.attackManager}.${g.getAvailableAttackCount} === "function") {
-                    var freeLandTarget = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                    var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
                     var count = ${g.attackManager}.${g.getAvailableAttackCount}(player) || 0;
                     for (var attackIndex = count - 1; attackIndex >= 0; attackIndex--) {
                         var target = ${g.attackManager}.${g.getAttackTarget}(player, attackIndex);
@@ -271,7 +271,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.attack=()=> __fx.openingAutomation.attackFreeLand();
             __fx.openingAutomation.attackFreeLand=()=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
-                var freeLandTarget = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
                 var percent = __fx.keybindFunctions.getAttackPercentage();
                 var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
                 if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack} === "function") {
@@ -283,7 +283,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.attackFreeLandWithPercent=(percent)=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
                 percent = Math.max(0, Math.min(1, Number(percent || 0)));
-                var freeLandTarget = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
                 var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
                 __fx.keybindFunctions.setAbsolute(percent);
                 __fx.keybindFunctions.repaintAttackPercentageBar();
@@ -447,7 +447,7 @@ function applyOpeningAutomation(modUtils) {
             };
             __fx.openingAutomation.cancelFreeLandAttack=()=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
-                var freeLandTarget = ${dict.game}.${dict.gLobbyMaxJoin} || 512;
+                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
                 if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack} === "function") {
                     ${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack}(freeLandTarget);
                     return true;

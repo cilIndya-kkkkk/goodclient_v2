@@ -114,6 +114,19 @@ function normalizeStrategy(config, tickOffset = 0) {
     return attacks;
 }
 
+const SLOT_SIZE = 7;
+function firstSlotAtOrAfter(absTick) {
+    return Math.ceil(absTick / SLOT_SIZE) * SLOT_SIZE;
+}
+function lastSlotInCycle(cycle) {
+    return Math.floor((cycle * 100 + 99) / SLOT_SIZE) * SLOT_SIZE;
+}
+function getCancelSlotAbs(cycle, stopAt) {
+    if (!(stopAt < 100)) return -1;
+    const threshold = cycle * 100 + stopAt;
+    return Math.min(firstSlotAtOrAfter(threshold), lastSlotInCycle(cycle));
+}
+
 const openingAutomation = new (function () {
     this.attack = () => { };
     this.attackFreeLand = () => false;
@@ -144,6 +157,8 @@ const openingAutomation = new (function () {
     this.attacks = [];
     this.stopAt = 100;
     this.stopAtByCycle = [100, 100, 100, 100, 100];
+    this.pendingFreeLandCancel = null;
+    this.cancelScheduledCycle = -1;
     this.tickOffset = 0;
     this.stopZoneCycle = -1;
     this.autoAttackCycle = -1;
@@ -208,6 +223,8 @@ const openingAutomation = new (function () {
         this.lastTick = -1;
         this.attacks = [];
         this.stopZoneCycle = -1;
+        this.pendingFreeLandCancel = null;
+        this.cancelScheduledCycle = -1;
         this.autoAttackCycle = -1;
         this.autoAttackCount = 0;
         this.autoAttackReservedAttackUsed = false;
@@ -657,6 +674,8 @@ const openingAutomation = new (function () {
             }
             this.stopAt = 100;
             this.stopZoneCycle = -1;
+            this.pendingFreeLandCancel = null;
+            this.cancelScheduledCycle = -1;
             this.enabledForGame = this.attacks.length > 0;
             this.completed = false;
             this.nextAttack = 0;
@@ -722,24 +741,53 @@ const openingAutomation = new (function () {
         if (!this.enabledForGame || this.completed) return;
 
         const cycle = Math.floor(tick / 100);
-        const tickInCycle = tick - cycle * 100;
-        const __rttTicks = getSettings().openingDynamicCompensationEnabled !== false
+        const __rttTicks = settings.openingDynamicCompensationEnabled !== false
             ? (window.__fx.rtt?.getTicks?.() || 0)
             : 0;
-        const rawStopAt = this.getStopAtForCycle(cycle);
-        const stopAt = rawStopAt >= 100 ? 100 : clamp(rawStopAt - __rttTicks, 0, 100);
-        const stopNow = stopAt < 100 && tickInCycle >= stopAt;
-        if (stopNow && tick % 7 === 0 && this.stopZoneCycle !== cycle) {
-            this.stopZoneCycle = cycle;
+        const stopAt = this.getStopAtForCycle(cycle);
+        const cancelSlotAbs = getCancelSlotAbs(cycle, stopAt);
+        const cancelSlotInCycle = cancelSlotAbs >= 0 ? cancelSlotAbs - cycle * 100 : 100;
+        const effectiveStop = cancelSlotAbs >= 0 ? Math.min(stopAt, cancelSlotInCycle) : stopAt;
+
+        if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle < cycle) {
             try { this.cancelFreeLandAttack(); } catch (_error) {}
+            this.pendingFreeLandCancel = null;
         }
 
-        while (this.nextAttack < this.attacks.length && (this.attacks[this.nextAttack].tick - __rttTicks) <= tick) {
-            const attack = this.attacks[this.nextAttack++];
-            if (stopNow) continue;
+        if (stopAt < 100 && cancelSlotAbs >= 0 && this.cancelScheduledCycle !== cycle) {
+            this.cancelScheduledCycle = cycle;
+            this.pendingFreeLandCancel = { cycle, slotAbs: cancelSlotAbs };
+        }
+
+        while (this.nextAttack < this.attacks.length) {
+            const attack = this.attacks[this.nextAttack];
+            if ((attack.tick - __rttTicks) > tick) break;
+            this.nextAttack++;
+
+            const attackCycle = Math.floor(attack.tick / 100);
+            const attackStopAt = this.getStopAtForCycle(attackCycle);
+            const attackCancelAbs = getCancelSlotAbs(attackCycle, attackStopAt);
+            const attackCancelInCycle = attackCancelAbs >= 0 ? attackCancelAbs - attackCycle * 100 : 100;
+            const attackEffectiveStop = attackCancelAbs >= 0 ? Math.min(attackStopAt, attackCancelInCycle) : attackStopAt;
+
+            if (attackEffectiveStop < 100 && tick >= attackCycle * 100 + attackEffectiveStop) {
+                continue;
+            }
+            if (attackCycle === cycle && effectiveStop < 100 && attack.tick >= cycle * 100 + effectiveStop) {
+                continue;
+            }
+            if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle === cycle && attack.tick >= this.pendingFreeLandCancel.slotAbs) {
+                continue;
+            }
+
             window.__fx.keybindFunctions.setAbsolute(attack.percent);
             window.__fx.keybindFunctions.repaintAttackPercentageBar();
             this.attack();
+        }
+
+        if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle === cycle && tick >= this.pendingFreeLandCancel.slotAbs - __rttTicks) {
+            try { this.cancelFreeLandAttack(); } catch (_error) {}
+            this.pendingFreeLandCancel = null;
         }
 
         if (this.nextAttack >= this.attacks.length) {
