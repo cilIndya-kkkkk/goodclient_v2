@@ -152,11 +152,17 @@ const openingAutomation = new (function () {
     this.enabledForGame = false;
     this.completed = false;
     this.nextAttack = 0;
+    this.lastAttackSentTick = -1;
+    this.lastAttackScheduledTick = -1;
+    this.debugEnabled = false;
+    this.debugEvents = [];
+    this._debugLastLand = -1;
     this.lastTick = -1;
     this.lastGameState = 0;
     this.attacks = [];
     this.stopAt = 100;
     this.stopAtByCycle = [100, 100, 100, 100, 100];
+    this.cancelDelayByCycle = [0, 0, 0, 0, 0];
     this.pendingFreeLandCancel = null;
     this.cancelScheduledCycle = -1;
     this.tickOffset = 0;
@@ -220,6 +226,8 @@ const openingAutomation = new (function () {
         this.enabledForGame = false;
         this.completed = false;
         this.nextAttack = 0;
+        this.lastAttackSentTick = -1;
+        this.lastAttackScheduledTick = -1;
         this.lastTick = -1;
         this.attacks = [];
         this.stopZoneCycle = -1;
@@ -654,6 +662,31 @@ const openingAutomation = new (function () {
         return clamp(stopAt + (Number.isFinite(offset) ? offset : 0), 0, 100);
     };
 
+    this.getCancelDelayForCycle = function (cycle) {
+        const values = this.cancelDelayByCycle;
+        if (!Array.isArray(values) || !values.length) return 0;
+        const index = Math.max(0, Math.min(Number(cycle) || 0, values.length - 1));
+        const value = Number(values[index]);
+        return Number.isFinite(value) ? clamp(Math.round(value), -14, 14) : 0;
+    };
+
+    this.setDebug = function (value) {
+        this.debugEnabled = Boolean(value);
+        this.debugEvents = [];
+        this._debugLastLand = -1;
+        console.log(`[opening] debug ${this.debugEnabled ? 'on' : 'off'}`);
+    };
+
+    this.dumpDebug = function () {
+        return this.debugEvents.slice();
+    };
+
+    this.debugPush = function (event) {
+        if (!this.debugEnabled) return;
+        this.debugEvents.push(event);
+        if (this.debugEvents.length > 5000) this.debugEvents.shift();
+    };
+
     this.start = function () {
         try {
             const strategy = readStrategy();
@@ -672,6 +705,18 @@ const openingAutomation = new (function () {
                 const value = Number.isFinite(stopAt) ? clamp(stopAt, 0, 100) : 100;
                 this.stopAtByCycle = [value, value, value, value, value];
             }
+            const rawCancelDelay = strategy.cancelDelay;
+            if (Array.isArray(rawCancelDelay)) {
+                this.cancelDelayByCycle = rawCancelDelay.slice(0, 5).map((value) => {
+                    const number = Number(value);
+                    return Number.isFinite(number) ? clamp(Math.round(number), -14, 14) : 0;
+                });
+                while (this.cancelDelayByCycle.length < 5) this.cancelDelayByCycle.push(0);
+            } else {
+                const delay = Number(rawCancelDelay);
+                const value = Number.isFinite(delay) ? clamp(Math.round(delay), -14, 14) : 0;
+                this.cancelDelayByCycle = [value, value, value, value, value];
+            }
             this.stopAt = 100;
             this.stopZoneCycle = -1;
             this.pendingFreeLandCancel = null;
@@ -679,6 +724,8 @@ const openingAutomation = new (function () {
             this.enabledForGame = this.attacks.length > 0;
             this.completed = false;
             this.nextAttack = 0;
+            this.lastAttackSentTick = -1;
+            this.lastAttackScheduledTick = -1;
             this.lastTick = -1;
             this.infiniteExpansionEnabled = isInfiniteExpansionConfigured();
             this.infiniteExpansionActive = this.infiniteExpansionEnabled;
@@ -694,6 +741,17 @@ const openingAutomation = new (function () {
             this.infiniteExpansionLastPercent = null;
             this.infiniteExpansionPendingSends = [];
             this.postOpeningPercentageResetDone = false;
+            this.debugEvents = [];
+            this._debugLastLand = -1;
+            if (window.__fx && window.__fx.openingDebug) this.debugEnabled = true;
+            this.debugPush({
+                type: 'start',
+                stopAt: this.stopAtByCycle.slice(),
+                cancelDelay: this.cancelDelayByCycle.slice(),
+                tickOffset: this.tickOffset,
+                attacks: this.attacks.length,
+                rttTicks: window.__fx.rtt?.getTicks?.() || 0
+            });
             console.log(`Opening automation loaded ${this.attacks.length} attacks (stopAt ${JSON.stringify(this.stopAtByCycle)})`);
         } catch (error) {
             this.reset();
@@ -738,25 +796,54 @@ const openingAutomation = new (function () {
         this.onTickInfiniteExpansion(tick);
         this.onTickAutoAttack(tick);
 
-        if (!this.enabledForGame || this.completed) return;
-
         const cycle = Math.floor(tick / 100);
         const __rttTicks = settings.openingDynamicCompensationEnabled !== false
             ? (window.__fx.rtt?.getTicks?.() || 0)
             : 0;
+
+        if (this.debugEnabled) {
+            const landNow = Number(this.getPlayerLand?.() ?? -1);
+            if (landNow !== this._debugLastLand) {
+                this.debugPush({ type: 'land', tick, cycle, land: landNow, delta: landNow - this._debugLastLand });
+                this._debugLastLand = landNow;
+            }
+        }
+
+        // A scheduled cycle-end cancel must still be delivered after the last attack,
+        // which is what sets `completed`; otherwise the pending cancel is dropped and
+        // the cycle never stops. It must also never fire on (or before) the tick that
+        // sent the last attack: an over-eager compensated cancel aborts that attack and
+        // loses a whole land increment (3784 -> 3612).
+        if (!this.enabledForGame || this.completed) {
+            if (this.pendingFreeLandCancel) {
+                const pending = this.pendingFreeLandCancel;
+                const cancelRtt = Number.isFinite(pending.rttTicks) ? pending.rttTicks : __rttTicks;
+                const earliest = Number.isFinite(this.lastAttackSentTick) ? this.lastAttackSentTick + 1 : -Infinity;
+                const due = pending.cycle < cycle ||
+                    (pending.cycle === cycle && tick >= Math.max(pending.slotAbs - cancelRtt + (pending.delay || 0), earliest));
+                if (due) {
+                    this.debugPush({ type: 'cancel-fire', tick, cycle, slotAbs: pending.slotAbs, delay: pending.delay || 0, rttTicks: cancelRtt, earliest, expectedServerTick: tick + cancelRtt });
+                    try { this.cancelFreeLandAttack(); } catch (_error) {}
+                    this.pendingFreeLandCancel = null;
+                }
+            }
+            return;
+        }
+
         const stopAt = this.getStopAtForCycle(cycle);
         const cancelSlotAbs = getCancelSlotAbs(cycle, stopAt);
         const cancelSlotInCycle = cancelSlotAbs >= 0 ? cancelSlotAbs - cycle * 100 : 100;
         const effectiveStop = cancelSlotAbs >= 0 ? Math.min(stopAt, cancelSlotInCycle) : stopAt;
 
-        if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle < cycle) {
-            try { this.cancelFreeLandAttack(); } catch (_error) {}
-            this.pendingFreeLandCancel = null;
-        }
-
         if (stopAt < 100 && cancelSlotAbs >= 0 && this.cancelScheduledCycle !== cycle) {
             this.cancelScheduledCycle = cycle;
-            this.pendingFreeLandCancel = { cycle, slotAbs: cancelSlotAbs };
+            this.pendingFreeLandCancel = {
+                cycle,
+                slotAbs: cancelSlotAbs,
+                delay: this.getCancelDelayForCycle(cycle),
+                rttTicks: __rttTicks
+            };
+            this.debugPush({ type: 'cancel-sched', tick, cycle, stopAt, slotAbs: cancelSlotAbs, delay: this.pendingFreeLandCancel.delay, rttTicks: __rttTicks });
         }
 
         while (this.nextAttack < this.attacks.length) {
@@ -783,11 +870,20 @@ const openingAutomation = new (function () {
             window.__fx.keybindFunctions.setAbsolute(attack.percent);
             window.__fx.keybindFunctions.repaintAttackPercentageBar();
             this.attack();
+            this.lastAttackSentTick = tick;
+            this.lastAttackScheduledTick = attack.tick;
+            this.debugPush({ type: 'attack', tick, cycle, scheduledTick: attack.tick, lateBy: tick - (attack.tick - __rttTicks), percent: attack.percent, rttTicks: __rttTicks });
         }
 
-        if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle === cycle && tick >= this.pendingFreeLandCancel.slotAbs - __rttTicks) {
-            try { this.cancelFreeLandAttack(); } catch (_error) {}
-            this.pendingFreeLandCancel = null;
+        if (this.pendingFreeLandCancel && this.pendingFreeLandCancel.cycle === cycle) {
+            const earliest = Number.isFinite(this.lastAttackSentTick) ? this.lastAttackSentTick + 1 : -Infinity;
+            const pending = this.pendingFreeLandCancel;
+            const cancelRtt = Number.isFinite(pending.rttTicks) ? pending.rttTicks : __rttTicks;
+            if (tick >= Math.max(pending.slotAbs - cancelRtt + (pending.delay || 0), earliest)) {
+                this.debugPush({ type: 'cancel-fire', tick, cycle, slotAbs: pending.slotAbs, delay: pending.delay || 0, rttTicks: cancelRtt, earliest, expectedServerTick: tick + cancelRtt });
+                try { this.cancelFreeLandAttack(); } catch (_error) {}
+                this.pendingFreeLandCancel = null;
+            }
         }
 
         if (this.nextAttack >= this.attacks.length) {

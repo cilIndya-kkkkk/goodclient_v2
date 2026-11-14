@@ -1,8 +1,9 @@
 {
-    "version": "0.6.46",
-    "lastUpdated": "10 Nov 2026",
+    "version": "0.6.48",
+    "lastUpdated": "14 Nov 2026",
     "changes": [
-        "Updated for Territorial.io 2.17.7."
+        "Updated for Territorial.io 2.17.11.",
+        "Fixed neutral attack target and opening cancel timing."
     ],
     "isSignificant": true
 }

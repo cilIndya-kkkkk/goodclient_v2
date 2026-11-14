@@ -3,50 +3,50 @@ import { definePatch } from "../modUtils.js";
 export default definePatch((modUtils) => {
   modUtils.waitForMinification(() => {
     modUtils.replaceOne(
-      /(this\.yI=function\(\)\{var oL=ir;)/g,
+      /(this\.yl=function\(\)\{var oP=iv;)/g,
       `$1
       var __fxShipY9 = i.j,
           __fxShipYA = i.k,
-          __fxShipE3 = jH / oL,
-          __fxShipE6 = jI / oL,
-          __fxShipE8 = (__fxShipY9 + jH) / oL,
-          __fxShipE9 = (__fxShipYA + jI) / oL,
-          __fxShipS9 = -20 * oL,
+          __fxShipE3 = jL / oP,
+          __fxShipE6 = jM / oP,
+          __fxShipE8 = (__fxShipY9 + jL) / oP,
+          __fxShipE9 = (__fxShipYA + jM) / oP,
+          __fxShipS9 = -20 * oP,
           __fxShipAId = .5 * __fxShipS9,
-          __fxShipYB = bV.fn << 4;
-      var __fxShipTargets = new Array(bQ.z.mo);
-      for (var __fxShipIndex = 0; __fxShipIndex < bQ.z.mo; __fxShipIndex++) {
-        var __fxShipRoute = bQ.z.mq[__fxShipIndex];
+          __fxShipYB = bV.fr << 4;
+      var __fxShipTargets = new Array(bQ.z.ms);
+      for (var __fxShipIndex = 0; __fxShipIndex < bQ.z.ms; __fxShipIndex++) {
+        var __fxShipRoute = bQ.z.mu[__fxShipIndex];
         var __fxShipLast = __fxShipRoute && __fxShipRoute.length ? __fxShipRoute[__fxShipRoute.length - 1] : -1;
-        var __fxShipTile = __fxShipLast >= 0 && typeof bP !== "undefined" && typeof bP.fS === "function"
-          ? bP.fS(__fxShipLast)
+        var __fxShipTile = __fxShipLast >= 0 && typeof bP !== "undefined" && typeof bP.fW === "function"
+          ? bP.fW(__fxShipLast)
           : __fxShipLast << 2;
         __fxShipTargets[__fxShipIndex] = __fxShipLast >= 0
           && typeof ad !== "undefined"
-          && typeof ad.hC === "function"
-          && typeof ad.fU === "function"
-          && ad.hC(__fxShipTile)
-          ? ad.fU(__fxShipTile)
+          && typeof ad.hG === "function"
+          && typeof ad.fY === "function"
+          && ad.hG(__fxShipTile)
+          ? ad.fY(__fxShipTile)
           : -1;
       }
       if (__fx.drawShipRoutes) {
         try {
           __fx.drawShipRoutes({
-            ctx: yJ,
-            jO: bQ.z.mo,
-            iz: bQ.z.n3,
-            j6: bQ.z.ms,
-            zg: bQ.z.aAQ,
-            routes: bQ.z.mq,
-            routeIndex: bQ.z.n2,
-            segmentProgress: bQ.z.acf,
-            shipStatus: bQ.z.mp,
+            ctx: ym,
+            jO: bQ.z.ms,
+            iz: bQ.z.n7,
+            j6: bQ.z.mw,
+            zg: bQ.z.aAu,
+            routes: bQ.z.mu,
+            routeIndex: bQ.z.n6,
+            segmentProgress: bQ.z.adO,
+            shipStatus: bQ.z.mt,
             targets: __fxShipTargets,
-            mapWidth: bV.fn,
-            mapHeight: bV.fo,
-            scale: oL,
-            camX: jH,
-            camY: jI,
+            mapWidth: bV.fr,
+            mapHeight: bV.fs,
+            scale: oP,
+            camX: jL,
+            camY: jM,
             screenWidth: __fxShipY9,
             screenHeight: __fxShipYA,
             project: function(value) {
@@ -58,10 +58,10 @@ export default definePatch((modUtils) => {
               };
             },
             zt: function(value) {
-              return bP.jN(value);
+              return bP.jR(value);
             },
-            colors: bj.aEc,
-            colorIds: bj.aEd
+            colors: bj.aF6,
+            colorIds: bj.aF7
           });
         } catch (__fxShipError) {
           if (!window.__fxShipError) {
@@ -72,7 +72,7 @@ export default definePatch((modUtils) => {
       }
       __fx.shipControl = __fx.shipControl || {
         recallShip: function(index) {
-          try { return bQ.mx.acd(Number(index)); } catch (_error) { return false; }
+          try { return bQ.n1.adM(Number(index)); } catch (_error) { return false; }
         },
         interceptShip: function(index, percent) {
           try {
@@ -88,8 +88,8 @@ export default definePatch((modUtils) => {
             var previous = keybinds && typeof keybinds.getAttackPercentage === "function" ? keybinds.getAttackPercentage() : null;
             if (keybinds && typeof keybinds.setAbsolute === "function") keybinds.setAbsolute(value);
             if (keybinds && typeof keybinds.repaintAttackPercentageBar === "function") keybinds.repaintAttackPercentageBar();
-            bW.hj(Math.floor(point.x * scale), Math.floor(point.y * scale));
-            bW.hk(2);
+            bW.hn(Math.floor(point.x * scale), Math.floor(point.y * scale));
+            bW.ho(2);
             if (previous !== null && keybinds && typeof keybinds.setAbsolute === "function") {
               keybinds.setAbsolute(previous);
               if (typeof keybinds.repaintAttackPercentageBar === "function") keybinds.repaintAttackPercentageBar();

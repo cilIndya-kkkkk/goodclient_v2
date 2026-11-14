@@ -11,37 +11,37 @@ const g = {
   attackManager: "ae",
   protocolHandler: "bB",
   teamUtils: "bw",
-  playerTiles: "hI",
-  neighborOffsets: "fe",
-  isNeutralTile: "fT",
-  isOwnedTile: "hC",
-  getTileOwner: "fU",
-  getAvailableAttackCount: "gj",
-  getAttackTarget: "go",
-  getAttackValue: "gp",
-  gameCommandSender: "i3",
-  sendAttack: "iA",
-  sendSupport: "r3",
-  cancelAttack: "rC",
-  canAttack: "fV",
-  mapIsRendered: "a0C",
+  playerTiles: "hM",
+  neighborOffsets: "fi",
+  isNeutralTile: "fX",
+  isOwnedTile: "hG",
+  getTileOwner: "fY",
+  getAvailableAttackCount: "gn",
+  getAttackTarget: "gs",
+  getAttackValue: "gt",
+  gameCommandSender: "i7",
+  sendAttack: "iE",
+  sendSupport: "rt",
+  cancelAttack: "s2",
+  canAttack: "fZ",
+  mapIsRendered: "a0g",
   mapRenderer: "bP",
-  screenToX: "ht",
-  screenToY: "hv",
-  screenToTileX: "fz",
-  screenToTile: "fS",
-  screenInBounds: "hw",
+  screenToX: "hx",
+  screenToY: "hz",
+  screenToTileX: "g3",
+  screenToTile: "fW",
+  screenInBounds: "i0",
   supportUtils: "bD",
-  supportMath: "gy",
-  supportAmount: "jF",
-  supportCalc: "rN",
+  supportMath: "h2",
+  supportAmount: "jJ",
+  supportCalc: "sD",
   mouseActions: "bW",
-  setMouse: "hj",
-  runMouseAction: "hk",
+  setMouse: "hn",
+  runMouseAction: "ho",
   viewport: "i",
   pixelScale: "l",
   uiController: "bF",
-  setUiHidden: "a5o",
+  setUiHidden: "a6H",
 
 };
 
@@ -255,7 +255,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.getDeployedTroops=()=> {
                 var player = ${dict.game}.${dict.playerId};
                 if (typeof ${g.attackManager} !== "undefined" && typeof ${g.attackManager}.${g.getAvailableAttackCount} === "function") {
-                    var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
+                    var freeLandTarget = 512;
                     var count = ${g.attackManager}.${g.getAvailableAttackCount}(player) || 0;
                     for (var attackIndex = count - 1; attackIndex >= 0; attackIndex--) {
                         var target = ${g.attackManager}.${g.getAttackTarget}(player, attackIndex);
@@ -271,7 +271,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.attack=()=> __fx.openingAutomation.attackFreeLand();
             __fx.openingAutomation.attackFreeLand=()=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
-                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
+                var freeLandTarget = 512;
                 var percent = __fx.keybindFunctions.getAttackPercentage();
                 var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
                 if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.sendAttack} === "function") {
@@ -283,7 +283,7 @@ function applyOpeningAutomation(modUtils) {
             __fx.openingAutomation.attackFreeLandWithPercent=(percent)=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
                 percent = Math.max(0, Math.min(1, Number(percent || 0)));
-                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
+                var freeLandTarget = 512;
                 var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
                 __fx.keybindFunctions.setAbsolute(percent);
                 __fx.keybindFunctions.repaintAttackPercentageBar();
@@ -447,7 +447,7 @@ function applyOpeningAutomation(modUtils) {
             };
             __fx.openingAutomation.cancelFreeLandAttack=()=> {
                 if (${dict.game}.${dict.gIsReplay}) return false;
-                var freeLandTarget = ${dict.game}.fZ ?? ${dict.game}.${dict.gLobbyMaxJoin} ?? 512;
+                var freeLandTarget = 512;
                 if (typeof ${g.protocolHandler} !== "undefined" && ${g.protocolHandler}.${g.gameCommandSender} && typeof ${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack} === "function") {
                     ${g.protocolHandler}.${g.gameCommandSender}.${g.cancelAttack}(freeLandTarget);
                     return true;
