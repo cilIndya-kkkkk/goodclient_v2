@@ -69,6 +69,19 @@ export default definePatch(({ safeDictionary: dict, insertCode, modifyCode, matc
     modifyCode(`
         ${insert(`__fx.replay.restartReplay = () => this.watchReplay();`)}
         this.watchReplay = function() {
+            var mapData = mapHolder.mapDataLoader(game.data);
+            if (game.data.mapType !== 2 && !mapHolder.mapValidator.isValid(mapData)) {
+                if (!mapLoading) {
+                    mapLoading = 1;
+                    mapHolder.mapValidator.load(mapData, function (valid) {
+                        mapLoading = 0;
+                        if (valid) {
+                            mapMenu.aZl();
+                        }
+                    });
+                }
+                return;
+            }
             var wasInGame = game.gameState !== 0;
             var returnPage = game.returnPageState;
             if (!wasInGame) {
