@@ -2,15 +2,15 @@ export const INFINITE_EXPANSION_START_TICK = 508;
 export const INFINITE_EXPANSION_END_CYCLE = 9;
 
 export function computeInfiniteExpansionStartTick(cycle, neutralBorderTiles) {
-    const baseStart = cycle === 5 ? 61.1414 : cycle === 6 ? 61.1414 : cycle === 7 ? 38.2134 : 22.9280;
+    const baseStart = cycle === 5 ? 60.689956 : cycle === 6 ? 60.689956 : cycle === 7 ? 37.931223 : cycle === 8 ? 22.758734 : 15;
     const referenceTiles = cycle === 5 ? 184 : cycle === 6 ? 220 : cycle === 7 ? 272 : 336;
     return Math.max(2, Math.round(baseStart * neutralBorderTiles / referenceTiles));
 }
 
 export function getInfiniteExpansionMaxSendPercent(ownLand) {
-    if (ownLand < 15000) return 0.40397;
-    if (ownLand < 30000) return 0.34626;
-    return 0.28855;
+    if (ownLand < 15000) return 0.383796;
+    if (ownLand < 30000) return 0.328968;
+    return 0.274140;
 }
 
 // Ported from ThighClient MPV3's runInfiniteExpansion (the border-tile-driven rewrite, not the
@@ -36,11 +36,11 @@ export function getDynamicInfiniteExpansionDecision({
     if (cycle >= INFINITE_EXPANSION_END_CYCLE) {
         return { type: "finish", cancelNeutral: neutralOutgoing > 0 };
     }
-    if (tickInCycle >= 96) return { type: "wait" };
+    if (tickInCycle >= 95) return { type: "wait" };
 
     // Dump remaining troops into the last live attack before the cycle locks (tickInCycle 90-95)
     // rather than let them sit idle once regular sends stop being worth the overhead.
-    if (started && tickInCycle >= 97 && hasAccessibleNeutralLand) {
+    if (started && tickInCycle >= 98 && hasAccessibleNeutralLand) {
         if (homeTroops > 200 && neutralOutgoing < homeTroops && tick - lastAttackTick >= 1) {
             const dumpPercent = Math.min(0.95, (homeTroops - 100) / Math.max(1, homeTroops));
             return { type: "attack", optimalStart, percent: dumpPercent };
@@ -69,14 +69,14 @@ export function getDynamicInfiniteExpansionDecision({
     if (tick - lastAttackTick < 1) return { type: "wait", optimalStart: nextOptimalStart, started: effectiveStarted || undefined };
 
     const maxSendPercent = getInfiniteExpansionMaxSendPercent(ownLand);
-    const minToKeepAlive = 2.188090223 * neutralBorderTiles;
-    const consumptionPerTick = 2.134055254 * neutralBorderTiles;
-    const targetOutgoing = minToKeepAlive + consumptionPerTick * 3.412831098;
-    const refillThreshold = minToKeepAlive + consumptionPerTick * 0.985229970;
+    const minToKeepAlive = 1.972047794 * neutralBorderTiles;
+    const consumptionPerTick = 2.428476727 * neutralBorderTiles;
+    const targetOutgoing = minToKeepAlive + consumptionPerTick * 4.864284269;
+    const refillThreshold = minToKeepAlive + consumptionPerTick * 1.331836961;
 
     if (!effectiveStarted || neutralOutgoing <= 0) {
         if (neutralOutgoing <= 0 && tickInCycle >= 91) return { type: "wait", optimalStart: nextOptimalStart };
-        const sendTarget = minToKeepAlive + consumptionPerTick * 5.809555161;
+        const sendTarget = minToKeepAlive + consumptionPerTick * 8.147730241;
         let initialSend = Math.min(sendTarget, homeTroops * maxSendPercent);
         if (initialSend < minToKeepAlive && homeTroops > minToKeepAlive * 2) initialSend = minToKeepAlive;
         if (initialSend < consumptionPerTick * 3) return { type: "wait", optimalStart: nextOptimalStart };
@@ -93,7 +93,7 @@ export function getDynamicInfiniteExpansionDecision({
 
     const maxSend = homeTroops * maxSendPercent;
     const sendTroops = Math.min(neededTroops, maxSend);
-    if (sendTroops < 126) return { type: "wait", optimalStart: nextOptimalStart, started: true };
+    if (sendTroops < 101) return { type: "wait", optimalStart: nextOptimalStart, started: true };
 
     const percent = Math.max(0.02, Math.min(maxSendPercent, sendTroops / Math.max(1, homeTroops)));
     return { type: "attack", optimalStart: nextOptimalStart, percent, started: true };

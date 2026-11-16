@@ -280,6 +280,62 @@ async function commitEditor() {
   setStatus("Saved");
 }
 
+function goldApi() {
+  const api = window.__fx && window.__fx.accountGold;
+  return api && typeof api.request === "function" ? api : null;
+}
+
+async function lookupGold(entry) {
+  const api = goldApi();
+  if (!api) {
+    setStatus("Gold lookup unavailable (account patch missing)", true);
+    return;
+  }
+  const account = String(entry.account || "").trim();
+  if (!account) {
+    setStatus("Account name is missing", true);
+    return;
+  }
+  setStatus(`Looking up gold for ${entry.name || account}...`);
+  try {
+    const result = await api.request(account);
+    entry.gold = Number(result.gold) || 0;
+    entry.goldUpdatedAt = Date.now();
+    await saveStore();
+    renderList();
+    setStatus(`Gold: ${entry.gold.toFixed(2)}`);
+  } catch (error) {
+    setStatus(`Gold lookup failed: ${error.message}`, true);
+  }
+}
+
+async function refreshAllGold() {
+  const api = goldApi();
+  if (!api) {
+    setStatus("Gold lookup unavailable (account patch missing)", true);
+    return;
+  }
+  let ok = 0;
+  let failed = 0;
+  for (const entry of entries) {
+    if (!entry.account) continue;
+    setStatus(`Gold ${ok + failed + 1}/${entries.length}: ${entry.name || entry.account}`);
+    try {
+      const result = await api.request(entry.account);
+      entry.gold = Number(result.gold) || 0;
+      entry.goldUpdatedAt = Date.now();
+      ok++;
+    } catch (_error) {
+      failed++;
+    }
+    renderList();
+    await new Promise((resolve) => setTimeout(resolve, 700));
+  }
+  await saveStore();
+  renderList();
+  setStatus(`Gold refreshed: ${ok} ok, ${failed} failed`);
+}
+
 function renderList() {
   if (!listEl) return;
   listEl.textContent = "";
@@ -307,11 +363,18 @@ function renderList() {
       note.textContent = entry.note;
       main.appendChild(note);
     }
+    if (entry.gold !== undefined && entry.gold !== null) {
+      const gold = document.createElement("div");
+      gold.className = "fx-store-gold";
+      gold.textContent = "Gold: " + Number(entry.gold).toFixed(2);
+      main.appendChild(gold);
+    }
     const actions = document.createElement("div");
     actions.className = "fx-store-actions";
     actions.append(
       makeButton("Copy user", () => copyText(entry.account, "Account"), "fx-store-small"),
       makeButton("Copy pass", () => copyText(entry.password, "Password"), "fx-store-small"),
+      makeButton("Gold", () => lookupGold(entry), "fx-store-small"),
       makeButton("Edit", () => openEditor(entry), "fx-store-small"),
       makeButton("Delete", async () => {
         if (!confirm(`Delete ${entry.name || entry.account}?`)) return;
@@ -438,6 +501,7 @@ function createPanel() {
     makeButton("Add account", () => openEditor(null), "fx-store-primary"),
     makeButton("Export encrypted backup", () => exportStore().catch((error) => setStatus(error && error.message || "Export failed", true))),
     makeButton("Import backup", () => fileInput.click()),
+    makeButton("Refresh gold", () => refreshAllGold().catch((error) => setStatus(error.message, true)), "fx-store-small"),
     fileInput
   );
 
