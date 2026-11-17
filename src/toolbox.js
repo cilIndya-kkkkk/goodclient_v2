@@ -5,7 +5,6 @@ import { openingTickOffsetToInternalTicks } from "./openingTickOffset.js";
 import { attacksPerCycleToIntervalMs, intervalMsToAttacksPerCycle } from "./botAttackRate.js";
 import DEFAULT_OPENING_STRATEGY from "./defaultOpeningStrategy.js";
 import { t } from "./i18n.js";
-import { openAccountStore } from "./localStore.js";
 import { isBotInstance, isEmbedded, getHost } from "./instance.js";
 import { openHelpPanel } from "./helpPanels.js";
 
@@ -651,9 +650,6 @@ export default function initToolbox(options = {}) {
   if (variant === "full" && embedded) {
     menuCards.push(makeMenuCard("Bot", "Tab Mode bot settings and window size", "bot"));
   }
-  const accountsCard = makeMenuCard("Accounts", "Saved accounts, cloud sync and gold", "menu");
-  accountsCard.addEventListener("click", () => { openAccountStore(); });
-  menuCards.push(accountsCard);
   menuCards.push(
     makeMenuCard("Help", "Changelog and usage guide", "help")
   );

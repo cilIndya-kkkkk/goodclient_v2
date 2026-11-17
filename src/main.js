@@ -38,6 +38,7 @@ import lobbyReminders from './lobbyReminders.js';
 import pingFilter from './pingFilter.js';
 import nameFilter from './nameFilter.js';
 import followedAccounts from './followedAccounts.js';
+import { openAccountStore } from './localStore.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
@@ -82,8 +83,17 @@ __fx.lobbyReminders = lobbyReminders;
 __fx.pingFilter = pingFilter;
 __fx.nameFilter = nameFilter;
 __fx.followedAccounts = followedAccounts;
+__fx.openAccountStore = openAccountStore;
 
 __fx.openingAutomation = openingAutomation;
+const openingDebugEnabled = (typeof __FX_OPENING_DEBUG__ !== "undefined" && __FX_OPENING_DEBUG__)
+    || new URLSearchParams(window.location.search).get("fxopeningdebug") === "1";
+if (openingDebugEnabled) {
+    try { __fx.openingAutomation.setDebug(true); } catch (_error) {}
+    import("./openingDebugOverlay.js")
+        .then((module) => module.initOpeningDebugOverlay())
+        .catch((error) => console.error("opening debug overlay failed", error));
+}
 __fx.OpeningAutomationInput = OpeningAutomationInput;
 __fx.botCommander = isTabBot ? initBotCommander() : null;
 __fx.automationControls = isTabBot ? null : initAutomationControls();

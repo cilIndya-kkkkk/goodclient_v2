@@ -83,12 +83,14 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
         replaceRawCode(`,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1)]`,
             `,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1),
             new nQ(__fx.t ? __fx.t("FX Client settings") : "FX Client settings", function() { __fx.WindowManager.openWindow("settings"); }, "rgba(0, 0, 20, 0.5)"),
-            new nQ(__fx.t ? __fx.t("Join/Create custom lobby") : "Join/Create custom lobby", function() { __fx.customLobby.showJoinPrompt(); }, "rgba(20, 9, 77, 0.5)")]`)
+            new nQ(__fx.t ? __fx.t("Join/Create custom lobby") : "Join/Create custom lobby", function() { __fx.customLobby.showJoinPrompt(); }, "rgba(20, 9, 77, 0.5)"),
+            new nQ(__fx.t ? __fx.t("Saved Accounts") : "Saved Accounts", function() { __fx.openAccountStore(); }, "rgba(20, 40, 30, 0.5)")]`)
         // set position
         replaceRawCode(`aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);`,
             `aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);
             aZ.g5.vO(aD3[5].button, x, a3X + h * 2 + gap * 2, a0S * 2 + gap, h / 3);
-            aZ.g5.vO(aD3[6].button, x, a3X + h * 2.33 + gap * 3, a0S * 2 + gap, h / 3);`);
+            aZ.g5.vO(aD3[6].button, x, a3X + h * 2.33 + gap * 3, a0S * 2 + gap, h / 3);
+            aZ.g5.vO(aD3[7].button, x, a3X + h * 2.66 + gap * 4, a0S * 2 + gap, h / 3);`);
     }
 
     { // Keybinds

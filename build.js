@@ -27,6 +27,11 @@ const buildClientCode = () => /** @type {Promise<void>} */(new Promise((resolve,
 	console.log("Building client code...");
 	webpack({
 		mode: 'production',
+		plugins: [
+			new webpack.DefinePlugin({
+				__FX_OPENING_DEBUG__: JSON.stringify(process.env.FX_OPENING_DEBUG === "1")
+			})
+		],
 		entry: { fxClient: "./src/main.js", host: "./src/host/main.js" },
 		output: {
 			path: path.resolve(import.meta.dirname, 'build'),
