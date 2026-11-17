@@ -38,7 +38,6 @@ import lobbyReminders from './lobbyReminders.js';
 import pingFilter from './pingFilter.js';
 import nameFilter from './nameFilter.js';
 import followedAccounts from './followedAccounts.js';
-import { openAccountStore } from './localStore.js';
 
 window.__fx = window.__fx || {};
 const __fx = window.__fx;
@@ -83,7 +82,6 @@ __fx.lobbyReminders = lobbyReminders;
 __fx.pingFilter = pingFilter;
 __fx.nameFilter = nameFilter;
 __fx.followedAccounts = followedAccounts;
-__fx.openAccountStore = openAccountStore;
 
 __fx.openingAutomation = openingAutomation;
 const openingDebugEnabled = (typeof __FX_OPENING_DEBUG__ !== "undefined" && __FX_OPENING_DEBUG__)

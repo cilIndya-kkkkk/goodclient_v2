@@ -1,10 +1,10 @@
 {
-    "version": "0.6.52",
+    "version": "0.6.53",
     "lastUpdated": "17 Nov 2026",
     "changes": [
         "Updated for Territorial.io 2.17.13 (new maps).",
-        "Added Saved Accounts entry to the main menu.",
-        "Saved accounts now show gold with one-click refresh."
+        "Reverted the saved-accounts gold display.",
+        "Kept the improved infinite expansion parameters."
     ],
     "isSignificant": true
 }
